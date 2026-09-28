@@ -1,0 +1,33 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}Resumen | ContableBernal{% endblock %}
+{% block workspace_class %}workspace--dashboard{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'css/dashboard/dashboard.css' %}">{% endblock %}
+{% block content %}
+<section class="page-heading dashboard-heading">
+    <div><p class="eyebrow">ESTUDIO CONTABLE · LA PAZ</p><h1>Resumen general</h1><p>Panorama operativo y financiero del estudio.</p></div>
+    <time class="page-date" datetime="{{ fecha_actual|date:'Y-m-d' }}">{{ fecha_actual|date:'j F Y' }}</time>
+</section>
+<section class="metric-grid" aria-label="Indicadores del estudio">
+    <article class="metric metric--green"><p>Clientes activos</p><strong>0</strong><span>En cartera</span></article>
+    <article class="metric metric--amber"><p>Tareas pendientes</p><strong>0</strong><span>Por completar</span></article>
+    <article class="metric metric--coral"><p>Vencimientos hoy</p><strong>0</strong><span>Requieren atención</span></article>
+    <article class="metric metric--blue"><p>Honorarios por cobrar</p><strong>Bs 0</strong><span>Saldo pendiente</span></article>
+    <article class="metric metric--green"><p>Ingresos del mes</p><strong>Bs 0</strong><span>Registrados</span></article>
+    <article class="metric metric--coral"><p>Gastos del mes</p><strong>Bs 0</strong><span>Registrados</span></article>
+</section>
+<section class="dashboard-lower">
+    <div class="surface due-surface">
+        <div class="section-heading"><div><p class="eyebrow">SEGUIMIENTO</p><h2>Vencimientos próximos</h2></div><a href="{% url 'obligaciones:index' %}">Ver obligaciones</a></div>
+        <div class="table-scroll"><table><thead><tr><th>Cliente</th><th>Obligación</th><th>Vencimiento</th><th>Estado</th></tr></thead><tbody><tr><td colspan="4" class="table-empty">Aún no hay vencimientos cargados.</td></tr></tbody></table></div>
+    </div>
+    <aside class="surface quick-surface">
+        <p class="eyebrow">ACCESOS</p><h2>Ir a un módulo</h2>
+        <a href="{% url 'clientes:index' %}"><span>01</span>Registrar clientes</a>
+        <a href="{% url 'tareas:index' %}"><span>02</span>Revisar tareas</a>
+        <a href="{% url 'honorarios:index' %}"><span>03</span>Controlar honorarios</a>
+        <a href="{% url 'gastos:index' %}"><span>04</span>Registrar gastos</a>
+    </aside>
+</section>
+{% endblock %}
+{% block page_js %}<script defer src="{% static 'js/dashboard/dashboard.js' %}"></script>{% endblock %}

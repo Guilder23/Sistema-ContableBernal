@@ -1,0 +1,7 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+{% block workspace_class %}workspace--clientes{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">{% endblock %}
+{% block content %}<section class="page-heading"><div><p class="eyebrow">CARTERA DE CLIENTES</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
+{% block page_js %}<script defer src="{% static 'js/clientes/clientes.js' %}"></script>{% endblock %}

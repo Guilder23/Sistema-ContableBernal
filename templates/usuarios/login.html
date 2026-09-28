@@ -1,0 +1,34 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#173d32">
+    <title>Iniciar sesión | ContableBernal</title>
+    <link rel="stylesheet" href="{% static 'css/usuarios/login.css' %}">
+</head>
+<body>
+<main class="login-layout">
+    <section class="login-brand-panel">
+        <a class="login-brand" href="/"><span class="brand-mark">CB</span><span><strong>Contable</strong><small>BERNAL</small></span></a>
+        <div class="brand-copy"><p class="eyebrow">GESTIÓN CONTABLE</p><h1>Orden para cada obligación.</h1><p>Clientes, vencimientos y trabajo del equipo en un solo lugar.</p></div>
+        <span class="brand-footer">LA PAZ · BOLIVIA</span>
+    </section>
+    <section class="login-form-panel">
+        <form class="login-form" method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ siguiente }}">
+            <p class="eyebrow">ACCESO AL SISTEMA</p><h2>Iniciar sesión</h2><p class="form-intro">Ingresa con tu cuenta del estudio.</p>
+            {% if error %}<div class="form-error" role="alert">{{ error }}</div>{% endif %}
+            <label for="username">Usuario</label>
+            <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+            <label for="password">Contraseña</label>
+            <div class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" required><button id="toggle-password" type="button" aria-label="Mostrar contraseña" aria-pressed="false">Mostrar</button></div>
+            <button class="submit-button" type="submit">Ingresar <span aria-hidden="true">→</span></button>
+        </form>
+    </section>
+</main>
+<script defer src="{% static 'js/usuarios/login.js' %}"></script>
+</body>
+</html>
