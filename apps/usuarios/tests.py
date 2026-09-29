@@ -47,9 +47,15 @@ class GestionUsuariosTests(TestCase):
 		self.assertRedirects(response, '/usuarios/')
 		cuenta = self.modelo_usuario.objects.get(username='secretaria_nueva')
 		self.assertEqual(cuenta.perfil.rol, PerfilUsuario.Rol.SECRETARIO)
+		self.assertIsNotNone(cuenta.date_joined)
+		self.assertIsNotNone(cuenta.perfil.creado_en)
+		self.assertEqual(cuenta.perfil.creado_por, self.administrador)
 		self.assertTrue(cuenta.check_password('X9$vpL3-mQ7!tR2'))
 
 	def test_edita_consulta_y_elimina_usuario(self):
+		creador_original = self.modelo_usuario.objects.create_user(username='creador_original')
+		self.auxiliar.perfil.creado_por = creador_original
+		self.auxiliar.perfil.save(update_fields=['creado_por', 'actualizado_en'])
 		response = self.client.post(f'/usuarios/{self.auxiliar.pk}/editar/', {
 			'username': 'auxiliar_actualizado',
 			'first_name': 'Luis',
@@ -62,6 +68,7 @@ class GestionUsuariosTests(TestCase):
 		self.auxiliar.refresh_from_db()
 		self.assertEqual(self.auxiliar.username, 'auxiliar_actualizado')
 		self.assertEqual(self.auxiliar.perfil.rol, PerfilUsuario.Rol.AUXILIAR)
+		self.assertEqual(self.auxiliar.perfil.creado_por, creador_original)
 		self.assertEqual(self.client.get(f'/usuarios/{self.auxiliar.pk}/').status_code, 404)
 		response = self.client.post(f'/usuarios/{self.auxiliar.pk}/eliminar/')
 		self.assertRedirects(response, '/usuarios/')

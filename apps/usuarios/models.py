@@ -13,6 +13,13 @@ class PerfilUsuario(models.Model):
 		on_delete=models.CASCADE,
 		related_name='perfil',
 	)
+	creado_por = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
+		related_name='usuarios_creados',
+	)
 	rol = models.CharField(max_length=20, choices=Rol.choices, default=Rol.AUXILIAR)
 	creado_en = models.DateTimeField(auto_now_add=True)
 	actualizado_en = models.DateTimeField(auto_now=True)

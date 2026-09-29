@@ -107,6 +107,7 @@ def _guardar_usuario(request, usuario=None, es_nuevo=False):
 		return None, datos, errores
 
 	modelo_usuario = get_user_model()
+	usuario_nuevo = usuario is None
 	with transaction.atomic():
 		if usuario is None:
 			usuario = modelo_usuario(username=datos['username'])
@@ -118,9 +119,17 @@ def _guardar_usuario(request, usuario=None, es_nuevo=False):
 		if password:
 			usuario.set_password(password)
 		usuario.save()
-		perfil, _ = PerfilUsuario.objects.get_or_create(usuario=usuario)
+		perfil, _ = PerfilUsuario.objects.get_or_create(
+			usuario=usuario,
+			defaults={'creado_por': request.user},
+		)
+		if usuario_nuevo and perfil.creado_por_id is None:
+			perfil.creado_por = request.user
 		perfil.rol = datos['rol']
-		perfil.save(update_fields=['rol', 'actualizado_en'])
+		campos_actualizados = ['rol', 'actualizado_en']
+		if usuario_nuevo:
+			campos_actualizados.append('creado_por')
+		perfil.save(update_fields=campos_actualizados)
 	return usuario, datos, {}
 
 
@@ -161,7 +170,7 @@ def index(request):
 
 
 def _contexto_listado(request, datos=None, errores=None, modal_activo='', usuario_edicion=None):
-	usuarios = get_user_model().objects.select_related('perfil').order_by('username')
+	usuarios = get_user_model().objects.select_related('perfil', 'perfil__creado_por').order_by('username')
 	busqueda = request.GET.get('q', '').strip()
 	rol = request.GET.get('rol', '')
 	estado = request.GET.get('estado', '')

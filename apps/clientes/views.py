@@ -96,7 +96,7 @@ def _guardar_cliente(request, cliente=None):
         return None, datos, errores
     with transaction.atomic():
         if cliente is None:
-            cliente = Cliente()
+            cliente = Cliente(creado_por=request.user)
         for campo in ('nombre', 'tipo', 'ci', 'actividad', 'telefono', 'whatsapp', 'correo', 'direccion', 'estado', 'observaciones'):
             setattr(cliente, campo, datos[campo])
         cliente.nit = datos['nit'] or None
@@ -111,7 +111,7 @@ def index(request):
 
 
 def _contexto_listado(request, datos=None, errores=None, modal_activo='', cliente_edicion=None):
-    clientes = Cliente.objects.all()
+    clientes = Cliente.objects.select_related('creado_por')
     busqueda = request.GET.get('q', '').strip()
     tipo = request.GET.get('tipo', '')
     estado = request.GET.get('estado', '')

@@ -57,6 +57,8 @@ class GestionClientesTests(TestCase):
 		self.assertEqual(cliente.nombre, 'Comercial El Roble')
 		self.assertEqual(cliente.tipo, Cliente.Tipo.JURIDICA)
 		self.assertEqual(cliente.fecha_inicio.isoformat(), '2026-01-15')
+		self.assertIsNotNone(cliente.creado_en)
+		self.assertEqual(cliente.creado_por, self.administrador)
 
 	def test_nit_duplicado_reabre_modal_con_error(self):
 		Cliente.objects.create(nombre='Cliente existente', nit='123456789')
@@ -66,11 +68,16 @@ class GestionClientesTests(TestCase):
 		self.assertContains(response, 'Ya existe un cliente con ese NIT.')
 
 	def test_edita_consulta_y_elimina_desde_el_directorio(self):
-		cliente = Cliente.objects.create(nombre='Cliente inicial', nit='987654321')
+		cliente = Cliente.objects.create(
+			nombre='Cliente inicial',
+			nit='987654321',
+			creado_por=self.secretario,
+		)
 		response = self.client.post(f'/clientes/{cliente.pk}/editar/', self.datos_cliente(nit='987654321'))
 		self.assertRedirects(response, '/clientes/')
 		cliente.refresh_from_db()
 		self.assertEqual(cliente.nombre, 'Comercial El Roble')
+		self.assertEqual(cliente.creado_por, self.secretario)
 		self.assertContains(self.client.get('/clientes/'), 'Comercial El Roble')
 		response = self.client.post(f'/clientes/{cliente.pk}/eliminar/')
 		self.assertRedirects(response, '/clientes/')

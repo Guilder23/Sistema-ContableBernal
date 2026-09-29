@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -38,6 +39,13 @@ class Cliente(models.Model):
 	fecha_inicio = models.DateField(null=True, blank=True)
 	observaciones = models.TextField(blank=True)
 	creado_en = models.DateTimeField(auto_now_add=True)
+	creado_por = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
+		related_name='clientes_creados',
+	)
 	actualizado_en = models.DateTimeField(auto_now=True)
 
 	class Meta:
