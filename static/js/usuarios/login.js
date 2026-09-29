@@ -9,9 +9,15 @@ if (currentYear) currentYear.textContent = String(new Date().getFullYear());
 passwordToggle?.addEventListener('click', () => {
     const isVisible = passwordInput.type === 'text';
     passwordInput.type = isVisible ? 'password' : 'text';
-    passwordToggle.textContent = isVisible ? 'Mostrar' : 'Ocultar';
     passwordToggle.setAttribute('aria-pressed', String(!isVisible));
     passwordToggle.setAttribute('aria-label', isVisible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+    
+    const eyeOpen = passwordToggle.querySelector('.eye-open');
+    const eyeClosed = passwordToggle.querySelector('.eye-closed');
+    if (eyeOpen && eyeClosed) {
+        eyeOpen.style.display = isVisible ? 'block' : 'none';
+        eyeClosed.style.display = isVisible ? 'none' : 'block';
+    }
 });
 
 loginForm?.addEventListener('submit', (event) => {
