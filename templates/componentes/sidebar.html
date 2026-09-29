@@ -1,30 +1,30 @@
 {% load static %}
 <aside class="sidebar" id="sidebar" aria-label="Navegación principal">
 	<a class="brand" href="{% url 'dashboard:index' %}">
-		<span class="brand-mark">CB</span><span class="brand-name"><strong>Contable</strong><small>BERNAL</small></span>
+		<img class="brand-mark" src="{% static 'img/logo.png' %}" alt=""><span class="brand-name"><strong>Contable</strong><small>BERNAL</small></span>
 	</a>
 	<nav class="side-nav">
 		<p class="nav-caption">GENERAL</p>
-		<a class="nav-link" href="{% url 'dashboard:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#dashboard"></use></svg>Resumen</a>
+		<a class="nav-link" href="{% url 'dashboard:index' %}" title="Resumen" aria-label="Resumen"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#dashboard"></use></svg><span class="nav-label">Resumen</span></a>
 		<p class="nav-caption">OPERACIÓN</p>
-		<a class="nav-link" href="{% url 'clientes:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#users"></use></svg>Clientes</a>
-		<a class="nav-link" href="{% url 'obligaciones:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#calendar-check"></use></svg>Obligaciones</a>
-		<a class="nav-link" href="{% url 'tareas:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#list-checks"></use></svg>Tareas</a>
-		<a class="nav-link" href="{% url 'requerimientos:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#inbox"></use></svg>Requerimientos</a>
-		<a class="nav-link" href="{% url 'agenda:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#calendar"></use></svg>Agenda</a>
+		<a class="nav-link" href="{% url 'clientes:index' %}" title="Clientes" aria-label="Clientes"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#users"></use></svg><span class="nav-label">Clientes</span></a>
+		<a class="nav-link" href="{% url 'obligaciones:index' %}" title="Obligaciones" aria-label="Obligaciones"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#calendar-check"></use></svg><span class="nav-label">Obligaciones</span></a>
+		<a class="nav-link" href="{% url 'tareas:index' %}" title="Tareas" aria-label="Tareas"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#list-checks"></use></svg><span class="nav-label">Tareas</span></a>
+		<a class="nav-link" href="{% url 'requerimientos:index' %}" title="Requerimientos" aria-label="Requerimientos"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#inbox"></use></svg><span class="nav-label">Requerimientos</span></a>
+		<a class="nav-link" href="{% url 'agenda:index' %}" title="Agenda" aria-label="Agenda"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#calendar"></use></svg><span class="nav-label">Agenda</span></a>
 		<p class="nav-caption">FINANZAS</p>
-		<a class="nav-link" href="{% url 'honorarios:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#receipt"></use></svg>Honorarios</a>
-		<a class="nav-link" href="{% url 'ingresos:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trending-up"></use></svg>Ingresos</a>
-		<a class="nav-link" href="{% url 'gastos:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#wallet"></use></svg>Gastos</a>
-		<a class="nav-link" href="{% url 'reportes:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chart"></use></svg>Reportes</a>
+		<a class="nav-link" href="{% url 'honorarios:index' %}" title="Honorarios" aria-label="Honorarios"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#receipt"></use></svg><span class="nav-label">Honorarios</span></a>
+		<a class="nav-link" href="{% url 'ingresos:index' %}" title="Ingresos" aria-label="Ingresos"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trending-up"></use></svg><span class="nav-label">Ingresos</span></a>
+		<a class="nav-link" href="{% url 'gastos:index' %}" title="Gastos" aria-label="Gastos"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#wallet"></use></svg><span class="nav-label">Gastos</span></a>
+		<a class="nav-link" href="{% url 'reportes:index' %}" title="Reportes" aria-label="Reportes"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chart"></use></svg><span class="nav-label">Reportes</span></a>
 		<p class="nav-caption">ARCHIVO Y EQUIPO</p>
-		<a class="nav-link" href="{% url 'credenciales:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg>Credenciales</a>
-		<a class="nav-link" href="{% url 'documentos:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#files"></use></svg>Documentos</a>
-		<a class="nav-link" href="{% url 'servicios:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#briefcase"></use></svg>Servicios y trámites</a>
-		<a class="nav-link" href="{% url 'historial:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#history"></use></svg>Historial</a>
-		<a class="nav-link" href="{% url 'notificaciones:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#bell"></use></svg>Notificaciones</a>
-		{% if request.user.is_superuser or request.user.perfil.rol == 'administrador' %}<a class="nav-link" href="{% url 'usuarios:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#users"></use></svg>Usuarios</a>{% endif %}
-		<a class="nav-link" href="{% url 'configuracion:index' %}"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#settings"></use></svg>Administración</a>
+		<a class="nav-link" href="{% url 'credenciales:index' %}" title="Credenciales" aria-label="Credenciales"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg><span class="nav-label">Credenciales</span></a>
+		<a class="nav-link" href="{% url 'documentos:index' %}" title="Documentos" aria-label="Documentos"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#files"></use></svg><span class="nav-label">Documentos</span></a>
+		<a class="nav-link" href="{% url 'servicios:index' %}" title="Servicios y trámites" aria-label="Servicios y trámites"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#briefcase"></use></svg><span class="nav-label">Servicios y trámites</span></a>
+		<a class="nav-link" href="{% url 'historial:index' %}" title="Historial" aria-label="Historial"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#history"></use></svg><span class="nav-label">Historial</span></a>
+		<a class="nav-link" href="{% url 'notificaciones:index' %}" title="Notificaciones" aria-label="Notificaciones"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#bell"></use></svg><span class="nav-label">Notificaciones</span></a>
+		{% if request.user.is_superuser or request.user.perfil.rol == 'administrador' %}<a class="nav-link" href="{% url 'usuarios:index' %}" title="Usuarios" aria-label="Usuarios"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#users"></use></svg><span class="nav-label">Usuarios</span></a>{% endif %}
+		<a class="nav-link" href="{% url 'configuracion:index' %}" title="Administración" aria-label="Administración"><svg class="icon nav-icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#settings"></use></svg><span class="nav-label">Administración</span></a>
 	</nav>
 	<div class="sidebar-foot">ESTUDIO CONTABLE <span>•</span> LA PAZ</div>
 </aside>

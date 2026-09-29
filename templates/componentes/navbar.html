@@ -1,6 +1,6 @@
 {% load static %}
 <header class="topbar">
-	<button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir navegación" aria-expanded="false" aria-controls="sidebar"><span></span><span></span><span></span></button>
+	<button class="menu-toggle" id="menu-toggle" type="button" aria-label="Contraer navegación" aria-expanded="true" aria-controls="sidebar" title="Contraer navegación"><svg class="icon menu-toggle__icon menu-toggle__icon--collapse" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#panel-left-close"></use></svg><svg class="icon menu-toggle__icon menu-toggle__icon--expand" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#panel-left-open"></use></svg><span class="menu-toggle__mobile-icon" aria-hidden="true"><span></span><span></span><span></span></span></button>
 	<div class="topbar-context"><span class="topbar-dot"></span><span>Panel de gestión</span></div>
 	<div class="topbar-user">
 		<details class="navbar-menu notification-menu">
