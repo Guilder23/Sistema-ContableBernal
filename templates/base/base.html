@@ -7,6 +7,7 @@
     <meta name="theme-color" content="#173d32">
     <title>{% block title %}ContableBernal{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/base/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/componentes/footer.css' %}">
     {% block page_css %}{% endblock %}
 </head>
 <body>
@@ -36,11 +37,12 @@
             <a class="nav-link" href="{% url 'servicios:index' %}"><span class="nav-code">12</span>Servicios y trámites</a>
             <a class="nav-link" href="{% url 'historial:index' %}"><span class="nav-code">13</span>Historial</a>
             <a class="nav-link" href="{% url 'notificaciones:index' %}"><span class="nav-code">14</span>Notificaciones</a>
-            <a class="nav-link" href="{% url 'usuarios:index' %}"><span class="nav-code">15</span>Usuarios</a>
+            {% if request.user.is_superuser or request.user.perfil.rol == 'administrador' %}<a class="nav-link" href="{% url 'usuarios:index' %}"><span class="nav-code">15</span>Usuarios</a>{% endif %}
             <a class="nav-link" href="{% url 'configuracion:index' %}"><span class="nav-code">16</span>Administración</a>
         </nav>
         <div class="sidebar-foot">ESTUDIO CONTABLE <span>•</span> LA PAZ</div>
     </aside>
+    <button class="menu-backdrop" type="button" aria-label="Cerrar navegación" tabindex="-1"></button>
     <div class="main-column">
         <header class="topbar">
             <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir navegación" aria-expanded="false" aria-controls="sidebar"><span></span><span></span><span></span></button>
@@ -51,10 +53,13 @@
             </div>
         </header>
         <main id="main-content" class="workspace {% block workspace_class %}{% endblock %}">
+            {% if messages %}<div class="flash-stack" role="status">{% for message in messages %}<p class="flash flash--{{ message.tags }}">{{ message }}</p>{% endfor %}</div>{% endif %}
             {% block content %}{% endblock %}
         </main>
+        {% include 'componentes/footer.html' %}
     </div>
 </div>
+    <script defer src="{% static 'js/componentes/footer.js' %}"></script>
 <script defer src="{% static 'js/base/base.js' %}"></script>
 {% block page_js %}{% endblock %}
 </body>

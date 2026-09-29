@@ -1,5 +1,8 @@
 const passwordInput = document.querySelector('#password');
 const passwordToggle = document.querySelector('#toggle-password');
+const currentYear = document.querySelector('[data-current-year]');
+
+if (currentYear) currentYear.textContent = String(new Date().getFullYear());
 
 passwordToggle?.addEventListener('click', () => {
     const isVisible = passwordInput.type === 'text';

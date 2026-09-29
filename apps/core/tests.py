@@ -26,6 +26,7 @@ class ModulePageTests(TestCase):
 	def setUp(self):
 		user_model = get_user_model()
 		self.user = user_model.objects.create_user(username='auxiliar', password='ClaveLocal123!')
+		self.admin = user_model.objects.create_superuser(username='administrador', password='ClaveLocal123!')
 
 	def test_login_is_manual_html_and_authenticates(self):
 		response = self.client.get('/usuarios/login/')
@@ -46,7 +47,7 @@ class ModulePageTests(TestCase):
 		self.assertRedirects(response, '/usuarios/login/?next=/clientes/')
 
 	def test_each_module_renders_its_own_css_and_javascript(self):
-		self.client.force_login(self.user)
+		self.client.force_login(self.admin)
 		for path, asset_folder, asset_name in self.pages:
 			with self.subTest(path=path):
 				response = self.client.get(path)

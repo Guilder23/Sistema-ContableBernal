@@ -1,0 +1,13 @@
+<section class="user-modal" id="modal-crear" role="dialog" aria-modal="true" aria-labelledby="modal-crear-title" {% if modal_activo != 'modal-crear' %}hidden{% endif %}>
+	<div class="user-modal__backdrop" data-close-modal></div><div class="user-modal__panel"><header><div><p class="eyebrow">NUEVA CUENTA</p><h2 id="modal-crear-title">Crear usuario</h2></div><button class="modal-close" type="button" data-close-modal aria-label="Cerrar">Cerrar</button></header>
+	<form method="post" action="{% url 'usuarios:crear' %}" class="modal-form">{% csrf_token %}
+		{% if errores.general %}<p class="field-error">{{ errores.general }}</p>{% endif %}
+		<label>Usuario<input name="username" value="{{ datos.username|default:'' }}" maxlength="150" required autocomplete="username">{% if errores.username %}<small class="field-error">{{ errores.username }}</small>{% endif %}</label>
+		<label>Correo<input name="email" type="email" value="{{ datos.email|default:'' }}" maxlength="254" autocomplete="email">{% if errores.email %}<small class="field-error">{{ errores.email }}</small>{% endif %}</label>
+		<div class="modal-form__row"><label>Nombre<input name="first_name" value="{{ datos.first_name|default:'' }}" maxlength="150"></label><label>Apellido<input name="last_name" value="{{ datos.last_name|default:'' }}" maxlength="150"></label></div>
+		<label>Rol<select name="rol" required><option value="" disabled {% if not datos.rol %}selected{% endif %}>Seleccionar rol</option>{% for value, label in roles %}<option value="{{ value }}" {% if datos.rol == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{% if errores.rol %}<small class="field-error">{{ errores.rol }}</small>{% endif %}</label>
+		<label>Contraseña<input name="password" type="password" required autocomplete="new-password">{% if errores.password %}<small class="field-error">{{ errores.password }}</small>{% endif %}</label><label>Confirmar contraseña<input name="password_confirm" type="password" required autocomplete="new-password">{% if errores.password_confirm %}<small class="field-error">{{ errores.password_confirm }}</small>{% endif %}</label>
+		<label class="modal-check"><input type="checkbox" name="is_active" {% if datos.is_active or not datos %}checked{% endif %}> Cuenta activa</label>
+		<footer><button class="button button--quiet" type="button" data-close-modal>Cancelar</button><button class="button button--primary" type="submit">Crear cuenta</button></footer>
+	</form></div>
+</section>

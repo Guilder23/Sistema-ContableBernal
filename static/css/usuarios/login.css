@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
 :root { --ink: #20352b; --muted: #718078; --forest: #173d32; --line: #dce5de; --font-body: 'DM Sans', 'Segoe UI', sans-serif; --font-display: 'Manrope', 'Segoe UI', sans-serif; }
 * { box-sizing: border-box; }
-body { min-height: 100vh; margin: 0; background: #f1f5f1; color: var(--ink); font-family: var(--font-body); }
+body { min-width: 320px; min-height: 100vh; margin: 0; background: #f1f5f1; color: var(--ink); font-family: var(--font-body); }
 .login-layout { display: grid; min-height: 100vh; grid-template-columns: minmax(320px, .92fr) 1.08fr; }
 .login-brand-panel { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 38px clamp(28px, 6vw, 82px); background: var(--forest); color: #f3f7f4; }
 .login-brand { display: flex; align-items: center; gap: 12px; width: fit-content; color: inherit; text-decoration: none; }
@@ -11,7 +11,7 @@ body { min-height: 100vh; margin: 0; background: #f1f5f1; color: var(--ink); fon
 .login-brand small { color: #a5c4b3; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; }
 .brand-copy { max-width: 410px; padding: 30px 0 70px; }
 .eyebrow { margin: 0 0 14px; color: #b9d9c5; font-size: 9px; font-weight: 700; letter-spacing: 1.6px; }
-.brand-copy h1 { max-width: 390px; margin: 0 0 15px; font: 700 clamp(32px, 4vw, 51px)/1.1 var(--font-display); letter-spacing: 0; }
+.brand-copy h1 { max-width: 390px; margin: 0 0 15px; font: 700 46px/1.1 var(--font-display); letter-spacing: 0; }
 .brand-copy > p:last-child { max-width: 360px; margin: 0; color: #c5d7cc; font-size: 14px; line-height: 1.7; }
 .brand-footer { color: #9eb9a8; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; }
 .login-form-panel { display: grid; place-items: center; padding: 38px 24px; }
@@ -29,4 +29,6 @@ body { min-height: 100vh; margin: 0; background: #f1f5f1; color: var(--ink); fon
 .submit-button:hover { background: #245444; }
 .submit-button span { font-size: 17px; }
 .form-error { padding: 10px 12px; border-left: 3px solid #c75c47; background: #fff0eb; color: #873c30; font-size: 11px; }
-@media (max-width: 720px) { .login-layout { grid-template-columns: 1fr; } .login-brand-panel { min-height: 240px; padding: 23px 25px; } .brand-copy { padding: 30px 0 8px; } .brand-copy h1 { max-width: 420px; font-size: 34px; } .brand-copy > p:last-child { display: none; } .brand-footer { display: none; } .login-form-panel { place-items: start center; padding: 37px 24px 55px; } }
+@media (max-width: 720px) { .login-layout { grid-template-columns: 1fr; } .login-brand-panel { min-height: 240px; padding: 23px 25px; } .brand-copy { padding: 30px 0 8px; } .brand-copy h1 { max-width: 420px; font-size: 34px; } .brand-copy > p:last-child { display: none; } .login-form-panel { place-items: start center; padding: 37px 24px 55px; } }
+@media (max-width: 380px) { .login-brand-panel { min-height: 215px; padding: 18px; } .brand-copy { padding-top: 23px; } .brand-copy h1 { font-size: 30px; } .login-form-panel { padding: 30px 18px 44px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }
