@@ -1,0 +1,30 @@
+{% load static %}
+<aside class="sidebar" id="sidebar" aria-label="Navegación principal">
+	<a class="brand" href="{% url 'dashboard:index' %}">
+		<span class="brand-mark">CB</span><span class="brand-name"><strong>Contable</strong><small>BERNAL</small></span>
+	</a>
+	<nav class="side-nav">
+		<p class="nav-caption">GENERAL</p>
+		<a class="nav-link" href="{% url 'dashboard:index' %}"><span class="nav-code">00</span>Resumen</a>
+		<p class="nav-caption">OPERACIÓN</p>
+		<a class="nav-link" href="{% url 'clientes:index' %}"><span class="nav-code">01</span>Clientes</a>
+		<a class="nav-link" href="{% url 'obligaciones:index' %}"><span class="nav-code">02</span>Obligaciones</a>
+		<a class="nav-link" href="{% url 'tareas:index' %}"><span class="nav-code">03</span>Tareas</a>
+		<a class="nav-link" href="{% url 'requerimientos:index' %}"><span class="nav-code">04</span>Requerimientos</a>
+		<a class="nav-link" href="{% url 'agenda:index' %}"><span class="nav-code">05</span>Agenda</a>
+		<p class="nav-caption">FINANZAS</p>
+		<a class="nav-link" href="{% url 'honorarios:index' %}"><span class="nav-code">06</span>Honorarios</a>
+		<a class="nav-link" href="{% url 'ingresos:index' %}"><span class="nav-code">07</span>Ingresos</a>
+		<a class="nav-link" href="{% url 'gastos:index' %}"><span class="nav-code">08</span>Gastos</a>
+		<a class="nav-link" href="{% url 'reportes:index' %}"><span class="nav-code">09</span>Reportes</a>
+		<p class="nav-caption">ARCHIVO Y EQUIPO</p>
+		<a class="nav-link" href="{% url 'credenciales:index' %}"><span class="nav-code">10</span>Credenciales</a>
+		<a class="nav-link" href="{% url 'documentos:index' %}"><span class="nav-code">11</span>Documentos</a>
+		<a class="nav-link" href="{% url 'servicios:index' %}"><span class="nav-code">12</span>Servicios y trámites</a>
+		<a class="nav-link" href="{% url 'historial:index' %}"><span class="nav-code">13</span>Historial</a>
+		<a class="nav-link" href="{% url 'notificaciones:index' %}"><span class="nav-code">14</span>Notificaciones</a>
+		{% if request.user.is_superuser or request.user.perfil.rol == 'administrador' %}<a class="nav-link" href="{% url 'usuarios:index' %}"><span class="nav-code">15</span>Usuarios</a>{% endif %}
+		<a class="nav-link" href="{% url 'configuracion:index' %}"><span class="nav-code">16</span>Administración</a>
+	</nav>
+	<div class="sidebar-foot">ESTUDIO CONTABLE <span>•</span> LA PAZ</div>
+</aside>

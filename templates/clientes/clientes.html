@@ -1,7 +1,48 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+{% block title %}Clientes | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--clientes{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">CARTERA DE CLIENTES</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/clientes/clientes.js' %}"></script>{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/clientes/modals/crear.css' %}">
+<link rel="stylesheet" href="{% static 'css/clientes/modals/ver.css' %}">
+{% if puede_gestionar %}<link rel="stylesheet" href="{% static 'css/clientes/modals/editar.css' %}"><link rel="stylesheet" href="{% static 'css/clientes/modals/eliminar.css' %}">{% endif %}
+{% endblock %}
+{% block content %}
+<section class="page-heading clients-heading">
+	<div><p class="eyebrow">DIRECTORIO DEL ESTUDIO</p><h1>Clientes</h1><p>Información general, tributaria y de contacto.</p></div>
+	{% if puede_gestionar %}<button class="button button--primary" type="button" data-open-modal="modal-crear">Crear cliente</button>{% endif %}
+</section>
+<section class="clients-toolbar surface">
+	<form method="get" class="clients-filter">
+		<label class="client-search"><span>Buscar</span><input type="search" name="q" value="{{ busqueda }}" placeholder="Nombre, NIT, CI o correo"></label>
+		<label><span>Tipo de cliente</span><select name="tipo"><option value="">Todos</option>{% for value, label in tipos %}<option value="{{ value }}" {% if tipo_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+		<label><span>Estado</span><select name="estado"><option value="">Todos</option>{% for value, label in estados %}<option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+		<button class="button button--filter" type="submit">Filtrar</button>
+	</form>
+</section>
+<section class="clients-table-wrap surface" aria-label="Directorio de clientes">
+	<div class="clients-table-heading"><h2>Cartera</h2><span>{{ clientes|length }} cliente{{ clientes|length|pluralize:"s" }}</span></div>
+	<div class="clients-table-scroll"><table class="clients-table"><thead><tr><th>Cliente</th><th>NIT / CI</th><th>Tipo</th><th>Actividad</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+	{% for cliente in clientes %}
+	<tr>
+		<td><div class="client-primary"><span class="client-avatar">{{ cliente.nombre|first|upper }}</span><span><strong>{{ cliente.nombre }}</strong><small>{% if cliente.nit %}NIT {{ cliente.nit }}{% elif cliente.ci %}CI {{ cliente.ci }}{% else %}Sin identificación{% endif %}</small></span></div></td>
+		<td>{{ cliente.nit|default:cliente.ci|default:'—' }}</td><td>{{ cliente.get_tipo_display }}</td><td>{{ cliente.get_actividad_display }}</td>
+		<td>{% if cliente.telefono %}{{ cliente.telefono }}{% elif cliente.correo %}{{ cliente.correo }}{% else %}<span class="client-muted">—</span>{% endif %}</td>
+		<td><span class="client-status client-status--{{ cliente.estado }}">{{ cliente.get_estado_display }}</span></td>
+		<td><div class="client-actions">
+			<button type="button" class="client-action" data-open-modal="modal-ver" data-client-name="{{ cliente.nombre }}" data-client-type="{{ cliente.get_tipo_display }}" data-client-nit="{{ cliente.nit|default:'' }}" data-client-ci="{{ cliente.ci }}" data-client-activity="{{ cliente.get_actividad_display }}" data-client-phone="{{ cliente.telefono }}" data-client-whatsapp="{{ cliente.whatsapp }}" data-client-email="{{ cliente.correo }}" data-client-address="{{ cliente.direccion }}" data-client-status="{{ cliente.get_estado_display }}" data-client-start-date="{{ cliente.fecha_inicio|date:'Y-m-d' }}" data-client-observations="{{ cliente.observaciones }}">Ver</button>
+			{% if puede_gestionar %}<button type="button" class="client-action" data-open-modal="modal-editar" data-edit-url="{% url 'clientes:editar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}" data-client-type-value="{{ cliente.tipo }}" data-client-nit="{{ cliente.nit|default:'' }}" data-client-ci="{{ cliente.ci }}" data-client-activity-value="{{ cliente.actividad }}" data-client-phone="{{ cliente.telefono }}" data-client-whatsapp="{{ cliente.whatsapp }}" data-client-email="{{ cliente.correo }}" data-client-address="{{ cliente.direccion }}" data-client-status-value="{{ cliente.estado }}" data-client-start-date="{{ cliente.fecha_inicio|date:'Y-m-d' }}" data-client-observations="{{ cliente.observaciones }}">Editar</button><button type="button" class="client-action client-action--danger" data-open-modal="modal-eliminar" data-delete-url="{% url 'clientes:eliminar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}">Eliminar</button>{% endif %}
+		</div></td>
+	</tr>
+	{% empty %}<tr><td colspan="7" class="clients-empty">No hay clientes que coincidan con los filtros.</td></tr>{% endfor %}
+	</tbody></table></div>
+</section>
+{% include 'clientes/modals/ver.html' %}
+{% if puede_gestionar %}{% include 'clientes/modals/crear.html' %}{% include 'clientes/modals/editar.html' %}{% include 'clientes/modals/eliminar.html' %}{% endif %}
+{% endblock %}
+{% block page_js %}
+<script defer src="{% static 'js/clientes/clientes.js' %}"></script>
+<script defer src="{% static 'js/clientes/modals/ver.js' %}"></script>
+{% if puede_gestionar %}<script defer src="{% static 'js/clientes/modals/crear.js' %}"></script><script defer src="{% static 'js/clientes/modals/editar.js' %}"></script><script defer src="{% static 'js/clientes/modals/eliminar.js' %}"></script>{% endif %}
+{% endblock %}

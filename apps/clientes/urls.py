@@ -4,4 +4,9 @@ from . import views
 
 app_name = 'clientes'
 
-urlpatterns = [path('', views.index, name='index')]
+urlpatterns = [
+	path('crear/', views.crear, name='crear'),
+	path('<int:cliente_id>/editar/', views.editar, name='editar'),
+	path('<int:cliente_id>/eliminar/', views.eliminar, name='eliminar'),
+	path('', views.index, name='index'),
+]

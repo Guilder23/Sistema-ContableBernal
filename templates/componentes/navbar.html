@@ -1,0 +1,10 @@
+{% load static %}
+<header class="topbar">
+	<button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir navegación" aria-expanded="false" aria-controls="sidebar"><span></span><span></span><span></span></button>
+	<div class="topbar-context"><span class="topbar-dot"></span><span>Panel de gestión</span></div>
+	<div class="topbar-user">
+		<span class="user-avatar user-avatar--nav">{{ request.user.username|first|upper }}</span>
+		<span class="user-name">{{ request.user.get_short_name|default:request.user.username }}</span>
+		<form method="post" action="{% url 'usuarios:logout' %}">{% csrf_token %}<button class="logout-button" type="submit" title="Cerrar sesión">Salir</button></form>
+	</div>
+</header>
