@@ -19,7 +19,9 @@
 * { box-sizing: border-box; }
 body { min-width: 320px; margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 14px; }
 a { color: inherit; text-decoration: none; }
-button, input { font: inherit; }
+button, input, select, textarea { font: inherit; }
+.icon { display: inline-block; width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+button, input, select, textarea, .button { border-radius: 5px; }
 .app-shell { min-height: 100vh; }
 .main-column { display: flex; min-height: 100vh; flex-direction: column; margin-left: 248px; }
 .workspace { width: min(100%, 1480px); flex: 1; margin: 0 auto; padding: 35px 38px 54px; }
@@ -28,7 +30,7 @@ button, input { font: inherit; }
 .page-heading p { max-width: 700px; margin: 0; color: var(--muted); line-height: 1.55; }
 .eyebrow { margin: 0; color: #39745a; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; }
 .page-date { color: var(--muted); font-size: 11px; white-space: nowrap; }
-.module-panel, .surface { border: 1px solid var(--line); background: var(--surface); }
+.module-panel, .surface { border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
 .module-panel { min-height: 270px; padding: 28px; }
 .empty-state { display: grid; min-height: 210px; align-content: center; justify-items: center; padding: 20px; text-align: center; }
 .empty-mark { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid #cbd9d0; color: #4a795e; font: 600 12px var(--font-display); }
@@ -37,6 +39,26 @@ button, input { font: inherit; }
 .flash-stack { display: grid; gap: 8px; margin: 0 0 16px; }
 .flash { margin: 0; padding: 11px 14px; border-left: 3px solid #39745a; background: #e8f3eb; color: #254c37; font-size: 12px; }
 .flash--error { border-left-color: var(--coral); background: #fff0eb; color: #873c30; }
+.search-input { display: flex; min-width: 0; height: 36px; align-items: center; gap: 8px; padding: 0 9px; border: 1px solid var(--line); border-radius: 5px; background: white; }
+.search-input:focus-within { border-color: #4c8966; }
+.search-input > .icon { width: 15px; height: 15px; color: #718078; }
+.search-input input { min-width: 0; flex: 1; border: 0 !important; border-radius: 0; outline: 0; background: transparent; box-shadow: none !important; }
+.icon-action { display: inline-grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; padding: 0; border: 1px solid transparent; border-radius: 6px; cursor: pointer; transition: background-color .15s ease, border-color .15s ease; }
+.icon-action .icon { width: 15px; height: 15px; }
+.icon-action--view { border-color: rgb(75 125 153 / 20%); background: rgb(75 125 153 / 10%); color: #466d84; }
+.icon-action--view:hover { background: rgb(75 125 153 / 20%); }
+.icon-action--edit { border-color: rgb(190 145 47 / 22%); background: rgb(214 163 63 / 12%); color: #8b681f; }
+.icon-action--edit:hover { background: rgb(214 163 63 / 22%); }
+.icon-action--delete { border-color: rgb(199 92 71 / 20%); background: rgb(199 92 71 / 10%); color: #a44837; }
+.icon-action--delete:hover { background: rgb(199 92 71 / 20%); }
+.icon-action:focus-visible, .page-number:focus-visible, .page-arrow:focus-visible { outline: 2px solid #d6a33f; outline-offset: 2px; }
+.pagination { display: flex; min-height: 53px; align-items: center; justify-content: space-between; gap: 12px; padding-top: 13px; color: var(--muted); font-size: 10px; }
+.pagination > div { display: flex; align-items: center; gap: 4px; }
+.page-number, .page-arrow { display: grid; min-width: 30px; height: 30px; place-items: center; padding: 0 7px; border: 1px solid transparent; border-radius: 5px; color: #4b6053; font-size: 10px; text-decoration: none; }
+.page-number:hover, .page-arrow:hover { border-color: var(--line); background: #f4f7f4; }
+.page-number--active { border-color: #1f5a41; background: #1f5a41; color: white; }
+.page-arrow { border-color: var(--line); background: white; }
+.page-arrow .icon { width: 14px; height: 14px; }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

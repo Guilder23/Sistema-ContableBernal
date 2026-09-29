@@ -20,12 +20,12 @@ body { min-width: 320px; min-height: 100vh; margin: 0; background: #f1f5f1; colo
 .login-form h2 { margin: 0 0 7px; font: 700 27px var(--font-display); }
 .form-intro { margin: 0 0 27px; color: var(--muted); font-size: 12px; }
 .login-form label { display: block; margin: 16px 0 7px; color: #42554a; font-size: 11px; font-weight: 600; }
-.login-form input { width: 100%; height: 43px; padding: 0 12px; border: 1px solid var(--line); border-radius: 0; outline: none; background: white; color: var(--ink); }
+.login-form input { width: 100%; height: 43px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; outline: none; background: white; color: var(--ink); }
 .login-form input:focus { border-color: #4d8a68; box-shadow: 0 0 0 2px rgb(77 138 104 / 13%); }
 .password-field { position: relative; }
 .password-field input { padding-right: 76px; }
 .password-field button { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); border: 0; background: transparent; color: #39745a; cursor: pointer; font-size: 10px; font-weight: 600; }
-.submit-button { display: flex; width: 100%; height: 44px; align-items: center; justify-content: space-between; margin-top: 25px; padding: 0 14px; border: 0; background: var(--forest); color: white; cursor: pointer; font-size: 12px; font-weight: 600; }
+.submit-button { display: flex; width: 100%; height: 44px; align-items: center; justify-content: space-between; margin-top: 25px; padding: 0 14px; border: 0; border-radius: 6px; background: var(--forest); color: white; cursor: pointer; font-size: 12px; font-weight: 600; }
 .submit-button:hover { background: #245444; }
 .submit-button span { font-size: 17px; }
 .form-error { padding: 10px 12px; border-left: 3px solid #c75c47; background: #fff0eb; color: #873c30; font-size: 11px; }

@@ -1,6 +1,19 @@
 const moduleRoot = document.querySelector('.workspace--clientes');
 if (moduleRoot) moduleRoot.dataset.module = 'clientes';
 
+const clientFilterForm = document.querySelector('.js-live-filter');
+const clientSearchInput = clientFilterForm?.querySelector('[data-live-search]');
+let clientSearchTimer;
+
+clientSearchInput?.addEventListener('input', () => {
+	window.clearTimeout(clientSearchTimer);
+	clientSearchTimer = window.setTimeout(() => clientFilterForm.requestSubmit(), 280);
+});
+
+clientFilterForm?.querySelectorAll('[data-live-filter]').forEach((filter) => {
+	filter.addEventListener('change', () => clientFilterForm.requestSubmit());
+});
+
 let previousClientTrigger = null;
 
 function closeClientModal(modal) {

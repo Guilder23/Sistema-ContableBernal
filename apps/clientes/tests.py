@@ -90,3 +90,16 @@ class GestionClientesTests(TestCase):
 		self.assertEqual(self.client.get('/clientes/crear/').status_code, 405)
 		self.assertEqual(self.client.get(f'/clientes/{cliente.pk}/editar/').status_code, 405)
 		self.assertEqual(self.client.get(f'/clientes/{cliente.pk}/eliminar/').status_code, 405)
+
+	def test_paginacion_conserva_busqueda_y_filtros(self):
+		for indice in range(13):
+			Cliente.objects.create(
+				nombre=f'Cliente listado {indice}',
+				nit=f'PAG-{indice:04}',
+				tipo=Cliente.Tipo.JURIDICA,
+			)
+		response = self.client.get('/clientes/?tipo=juridica&estado=activo&page=2')
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.context['page_obj'].number, 2)
+		self.assertEqual(response.context['total_clientes'], 13)
+		self.assertContains(response, 'tipo=juridica&amp;estado=activo&amp;page=1')

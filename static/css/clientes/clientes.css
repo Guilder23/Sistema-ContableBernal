@@ -1,6 +1,6 @@
 .workspace--clientes .eyebrow { color: #347353; }
 .clients-heading { align-items: center; }
-.button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 0 14px; border: 1px solid transparent; cursor: pointer; font-size: 11px; font-weight: 600; text-decoration: none; }
+.button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 0 14px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; text-decoration: none; }
 .button--primary { background: #1f5a41; color: white; }
 .button--primary:hover { background: #173d32; }
 .button--quiet { border-color: var(--line); background: white; color: #45584c; }
@@ -11,7 +11,7 @@
 .clients-filter { display: flex; align-items: flex-end; gap: 11px; }
 .clients-filter label { display: grid; min-width: 155px; gap: 6px; color: #65746b; font-size: 10px; font-weight: 600; }
 .clients-filter .client-search { flex: 1; }
-.clients-filter input, .clients-filter select { width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 0; outline: 0; background: white; color: var(--ink); font: inherit; font-size: 11px; }
+.clients-filter input, .clients-filter select { width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 5px; outline: 0; background: white; color: var(--ink); font: inherit; font-size: 11px; }
 .clients-filter input:focus, .clients-filter select:focus { border-color: #4c8966; }
 .clients-table-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 2px 1px 14px; }
 .clients-table-heading h2 { margin: 0; font: 700 15px var(--font-display); }
@@ -29,9 +29,6 @@
 .client-status--activo { background: #e8f3eb; color: #34714c; }
 .client-status--inactivo { background: #f8e9e5; color: #a34d3c; }
 .client-actions { display: flex; align-items: center; gap: 10px; }
-.client-action { padding: 0; border: 0; background: transparent; color: #316a4d; cursor: pointer; font-size: 10px; font-weight: 600; }
-.client-action:hover { text-decoration: underline; }
-.client-action--danger { color: #ae4c3b; }
 .clients-empty { height: 100px; color: var(--muted) !important; text-align: center; }
 .client-modal[hidden] { display: none; }
 .client-modal { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: 18px; }
@@ -46,7 +43,7 @@
 .client-form { display: grid; gap: 12px; }
 .client-field { display: grid; gap: 6px; color: #56675d; font-size: 10px; font-weight: 600; }
 .client-field > span b { color: #ae4c3b; }
-.client-field input, .client-field select, .client-field textarea { width: 100%; min-height: 36px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 0; outline: 0; background: white; color: var(--ink); font: inherit; font-weight: 400; }
+.client-field input, .client-field select, .client-field textarea { width: 100%; min-height: 36px; padding: 8px 9px; border: 1px solid var(--line); border-radius: 5px; outline: 0; background: white; color: var(--ink); font: inherit; font-weight: 400; }
 .client-field input:focus, .client-field select:focus, .client-field textarea:focus { border-color: #478565; box-shadow: 0 0 0 2px rgb(71 133 101 / 12%); }
 .client-field textarea { min-height: 68px; resize: vertical; }
 .client-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

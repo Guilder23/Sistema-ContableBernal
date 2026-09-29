@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import transaction
@@ -125,11 +126,18 @@ def _contexto_listado(request, datos=None, errores=None, modal_activo='', client
         clientes = clientes.filter(tipo=tipo)
     if estado in {valor for valor, _ in Cliente.Estado.choices}:
         clientes = clientes.filter(estado=estado)
+    paginador = Paginator(clientes, 12)
+    parametros = request.GET.copy()
+    parametros.pop('page', None)
+    page_obj = paginador.get_page(request.GET.get('page'))
     puede_gestionar = request.user.is_superuser or getattr(getattr(request.user, 'perfil', None), 'rol', '') in {
         'administrador', 'secretario',
     }
     return {
-        'clientes': clientes,
+        'clientes': page_obj.object_list,
+        'page_obj': page_obj,
+        'total_clientes': paginador.count,
+        'query_string': parametros.urlencode(),
         'busqueda': busqueda,
         'tipo_filtro': tipo,
         'estado_filtro': estado,

@@ -92,3 +92,12 @@ class GestionUsuariosTests(TestCase):
 		self.assertEqual(response.status_code, 200)
 		self.administrador.refresh_from_db()
 		self.assertEqual(self.administrador.perfil.rol, PerfilUsuario.Rol.ADMINISTRADOR)
+
+	def test_paginacion_conserva_el_filtro_de_rol(self):
+		for indice in range(12):
+			self.modelo_usuario.objects.create_user(username=f'equipo_{indice}')
+		response = self.client.get('/usuarios/?rol=auxiliar&page=2')
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response.context['page_obj'].number, 2)
+		self.assertEqual(response.context['total_usuarios'], 13)
+		self.assertContains(response, 'rol=auxiliar&amp;page=1')

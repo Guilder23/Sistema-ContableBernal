@@ -3,8 +3,13 @@
 	<button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir navegación" aria-expanded="false" aria-controls="sidebar"><span></span><span></span><span></span></button>
 	<div class="topbar-context"><span class="topbar-dot"></span><span>Panel de gestión</span></div>
 	<div class="topbar-user">
-		<span class="user-avatar user-avatar--nav">{{ request.user.username|first|upper }}</span>
-		<span class="user-name">{{ request.user.get_short_name|default:request.user.username }}</span>
-		<form method="post" action="{% url 'usuarios:logout' %}">{% csrf_token %}<button class="logout-button" type="submit" title="Cerrar sesión">Salir</button></form>
+		<details class="navbar-menu notification-menu">
+			<summary class="icon-button" aria-label="Notificaciones, 0 pendientes" title="Notificaciones"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#bell"></use></svg><span class="notification-badge" data-unread-count="0" hidden>0</span></summary>
+			<div class="navbar-popover notification-popover"><p class="popover-kicker">ACTIVIDAD</p><h2>Notificaciones</h2><p class="popover-empty">No tienes notificaciones pendientes.</p><a class="popover-link" href="{% url 'notificaciones:index' %}">Ir a notificaciones <span>→</span></a></div>
+		</details>
+		<details class="navbar-menu profile-menu">
+			<summary class="profile-trigger"><span class="user-avatar user-avatar--nav">{{ request.user.username|first|upper }}</span><span class="profile-summary"><strong class="user-name">{{ request.user.get_short_name|default:request.user.username }}</strong><small>{{ request.user.perfil.get_rol_display|default:'Equipo' }}</small></span><svg class="icon profile-chevron" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-down"></use></svg></summary>
+			<div class="navbar-popover profile-popover"><div class="profile-popover__identity"><span class="user-avatar">{{ request.user.username|first|upper }}</span><span><strong>{{ request.user.get_full_name|default:request.user.username }}</strong><small>{{ request.user.email|default:request.user.perfil.get_rol_display }}</small></span></div><a class="popover-link" href="{% url 'dashboard:index' %}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#dashboard"></use></svg>Dashboard</a><form method="post" action="{% url 'usuarios:logout' %}">{% csrf_token %}<button class="popover-link popover-link--logout" type="submit"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#logout"></use></svg>Cerrar sesión</button></form></div>
+		</details>
 	</div>
 </header>

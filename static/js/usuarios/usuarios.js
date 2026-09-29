@@ -1,6 +1,19 @@
 const moduleRoot = document.querySelector('.workspace--usuarios');
 if (moduleRoot) moduleRoot.dataset.module = 'usuarios';
 
+const userFilterForm = document.querySelector('.js-live-filter');
+const userSearchInput = userFilterForm?.querySelector('[data-live-search]');
+let userSearchTimer;
+
+userSearchInput?.addEventListener('input', () => {
+	window.clearTimeout(userSearchTimer);
+	userSearchTimer = window.setTimeout(() => userFilterForm.requestSubmit(), 280);
+});
+
+userFilterForm?.querySelectorAll('[data-live-filter]').forEach((filter) => {
+	filter.addEventListener('change', () => userFilterForm.requestSubmit());
+});
+
 let modalAnterior = null;
 
 function abrirModal(modal, boton) {

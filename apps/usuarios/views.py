@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import transaction
@@ -177,8 +178,15 @@ def _contexto_listado(request, datos=None, errores=None, modal_activo='', usuari
 		usuarios = usuarios.filter(is_active=True)
 	elif estado == 'inactivo':
 		usuarios = usuarios.filter(is_active=False)
+	paginador = Paginator(usuarios, 12)
+	parametros = request.GET.copy()
+	parametros.pop('page', None)
+	page_obj = paginador.get_page(request.GET.get('page'))
 	return {
-		'usuarios': usuarios,
+		'usuarios': page_obj.object_list,
+		'page_obj': page_obj,
+		'total_usuarios': paginador.count,
+		'query_string': parametros.urlencode(),
 		'busqueda': busqueda,
 		'rol_filtro': rol,
 		'estado_filtro': estado,

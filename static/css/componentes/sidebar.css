@@ -6,10 +6,11 @@
 .brand-name small { color: #a5c4b3; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; }
 .side-nav { display: flex; flex: 1; flex-direction: column; gap: 3px; padding: 18px 12px 20px; }
 .nav-caption { margin: 17px 11px 7px; color: #9db7a8; font-size: 9px; font-weight: 700; letter-spacing: 1.25px; }
-.nav-link { display: flex; min-height: 36px; align-items: center; gap: 11px; padding: 0 11px; border-left: 2px solid transparent; color: #d6e4db; font-size: 12px; text-decoration: none; transition: background-color .16s ease, color .16s ease; }
+.nav-link { display: flex; min-height: 38px; align-items: center; gap: 11px; padding: 0 11px; border-left: 2px solid transparent; color: #d6e4db; font-size: 12px; text-decoration: none; transition: background-color .16s ease, color .16s ease; }
 .nav-link:hover, .nav-link[aria-current="page"] { border-left-color: #e4b657; background: rgb(255 255 255 / 9%); color: #fff; }
 .nav-link:focus-visible { outline: 2px solid #e4b657; outline-offset: 2px; }
-.nav-code { width: 18px; flex: 0 0 18px; color: #93b2a1; font: 600 9px var(--font-display); }
+.nav-icon { width: 16px; height: 16px; color: #a6c2b2; }
+.nav-link:hover .nav-icon, .nav-link[aria-current="page"] .nav-icon { color: #e6c377; }
 .sidebar-foot { padding: 15px 20px; border-top: 1px solid rgb(255 255 255 / 11%); color: #abc2b4; font-size: 9px; font-weight: 700; letter-spacing: .7px; }
 .sidebar-foot span { padding: 0 4px; color: #e4b657; }
 .sidebar-backdrop { display: none; }
