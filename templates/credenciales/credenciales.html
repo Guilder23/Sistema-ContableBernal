@@ -1,7 +1,145 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+
+{% block title %}Credenciales y Accesos | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--credenciales{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/credenciales/credenciales.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">ACCESOS DE CLIENTES</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/credenciales/credenciales.js' %}"></script>{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/clientes/detalle.css' %}">
+<link rel="stylesheet" href="{% static 'css/credenciales/modals/credenciales_modals.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-heading clients-heading">
+  <div>
+    <p class="eyebrow">SEGURIDAD Y CONTROL DE ACCESOS</p>
+    <h1>Credenciales y Accesos</h1>
+    <p>Gestión centralizada de accesos a Impuestos Nacionales, Gestora, Ministerio, Cajas de Salud y otros portales.</p>
+  </div>
+  {% if puede_gestionar %}
+  <button class="button button--primary" type="button" data-open-modal="modal-crear-credencial">
+    <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>
+    Nueva credencial
+  </button>
+  {% endif %}
+</section>
+
+<section class="clients-toolbar surface">
+  <form method="get" class="clients-filter js-live-filter">
+    <label class="client-search">
+      <span>Buscar</span>
+      <span class="search-input">
+        <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#search"></use></svg>
+        <input type="search" name="q" value="{{ busqueda }}" placeholder="Cliente, usuario, notas o sistema">
+      </span>
+    </label>
+    <label>
+      <span>Sistema</span>
+      <select name="sistema" onchange="this.form.submit()">
+        <option value="">Todos los sistemas</option>
+        {% for val, lab in sistemas %}
+        <option value="{{ val }}" {% if sistema_filtro == val %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Cliente</span>
+      <select name="cliente" onchange="this.form.submit()">
+        <option value="">Todos los clientes</option>
+        {% for c in clientes %}
+        <option value="{{ c.pk }}" {% if cliente_filtro == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+<section class="clients-table-wrap surface" aria-label="Listado general de credenciales">
+  <div class="clients-table-heading">
+    <h2>Registros protegidos</h2>
+    <span>{{ total_credenciales }} credencial{{ total_credenciales|pluralize:"es" }}</span>
+  </div>
+
+  {% if credenciales %}
+  <div class="clients-table-scroll">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Sistema / Plataforma</th>
+          <th>Usuario</th>
+          <th>Contraseña</th>
+          <th>PIN / Extra</th>
+          <th>Portal</th>
+          <th>Último cambio</th>
+          {% if puede_gestionar %}<th>Acciones</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for cred in credenciales %}
+        <tr>
+          <td>
+            <strong><a href="{% url 'clientes:detalle' cliente_id=cred.cliente.pk %}" class="client-link">{{ cred.cliente.nombre }}</a></strong>
+            <small style="display:block; color:#65746b;">NIT: {{ cred.cliente.nit|default:'—' }}</small>
+          </td>
+          <td>
+            <span class="cred-system-badge">
+              <svg class="icon" style="width:15px; height:15px; color:#226049;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg>
+              {{ cred.nombre_sistema }}
+            </span>
+          </td>
+          <td>
+            <code>{{ cred.usuario }}</code>
+            <button type="button" class="btn-mini-copy" data-copy-value="{{ cred.usuario }}" title="Copiar usuario">
+              <svg class="icon" style="width:13px; height:13px;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#files"></use></svg>
+            </button>
+          </td>
+          <td>
+            <span class="cred-password-box" id="cred-pass-{{ cred.pk }}" data-revealed="false">••••••••••••</span>
+            <button type="button" class="btn-mini-reveal" data-cred-id="{{ cred.pk }}" title="Mostrar contraseña">
+              <svg class="icon" style="width:13px; height:13px;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg>
+            </button>
+          </td>
+          <td>{{ cred.codigo_extra|default:'—' }}</td>
+          <td>
+            {% if cred.url %}
+            <a href="{{ cred.url }}" target="_blank" rel="noopener noreferrer" style="color:var(--coral); font-weight:600; text-decoration:none; font-size:12.5px;">Acceder ↗</a>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            <small>{{ cred.actualizado_en|date:'d/m/Y H:i' }}</small>
+            <small style="display:block; color:#85988e;">Por {{ cred.actualizado_por.username|default:'Sistema' }}</small>
+          </td>
+          {% if puede_gestionar %}
+          <td>
+            <div class="client-actions">
+              <button type="button" class="icon-action icon-action--edit" title="Editar credencial" data-open-modal="modal-editar-credencial" data-edit-url="{% url 'credenciales:editar' credencial_id=cred.pk %}" data-sistema="{{ cred.sistema }}" data-sistema-pers="{{ cred.sistema_personalizado }}" data-usuario="{{ cred.usuario }}" data-url="{{ cred.url }}" data-codigo-extra="{{ cred.codigo_extra }}" data-observaciones="{{ cred.observaciones }}">
+                <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg>
+              </button>
+              <button type="button" class="icon-action icon-action--delete" title="Eliminar credencial" data-open-modal="modal-eliminar-credencial" data-delete-url="{% url 'credenciales:eliminar' credencial_id=cred.pk %}" data-sistema-nombre="{{ cred.nombre_sistema }}">
+                <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trash"></use></svg>
+              </button>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="clients-empty" style="text-align:center; padding:32px;">No se encontraron credenciales con los filtros seleccionados.</p>
+  {% endif %}
+</section>
+
+<!-- Modales -->
+{% include 'credenciales/modals/crear.html' %}
+{% include 'credenciales/modals/editar.html' %}
+{% include 'credenciales/modals/eliminar.html' %}
+{% endblock %}
+
+{% block page_js %}
+<script defer src="{% static 'js/clientes/clientes.js' %}"></script>
+<script defer src="{% static 'js/clientes/detalle.js' %}"></script>
+{% endblock %}

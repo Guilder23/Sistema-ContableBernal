@@ -1,0 +1,355 @@
+/* Estilos para la Ficha Integral del Cliente (Detalle) */
+.client-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.client-hero-card {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 24px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  margin-bottom: 24px;
+}
+.client-hero-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1f4e3d 0%, #2f6b54 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(31, 78, 61, 0.2);
+  flex-shrink: 0;
+}
+.client-hero-info {
+  flex: 1;
+}
+.client-hero-info h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.client-hero-tags {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #556960;
+}
+.client-badge-pill {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f0f4f2;
+  color: #2b5443;
+  border: 1px solid #d8e2dc;
+}
+.client-badge-pill--activo {
+  background: #e6f7ec;
+  color: #1a743b;
+  border-color: #b5e4c3;
+}
+.client-badge-pill--inactivo {
+  background: #fbeae8;
+  color: #b9342b;
+  border-color: #f6c0bc;
+}
+.client-hero-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Grilla general de la ficha */
+.client-tabs-nav {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--line);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.client-tab-btn {
+  padding: 12px 18px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #65746b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.client-tab-btn:hover {
+  color: var(--coral, #ee493c);
+}
+.client-tab-btn.active {
+  color: var(--coral, #ee493c);
+  border-bottom-color: var(--coral, #ee493c);
+}
+.client-tab-badge {
+  background: #edf3f0;
+  color: #40574c;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.client-tab-pane {
+  display: none;
+}
+.client-tab-pane.active {
+  display: block;
+}
+
+/* Tarjetas y Secciones */
+.client-grid-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) {
+  .client-grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+.client-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  margin-bottom: 20px;
+}
+.client-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.client-card-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #f0f3f2;
+  font-size: 13.5px;
+}
+.info-row:last-child {
+  border-bottom: none;
+}
+.info-label {
+  color: #65746b;
+  font-weight: 500;
+}
+.info-value {
+  color: var(--ink);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Credenciales Cards */
+.credenciales-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.cred-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
+}
+.cred-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.cred-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.cred-system-badge {
+  font-size: 13px;
+  font-weight: 700;
+  color: #173d32;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cred-meta-line {
+  font-size: 13px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8faf9;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+.cred-meta-line b {
+  color: #65746b;
+  font-weight: 600;
+}
+.cred-password-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: monospace;
+  font-size: 14px;
+}
+.btn-mini-reveal,
+.btn-mini-copy {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: #556960;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-mini-reveal:hover,
+.btn-mini-copy:hover {
+  color: var(--coral, #ee493c);
+  background: #eaeaea;
+}
+.cred-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f3f2;
+}
+
+/* Obligaciones Switch list */
+.obligaciones-config-group {
+  margin-bottom: 20px;
+}
+.obligaciones-config-group h3 {
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #7a8c82;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 4px;
+}
+.obligacion-checkbox-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #fff;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.obligacion-checkbox-card:hover {
+  background: #f9fbf9;
+}
+.obligacion-checkbox-card input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #266b53;
+  cursor: pointer;
+}
+.obligacion-checkbox-card-info strong {
+  display: block;
+  font-size: 14px;
+  color: var(--ink);
+}
+.obligacion-checkbox-card-info small {
+  color: #65746b;
+  font-size: 12px;
+}
+
+/* Timeline Historial */
+.history-timeline {
+  position: relative;
+  padding-left: 24px;
+}
+.history-timeline::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 8px;
+  width: 2px;
+  background: #e2e8e5;
+}
+.history-item {
+  position: relative;
+  margin-bottom: 18px;
+}
+.history-dot {
+  position: absolute;
+  left: -20px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2b6b53;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px #2b6b53;
+}
+.history-content {
+  background: #fdfdfd;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 14px;
+}
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #7a8c82;
+  margin-bottom: 4px;
+}
+.history-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.history-desc {
+  font-size: 13px;
+  color: #556960;
+  margin: 0;
+}

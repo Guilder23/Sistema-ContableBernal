@@ -27,14 +27,19 @@ MESES = (
 )
 
 
-def _redirigir_cliente(cliente_id):
+def _redirigir_cliente(cliente_id, volver=''):
+    if volver:
+        return redirect(volver)
     if cliente_id:
         return redirect(f'{reverse("obligaciones:index")}?config_cliente={cliente_id}')
     return redirect('obligaciones:index')
 
 
-def _url_periodo_cliente(cliente_id, periodicidad, anio, numero):
+def _url_periodo_cliente(cliente_id, periodicidad, anio, numero, volver=''):
+    if volver:
+        return redirect(volver)
     return f'{reverse("obligaciones:index")}?{urlencode({"config_cliente": cliente_id})}'
+
 
 
 @login_required
@@ -142,12 +147,13 @@ def index(request):
 @require_POST
 def configurar_cliente(request):
     cliente_id = request.POST.get('cliente_id', '')
+    volver = request.POST.get('volver', '')
     cliente = get_object_or_404(Cliente, pk=cliente_id, estado=Cliente.Estado.ACTIVO)
     tipo_ids = set(request.POST.getlist('tipos'))
     tipos = list(TipoObligacion.objects.filter(pk__in=tipo_ids, activa=True))
     if len(tipos) != len(tipo_ids):
         messages.error(request, 'La selección contiene tipos de obligación no válidos.')
-        return _redirigir_cliente(cliente.pk)
+        return _redirigir_cliente(cliente.pk, volver)
 
     fecha_inicio = parse_date(request.POST.get('fecha_inicio', ''))
     with transaction.atomic():
@@ -175,7 +181,7 @@ def configurar_cliente(request):
     except (TypeError, ValueError):
         messages.success(request, f'Se guardó la configuración de {cliente.nombre}.')
         messages.warning(request, 'La configuración se guardó, pero no se pudo generar el período seleccionado.')
-        return _redirigir_cliente(cliente.pk)
+        return _redirigir_cliente(cliente.pk, volver)
 
     maximo = 12 if periodicidad == TipoObligacion.Periodicidad.MENSUAL else (
         4 if periodicidad == TipoObligacion.Periodicidad.TRIMESTRAL else 0
@@ -188,7 +194,7 @@ def configurar_cliente(request):
     if not periodo_valido:
         messages.success(request, f'Se guardó la configuración de {cliente.nombre}.')
         messages.warning(request, 'La configuración se guardó, pero el período seleccionado no es válido.')
-        return _redirigir_cliente(cliente.pk)
+        return _redirigir_cliente(cliente.pk, volver)
 
     resultado = generar_obligaciones(periodicidad, anio, numero, cliente_id=cliente.pk)
     mensaje = (
@@ -204,7 +210,8 @@ def configurar_cliente(request):
             messages.error(request, error)
     else:
         messages.success(request, mensaje)
-    return redirect(_url_periodo_cliente(cliente.pk, periodicidad, anio, numero))
+    return redirect(_url_periodo_cliente(cliente.pk, periodicidad, anio, numero, volver))
+
 
 
 @solo_gestores_clientes

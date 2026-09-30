@@ -1,0 +1,28 @@
+/* Estilos para modales de credenciales */
+.field-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.field-password-wrap input {
+  padding-right: 40px !important;
+  width: 100%;
+}
+.field-password-wrap .btn-toggle-eye {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #65746b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+.field-password-wrap .btn-toggle-eye:hover {
+  color: var(--ink);
+}
+.client-modal__panel--small {
+  max-width: 440px;
+}
