@@ -1,0 +1,21 @@
+<section class="client-modal" id="modal-eliminar-credencial" role="dialog" aria-modal="true" aria-labelledby="modal-eliminar-cred-title" hidden>
+	<div class="client-modal__backdrop" data-close-modal></div>
+	<div class="client-modal__panel client-modal__panel--small">
+		<header>
+			<div>
+				<p class="eyebrow">ELIMINAR ACCESO</p>
+				<h2 id="modal-eliminar-cred-title">Eliminar credencial</h2>
+			</div>
+			<button class="modal-close" type="button" data-close-modal aria-label="Cerrar">Cerrar</button>
+		</header>
+		<form method="post" action="" id="form-eliminar-credencial" class="client-form">
+			{% csrf_token %}
+			<input type="hidden" name="volver" value="{{ volver|default:request.get_full_path }}">
+			<p>¿Estás seguro de que deseas eliminar la credencial para <strong id="delete-cred-sistema">el sistema</strong>? Esta acción no se puede deshacer.</p>
+			<footer>
+				<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+				<button class="button button--danger" type="submit">Eliminar credencial</button>
+			</footer>
+		</form>
+	</div>
+</section>

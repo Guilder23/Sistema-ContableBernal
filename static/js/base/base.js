@@ -1,17 +1,6 @@
-const menuToggle = document.querySelector('#menu-toggle');
-const menuBackdrop = document.querySelector('.menu-backdrop');
+const pageError = document.querySelector('[role="alert"], .flash--error');
 
-function setMenuOpen(isOpen) {
-    document.body.classList.toggle('sidebar-open', isOpen);
-    menuToggle?.setAttribute('aria-expanded', String(isOpen));
+if (pageError) {
+    pageError.setAttribute('tabindex', '-1');
+    pageError.focus({ preventScroll: true });
 }
-
-menuToggle?.addEventListener('click', () => {
-    setMenuOpen(menuToggle.getAttribute('aria-expanded') !== 'true');
-});
-
-menuBackdrop?.addEventListener('click', () => setMenuOpen(false));
-
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') setMenuOpen(false);
-});

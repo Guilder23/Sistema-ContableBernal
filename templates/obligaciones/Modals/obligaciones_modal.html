@@ -1,0 +1,41 @@
+{% if puede_gestionar %}
+<section class="obligation-modal" id="modal-obligation-settings" role="dialog" aria-modal="true" aria-labelledby="obligation-settings-title" hidden>
+	<div class="obligation-modal__backdrop" data-close-settings></div>
+	<div class="obligation-modal__panel">
+		<header class="obligation-modal__header"><div><p class="eyebrow">CONFIGURACIÓN DEL CALENDARIO</p><h2 id="obligation-settings-title">Reglas y días no laborables</h2></div><button class="obligation-modal__close" type="button" data-close-settings>Cerrar</button></header>
+		<div class="obligation-settings-tabs" role="tablist" aria-label="Configuración de obligaciones">
+			<button type="button" role="tab" id="tab-catalogo" aria-controls="panel-catalogo" aria-selected="true" data-settings-tab="catalogo">Tipos de obligación</button>
+			<button type="button" role="tab" id="tab-feriados" aria-controls="panel-feriados" aria-selected="false" data-settings-tab="feriados">Días no laborables</button>
+		</div>
+		<section class="obligation-settings-panel" id="panel-catalogo" role="tabpanel" aria-labelledby="tab-catalogo" data-settings-panel="catalogo">
+			<form method="post" action="{% url 'obligaciones:crear_tipo' %}" class="obligation-catalog-create">{% csrf_token %}
+				<strong>Agregar tipo</strong><div class="obligation-catalog-fields">
+					<label><span>Nombre</span><input name="nombre" maxlength="100" required></label>
+					<label><span>Frecuencia</span><select name="periodicidad">{% for value, label in periodicidades %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+					<label><span>Regla de vencimiento</span><select name="regla_vencimiento">{% for value, label in reglas_vencimiento %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+					<label><span>Día del mes</span><input type="number" name="dia_vencimiento" min="1" max="31" placeholder="Solo día fijo"></label>
+					<label><span>Meses después del período</span><input type="number" name="meses_despues_periodo" min="0" max="12" value="1" required></label>
+				</div><label class="obligation-inline-check"><input type="checkbox" name="activa" checked> Activa</label><button class="obligation-button obligation-button--primary" type="submit">Agregar tipo</button>
+			</form>
+			<div class="obligation-catalog-list"><h3>Tipos registrados</h3>
+				{% for tipo in tipos_catalogo %}
+				<form method="post" action="{% url 'obligaciones:editar_tipo' tipo.pk %}" class="obligation-catalog-row">{% csrf_token %}<input type="hidden" name="codigo" value="{{ tipo.codigo }}">
+					<label><span>Nombre</span><input name="nombre" value="{{ tipo.nombre }}" maxlength="100" required></label>
+					<label><span>Frecuencia</span><select name="periodicidad">{% for value, label in periodicidades %}<option value="{{ value }}" {% if tipo.periodicidad == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+					<label><span>Regla</span><select name="regla_vencimiento">{% for value, label in reglas_vencimiento %}<option value="{{ value }}" {% if tipo.regla_vencimiento == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+					<label><span>Día</span><input type="number" name="dia_vencimiento" min="1" max="31" value="{{ tipo.dia_vencimiento|default:'' }}"></label>
+					<label><span>Meses después</span><input type="number" name="meses_despues_periodo" min="0" max="12" value="{{ tipo.meses_despues_periodo }}" required></label>
+					<label class="obligation-inline-check"><input type="checkbox" name="activa" {% if tipo.activa %}checked{% endif %}> Activa</label><button class="obligation-button obligation-button--quiet" type="submit">Guardar</button>
+				</form>
+				{% empty %}<p class="obligation-empty">Aún no hay tipos configurados.</p>{% endfor %}
+			</div>
+		</section>
+		<section class="obligation-settings-panel" id="panel-feriados" role="tabpanel" aria-labelledby="tab-feriados" data-settings-panel="feriados" hidden>
+			<form method="post" action="{% url 'obligaciones:crear_dia_no_laborable' %}" class="obligation-holiday-create">{% csrf_token %}
+				<label><span>Fecha</span><input type="date" name="fecha" required></label><label><span>Descripción</span><input name="descripcion" maxlength="120" placeholder="Ej. Feriado nacional" required></label><button class="obligation-button obligation-button--primary" type="submit">Agregar día</button>
+			</form>
+			<div class="obligation-holiday-list"><h3>Días registrados</h3>{% for dia in dias_no_laborables %}<div class="obligation-holiday-row"><span><strong>{{ dia.fecha|date:'d/m/Y' }}</strong><small>{{ dia.descripcion }}</small></span><form method="post" action="{% url 'obligaciones:eliminar_dia_no_laborable' dia.pk %}">{% csrf_token %}<button class="obligation-button obligation-button--quiet" type="submit">Eliminar</button></form></div>{% empty %}<p class="obligation-empty">No hay días no laborables registrados.</p>{% endfor %}</div>
+		</section>
+	</div>
+</section>
+{% endif %}

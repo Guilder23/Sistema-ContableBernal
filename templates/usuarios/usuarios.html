@@ -1,7 +1,147 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+
+{% block title %}Usuarios | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--usuarios{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/usuarios/usuarios.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">ACCESO DEL EQUIPO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/usuarios/usuarios.js' %}"></script>{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/usuarios/usuarios.css' %}">
+<link rel="stylesheet" href="{% static 'css/usuarios/modals/crear.css' %}">
+<link rel="stylesheet" href="{% static 'css/usuarios/modals/ver.css' %}">
+<link rel="stylesheet" href="{% static 'css/usuarios/modals/editar.css' %}">
+<link rel="stylesheet" href="{% static 'css/usuarios/modals/eliminar.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-heading users-heading">
+  <div>
+    <p class="eyebrow">ADMINISTRACIÓN DEL EQUIPO</p>
+    <h1>Usuarios</h1>
+    <p>Cuentas con acceso al sistema y rol asignado.</p>
+  </div>
+  <div class="heading-actions">
+    <button class="button button--primary" type="button" data-open-modal="modal-crear">
+      <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>
+      Crear usuario
+    </button>
+  </div>
+</section>
+
+<section class="users-toolbar surface">
+  <form method="get" class="filter-form js-live-filter">
+    <label class="search-field">
+      <span>Buscar</span>
+      <span class="search-input">
+        <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#search"></use></svg>
+        <input type="search" name="q" value="{{ busqueda }}" placeholder="Nombre, usuario o correo" data-live-search>
+      </span>
+    </label>
+    <label>
+      <span>Rol</span>
+      <select name="rol" data-live-filter>
+        <option value="">Todos</option>
+        {% for value, label in roles %}
+        <option value="{{ value }}" {% if rol_filtro == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Estado</span>
+      <select name="estado" data-live-filter>
+        <option value="">Todos</option>
+        <option value="activo" {% if estado_filtro == 'activo' %}selected{% endif %}>Activo</option>
+        <option value="inactivo" {% if estado_filtro == 'inactivo' %}selected{% endif %}>Inactivo</option>
+      </select>
+    </label>
+  </form>
+</section>
+
+<section class="users-table-wrap surface" aria-label="Listado de usuarios">
+  <div class="table-heading">
+    <h2>Equipo</h2>
+    <span>{{ total_usuarios }} cuenta{{ total_usuarios|pluralize:"s" }}{% if page_obj.paginator.count %} · {{ page_obj.start_index }}–{{ page_obj.end_index }}{% endif %}</span>
+  </div>
+  <div class="table-scroll">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th>Último acceso</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cuenta in usuarios %}
+        <tr data-user-created-at="{{ cuenta.date_joined|date:'d/m/Y H:i' }}" data-user-created-by="{% if cuenta.perfil.creado_por %}{{ cuenta.perfil.creado_por.get_full_name|default:cuenta.perfil.creado_por.username }}{% else %}Sin registro{% endif %}">
+          <td>
+            <div class="user-cell">
+              <span class="user-avatar">{{ cuenta.username|first|upper }}</span>
+              <span><strong>{{ cuenta.get_full_name|default:cuenta.username }}</strong><small>@{{ cuenta.username }}</small></span>
+            </div>
+          </td>
+          <td>{{ cuenta.email|default:'—' }}</td>
+          <td><span class="role-tag role-tag--{{ cuenta.perfil.rol }}">{{ cuenta.perfil.get_rol_display }}</span></td>
+          <td><span class="status-tag {% if cuenta.is_active %}status-tag--active{% else %}status-tag--inactive{% endif %}">{{ cuenta.is_active|yesno:'Activo,Inactivo' }}</span></td>
+          <td>{% if cuenta.last_login %}{{ cuenta.last_login|date:'d/m/Y H:i' }}{% else %}<span class="muted">Sin acceso</span>{% endif %}</td>
+          <td>
+            <div class="row-actions">
+              <button type="button" class="icon-action icon-action--view" title="Ver usuario" aria-label="Ver {{ cuenta.username }}" data-open-modal="modal-ver" data-user-name="{{ cuenta.get_full_name|default:cuenta.username }}" data-user-username="{{ cuenta.username }}" data-user-email="{{ cuenta.email }}" data-user-role="{{ cuenta.perfil.get_rol_display }}" data-user-status="{{ cuenta.is_active|yesno:'Activo,Inactivo' }}">
+                <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg>
+              </button>
+              <button type="button" class="icon-action icon-action--edit" title="Editar usuario" aria-label="Editar {{ cuenta.username }}" data-open-modal="modal-editar" data-edit-url="{% url 'usuarios:editar' usuario_id=cuenta.pk %}" data-user-username="{{ cuenta.username }}" data-user-first-name="{{ cuenta.first_name }}" data-user-last-name="{{ cuenta.last_name }}" data-user-email="{{ cuenta.email }}" data-user-role-value="{{ cuenta.perfil.rol }}" data-user-active="{% if cuenta.is_active %}true{% else %}false{% endif %}">
+                <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg>
+              </button>
+              {% if cuenta.pk != request.user.pk %}
+              <button type="button" class="icon-action icon-action--delete" title="Eliminar usuario" aria-label="Eliminar {{ cuenta.username }}" data-open-modal="modal-eliminar" data-delete-url="{% url 'usuarios:eliminar' usuario_id=cuenta.pk %}" data-user-name="{{ cuenta.get_full_name|default:cuenta.username }}">
+                <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trash"></use></svg>
+              </button>
+              {% else %}
+              <span class="muted">Tu cuenta</span>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="table-empty">No hay usuarios que coincidan con los filtros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Paginación de usuarios">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div>
+      {% if page_obj.has_previous %}
+      <a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Página anterior"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-left"></use></svg></a>
+      {% endif %}
+      {% for number in page_obj.paginator.page_range %}
+        {% if number == page_obj.number %}
+        <span class="page-number page-number--active" aria-current="page">{{ number }}</span>
+        {% else %}
+        <a class="page-number" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ number }}">{{ number }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Página siguiente"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-right"></use></svg></a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+</section>
+
+{% include 'usuarios/modals/crear.html' %}
+{% include 'usuarios/modals/ver.html' %}
+{% include 'usuarios/modals/editar.html' %}
+{% include 'usuarios/modals/eliminar.html' %}
+{% endblock %}
+
+{% block page_js %}
+<script defer src="{% static 'js/usuarios/usuarios.js' %}"></script>
+<script defer src="{% static 'js/usuarios/modals/crear.js' %}"></script>
+<script defer src="{% static 'js/usuarios/modals/ver.js' %}"></script>
+<script defer src="{% static 'js/usuarios/modals/editar.js' %}"></script>
+<script defer src="{% static 'js/usuarios/modals/eliminar.js' %}"></script>
+{% endblock %}

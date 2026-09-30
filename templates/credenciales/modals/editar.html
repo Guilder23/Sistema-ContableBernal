@@ -1,0 +1,69 @@
+{% load static %}
+<section class="client-modal" id="modal-editar-credencial" role="dialog" aria-modal="true" aria-labelledby="modal-editar-cred-title" hidden>
+	<div class="client-modal__backdrop" data-close-modal></div>
+	<div class="client-modal__panel">
+		<header>
+			<div>
+				<p class="eyebrow">MODIFICAR ACCESO</p>
+				<h2 id="modal-editar-cred-title">Editar credencial</h2>
+			</div>
+			<button class="modal-close" type="button" data-close-modal aria-label="Cerrar">Cerrar</button>
+		</header>
+		<form method="post" action="" id="form-editar-credencial" class="client-form">
+			{% csrf_token %}
+			<input type="hidden" name="volver" value="{{ volver|default:request.get_full_path }}">
+
+			<div class="client-form__row">
+				<label class="client-field">
+					<span>Sistema / Plataforma <b>*</b></span>
+					<select name="sistema" id="edit-cred-select-sistema" required>
+						{% for val, lab in sistemas_credenciales %}
+						<option value="{{ val }}">{{ lab }}</option>
+						{% endfor %}
+					</select>
+				</label>
+				<label class="client-field" id="edit-cred-campo-personalizado" style="display: none;">
+					<span>Nombre de la plataforma</span>
+					<input name="sistema_personalizado" id="edit-cred-sistema-pers">
+				</label>
+			</div>
+
+			<div class="client-form__row">
+				<label class="client-field">
+					<span>Usuario o Código <b>*</b></span>
+					<input name="usuario" id="edit-cred-usuario" maxlength="150" required>
+				</label>
+				<label class="client-field">
+					<span>Contraseña (dejar en blanco para mantener)</span>
+					<div class="field-password-wrap">
+						<input type="password" name="password" id="edit-cred-password" maxlength="255" placeholder="••••••••••">
+						<button type="button" class="btn-toggle-eye" title="Mostrar/ocultar contraseña" aria-label="Mostrar u ocultar contraseña">
+							<svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg>
+						</button>
+					</div>
+				</label>
+			</div>
+
+			<div class="client-form__row">
+				<label class="client-field">
+					<span>Enlace / URL</span>
+					<input type="url" name="url" id="edit-cred-url">
+				</label>
+				<label class="client-field">
+					<span>Código adicional / PIN</span>
+					<input name="codigo_extra" id="edit-cred-codigo-extra">
+				</label>
+			</div>
+
+			<label class="client-field">
+				<span>Notas y observaciones</span>
+				<textarea name="observaciones" id="edit-cred-observaciones" rows="2"></textarea>
+			</label>
+
+			<footer>
+				<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+				<button class="button button--primary" type="submit">Actualizar credencial</button>
+			</footer>
+		</form>
+	</div>
+</section>

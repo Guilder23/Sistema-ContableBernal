@@ -1,7 +1,157 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+
+{% block title %}Clientes | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--clientes{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">CARTERA DE CLIENTES</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/clientes/clientes.js' %}"></script>{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/clientes/modals/crear.css' %}">
+<link rel="stylesheet" href="{% static 'css/clientes/modals/ver.css' %}">
+{% if puede_gestionar %}
+<link rel="stylesheet" href="{% static 'css/clientes/modals/editar.css' %}">
+<link rel="stylesheet" href="{% static 'css/clientes/modals/eliminar.css' %}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="page-heading clients-heading">
+  <div>
+    <p class="eyebrow">DIRECTORIO DEL ESTUDIO</p>
+    <h1>Clientes</h1>
+    <p>Información general, tributaria y de contacto.</p>
+  </div>
+  {% if puede_gestionar %}
+  <button class="button button--primary" type="button" data-open-modal="modal-crear">
+    <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>
+    Crear cliente
+  </button>
+  {% endif %}
+</section>
+
+<section class="clients-toolbar surface">
+  <form method="get" class="clients-filter js-live-filter">
+    <label class="client-search">
+      <span>Buscar</span>
+      <span class="search-input">
+        <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#search"></use></svg>
+        <input type="search" name="q" value="{{ busqueda }}" placeholder="Nombre, NIT, CI o correo" data-live-search>
+      </span>
+    </label>
+    <label>
+      <span>Tipo de cliente</span>
+      <select name="tipo" data-live-filter>
+        <option value="">Todos</option>
+        {% for value, label in tipos %}
+        <option value="{{ value }}" {% if tipo_filtro == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Estado</span>
+      <select name="estado" data-live-filter>
+        <option value="">Todos</option>
+        {% for value, label in estados %}
+        <option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+<section class="clients-table-wrap surface" aria-label="Directorio de clientes">
+  <div class="clients-table-heading">
+    <h2>Cartera</h2>
+    <span>{{ total_clientes }} cliente{{ total_clientes|pluralize:"s" }}{% if page_obj.paginator.count %} · {{ page_obj.start_index }}–{{ page_obj.end_index }}{% endif %}</span>
+  </div>
+  <div class="clients-table-scroll">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>NIT / CI</th>
+          <th>Tipo</th>
+          <th>Actividad</th>
+          <th>Contacto</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cliente in clientes %}
+        <tr data-client-created-at="{{ cliente.creado_en|date:'d/m/Y H:i' }}" data-client-created-by="{% if cliente.creado_por %}{{ cliente.creado_por.get_full_name|default:cliente.creado_por.username }}{% else %}Sin registro{% endif %}">
+          <td>
+            <div class="client-primary">
+              <span class="client-avatar">{{ cliente.nombre|first|upper }}</span>
+              <span>
+                <strong><a href="{% url 'clientes:detalle' cliente_id=cliente.pk %}" class="client-link" title="Ver ficha integral">{{ cliente.nombre }}</a></strong>
+                <small>{% if cliente.nit %}NIT {{ cliente.nit }}{% elif cliente.ci %}CI {{ cliente.ci }}{% else %}Sin identificación{% endif %}</small>
+              </span>
+            </div>
+          </td>
+          <td>{{ cliente.nit|default:cliente.ci|default:'—' }}</td>
+          <td>{{ cliente.get_tipo_display }}</td>
+          <td>{{ cliente.get_actividad_display }}</td>
+          <td>{% if cliente.telefono %}{{ cliente.telefono }}{% elif cliente.correo %}{{ cliente.correo }}{% else %}<span class="client-muted">—</span>{% endif %}</td>
+          <td><span class="client-status client-status--{{ cliente.estado }}">{{ cliente.get_estado_display }}</span></td>
+          <td>
+            <div class="client-actions">
+              <a href="{% url 'clientes:detalle' cliente_id=cliente.pk %}" class="icon-action icon-action--view" title="Abrir ficha integral" aria-label="Abrir ficha de {{ cliente.nombre }}">
+                <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg>
+              </a>
+              {% if puede_gestionar %}
+              <button type="button" class="icon-action icon-action--edit" title="Editar cliente" aria-label="Editar {{ cliente.nombre }}" data-open-modal="modal-editar" data-edit-url="{% url 'clientes:editar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}" data-client-type-value="{{ cliente.tipo }}" data-client-nit="{{ cliente.nit|default:'' }}" data-client-ci="{{ cliente.ci }}" data-client-activity-value="{{ cliente.actividad }}" data-client-phone="{{ cliente.telefono }}" data-client-whatsapp="{{ cliente.whatsapp }}" data-client-email="{{ cliente.correo }}" data-client-address="{{ cliente.direccion }}" data-client-status-value="{{ cliente.estado }}" data-client-start-date="{{ cliente.fecha_inicio|date:'Y-m-d' }}" data-client-observations="{{ cliente.observaciones }}">
+                <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg>
+              </button>
+              <button type="button" class="icon-action icon-action--delete" title="Eliminar cliente" aria-label="Eliminar {{ cliente.nombre }}" data-open-modal="modal-eliminar" data-delete-url="{% url 'clientes:eliminar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}">
+                <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trash"></use></svg>
+              </button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="clients-empty">No hay clientes que coincidan con los filtros.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Paginación de clientes">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div>
+      {% if page_obj.has_previous %}
+      <a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Página anterior"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-left"></use></svg></a>
+      {% endif %}
+      {% for number in page_obj.paginator.page_range %}
+        {% if number == page_obj.number %}
+        <span class="page-number page-number--active" aria-current="page">{{ number }}</span>
+        {% else %}
+        <a class="page-number" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ number }}">{{ number }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Página siguiente"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-right"></use></svg></a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+</section>
+
+{% include 'clientes/modals/ver.html' %}
+{% if puede_gestionar %}
+{% include 'clientes/modals/crear.html' %}
+{% include 'clientes/modals/editar.html' %}
+{% include 'clientes/modals/eliminar.html' %}
+{% endif %}
+{% endblock %}
+
+{% block page_js %}
+<script defer src="{% static 'js/clientes/clientes.js' %}"></script>
+<script defer src="{% static 'js/clientes/modals/ver.js' %}"></script>
+{% if puede_gestionar %}
+<script defer src="{% static 'js/clientes/modals/crear.js' %}"></script>
+<script defer src="{% static 'js/clientes/modals/editar.js' %}"></script>
+<script defer src="{% static 'js/clientes/modals/eliminar.js' %}"></script>
+{% endif %}
+{% endblock %}

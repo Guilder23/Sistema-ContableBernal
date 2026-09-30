@@ -1,32 +1,596 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
-:root { --ink: #20352b; --muted: #718078; --forest: #173d32; --line: #dce5de; --font-body: 'DM Sans', 'Segoe UI', sans-serif; --font-display: 'Manrope', 'Segoe UI', sans-serif; }
-* { box-sizing: border-box; }
-body { min-height: 100vh; margin: 0; background: #f1f5f1; color: var(--ink); font-family: var(--font-body); }
-.login-layout { display: grid; min-height: 100vh; grid-template-columns: minmax(320px, .92fr) 1.08fr; }
-.login-brand-panel { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 38px clamp(28px, 6vw, 82px); background: var(--forest); color: #f3f7f4; }
-.login-brand { display: flex; align-items: center; gap: 12px; width: fit-content; color: inherit; text-decoration: none; }
-.brand-mark { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid #9ec6ad; color: #c6e5d1; font: 800 13px var(--font-display); }
-.login-brand span:last-child { display: grid; gap: 2px; }
-.login-brand strong { font: 700 17px var(--font-display); }
-.login-brand small { color: #a5c4b3; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; }
-.brand-copy { max-width: 410px; padding: 30px 0 70px; }
-.eyebrow { margin: 0 0 14px; color: #b9d9c5; font-size: 9px; font-weight: 700; letter-spacing: 1.6px; }
-.brand-copy h1 { max-width: 390px; margin: 0 0 15px; font: 700 clamp(32px, 4vw, 51px)/1.1 var(--font-display); letter-spacing: 0; }
-.brand-copy > p:last-child { max-width: 360px; margin: 0; color: #c5d7cc; font-size: 14px; line-height: 1.7; }
-.brand-footer { color: #9eb9a8; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; }
-.login-form-panel { display: grid; place-items: center; padding: 38px 24px; }
-.login-form { width: min(100%, 370px); }
-.login-form .eyebrow { margin-bottom: 11px; color: #39745a; }
-.login-form h2 { margin: 0 0 7px; font: 700 27px var(--font-display); }
-.form-intro { margin: 0 0 27px; color: var(--muted); font-size: 12px; }
-.login-form label { display: block; margin: 16px 0 7px; color: #42554a; font-size: 11px; font-weight: 600; }
-.login-form input { width: 100%; height: 43px; padding: 0 12px; border: 1px solid var(--line); border-radius: 0; outline: none; background: white; color: var(--ink); }
-.login-form input:focus { border-color: #4d8a68; box-shadow: 0 0 0 2px rgb(77 138 104 / 13%); }
-.password-field { position: relative; }
-.password-field input { padding-right: 76px; }
-.password-field button { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); border: 0; background: transparent; color: #39745a; cursor: pointer; font-size: 10px; font-weight: 600; }
-.submit-button { display: flex; width: 100%; height: 44px; align-items: center; justify-content: space-between; margin-top: 25px; padding: 0 14px; border: 0; background: var(--forest); color: white; cursor: pointer; font-size: 12px; font-weight: 600; }
-.submit-button:hover { background: #245444; }
-.submit-button span { font-size: 17px; }
-.form-error { padding: 10px 12px; border-left: 3px solid #c75c47; background: #fff0eb; color: #873c30; font-size: 11px; }
-@media (max-width: 720px) { .login-layout { grid-template-columns: 1fr; } .login-brand-panel { min-height: 240px; padding: 23px 25px; } .brand-copy { padding: 30px 0 8px; } .brand-copy h1 { max-width: 420px; font-size: 34px; } .brand-copy > p:last-child { display: none; } .brand-footer { display: none; } .login-form-panel { place-items: start center; padding: 37px 24px 55px; } }
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+:root {
+  /* System palette variables */
+  --ink: #3d2925;
+  --muted: #82716a;
+  --paper: #fff8f0;
+  --surface: #ffffff;
+  --line: #ead9c9;
+  --forest: #56271f;
+  --forest-soft: #76372c;
+  --mint: #f8e6d6;
+  --amber: #e5a13a;
+  --coral: #ee493c;
+  --magenta: #9e1b69;
+  --magenta-dark: #631243;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* No scroll anywhere */
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', var(--font-body), sans-serif;
+  background-color: var(--paper);
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(238, 73, 60, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(86, 39, 31, 0.08) 0%, transparent 40%),
+    linear-gradient(135deg, #fff3ea 0%, #fae8dc 100%);
+  color: var(--ink);
+  padding: 16px;
+}
+
+/* Master wrapper - full center view */
+.login-wrapper {
+  width: 100%;
+  max-width: 1100px;
+  max-height: 94vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Centered main container with rich elevation / shadow and rounded borders */
+.login-card-window {
+  position: relative;
+  width: 100%;
+  height: min(620px, 90vh);
+  background: radial-gradient(circle at 85% 25%, #8f175a 0%, #70163e 40%, var(--forest) 95%);
+  border-radius: 28px;
+  box-shadow: 
+    0 24px 60px -10px rgba(86, 39, 31, 0.35),
+    0 12px 24px -5px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Background Artwork & Space Spheres / Planets Layer */
+.art-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Organic Blobs from reference image */
+.blob-shape {
+  position: absolute;
+  pointer-events: none;
+  transition: transform 0.4s ease;
+}
+
+/* Blob 1: "Sidewalk Gum Blob" organic fluid shape in rich magenta-forest tone */
+.blob-organic-gum {
+  top: -30px;
+  right: 18%;
+  width: 170px;
+  height: 155px;
+  background: linear-gradient(135deg, rgba(168, 32, 109, 0.45) 0%, rgba(86, 39, 31, 0.3) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.14);
+  /* Sidewalk gum four-corner undulating blob curve */
+  border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+  backdrop-filter: blur(2px);
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.18));
+  animation: floatGum 10s ease-in-out infinite alternate;
+}
+
+/* Blob 2: "Organic Star/Flower Blob" undulating in lower right area */
+.blob-organic-star {
+  bottom: 15px;
+  right: 3%;
+  width: 140px;
+  height: 140px;
+  background: linear-gradient(145deg, rgba(238, 73, 60, 0.28) 0%, rgba(118, 55, 44, 0.4) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 63% 37% 54% 46% / 30% 64% 36% 70%;
+  backdrop-filter: blur(3px);
+  box-shadow: inset 0 0 25px rgba(255, 255, 255, 0.1);
+  animation: floatStar 12s ease-in-out infinite alternate;
+}
+
+@keyframes floatGum {
+  0% {
+    transform: rotate(0deg) scale(1);
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+  }
+  100% {
+    transform: rotate(18deg) scale(1.06);
+    border-radius: 56% 44% 38% 62% / 60% 50% 50% 40%;
+  }
+}
+
+@keyframes floatStar {
+  0% {
+    transform: rotate(0deg) scale(1);
+    border-radius: 63% 37% 54% 46% / 30% 64% 36% 70%;
+  }
+  100% {
+    transform: rotate(-15deg) scale(1.08);
+    border-radius: 38% 62% 43% 57% / 54% 38% 62% 46%;
+  }
+}
+
+/* System Image embedded inside an organic decorative shape/portal */
+.figure-photo-sphere {
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 440px;
+  height: 440px;
+  border-radius: 46% 54% 63% 37% / 41% 44% 56% 59%;
+  background-image: url("../../img/FondoContable.png");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.32;
+  mix-blend-mode: luminosity;
+  filter: contrast(1.15) brightness(0.9);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 40px rgba(86, 39, 31, 0.8), 0 0 50px rgba(0, 0, 0, 0.3);
+  animation: morphShape 14s ease-in-out infinite alternate;
+}
+
+@keyframes morphShape {
+  0% {
+    border-radius: 46% 54% 63% 37% / 41% 44% 56% 59%;
+    transform: translateY(-50%) rotate(0deg);
+  }
+  100% {
+    border-radius: 58% 42% 45% 55% / 54% 61% 39% 46%;
+    transform: translateY(-50%) rotate(12deg);
+  }
+}
+
+.photo-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, transparent 40%, var(--forest) 95%);
+}
+
+/* 3D planetary spheres styled with system colors (Coral & Amber highlights + Warm Shadows) */
+.planet {
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: 
+    inset -10px -12px 24px rgba(60, 15, 10, 0.75),
+    inset 8px 8px 16px rgba(255, 175, 100, 0.55),
+    0 16px 36px rgba(45, 12, 10, 0.45);
+  transition: transform 0.3s ease;
+}
+
+/* Planet 1 - Top right (warm coral to amber gradient) */
+.planet-top-right {
+  top: 48px;
+  right: 8%;
+  width: 110px;
+  height: 110px;
+  background: radial-gradient(circle at 35% 30%, #ff6b4a 0%, var(--coral) 55%, var(--forest-soft) 100%);
+}
+
+.planet-ring {
+  position: absolute;
+  top: 42%;
+  left: -20%;
+  width: 140%;
+  height: 22px;
+  border: 3.5px solid rgba(255, 195, 130, 0.45);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+  transform: rotate(-16deg);
+}
+
+/* Planet 2 - Center right (large focal planet) */
+.planet-center-right {
+  bottom: 60px;
+  right: 14%;
+  width: 185px;
+  height: 185px;
+  background: radial-gradient(circle at 32% 30%, #ff5e45 0%, var(--coral) 50%, #762218 100%);
+  box-shadow: 
+    inset -16px -16px 32px rgba(50, 15, 12, 0.8),
+    inset 12px 12px 22px rgba(255, 160, 110, 0.6),
+    0 24px 50px rgba(40, 10, 10, 0.5);
+}
+
+.planet-slice {
+  position: absolute;
+  top: 48%;
+  left: 6%;
+  width: 88%;
+  height: 12px;
+  background: rgba(255, 190, 155, 0.35);
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+/* Planet 3 - Bottom middle */
+.planet-bottom-mid {
+  bottom: 45px;
+  left: 45%;
+  width: 115px;
+  height: 115px;
+  background: radial-gradient(circle at 30% 30%, #ff7352 0%, #db3b28 55%, var(--forest) 100%);
+}
+
+.planet-stripe {
+  position: absolute;
+  top: 42%;
+  left: 0;
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255, 190, 160, 0.35) 50%, rgba(255,255,255,0.05));
+  border-radius: 50%;
+}
+
+/* Extra Shape 1: Mini floating glowing satellite / sphere */
+.planet-floating-mini {
+  top: 175px;
+  left: 44%;
+  width: 52px;
+  height: 52px;
+  background: radial-gradient(circle at 35% 30%, #ffd085 0%, var(--amber) 60%, #a86210 100%);
+  box-shadow: 
+    inset -4px -5px 10px rgba(50, 20, 0, 0.6),
+    inset 4px 4px 8px rgba(255, 230, 180, 0.6),
+    0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Extra Shape 2: Luminous orbital ring / halo */
+.shape-ring-saturn {
+  position: absolute;
+  top: 12%;
+  right: 32%;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px dashed rgba(255, 200, 150, 0.35);
+  filter: drop-shadow(0 0 8px rgba(238, 73, 60, 0.3));
+  transform: rotate(45deg);
+}
+
+/* Extra Shape 3: Ambient glow accent */
+.shape-glow-accent {
+  position: absolute;
+  top: -50px;
+  right: 20%;
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(229, 161, 58, 0.18) 0%, transparent 70%);
+  filter: blur(40px);
+}
+
+/* Left Content Area that hosts the organic White Wave */
+.login-content-area {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+/* White organic wave container with the exact curve from reference image */
+.form-container {
+  position: relative;
+  width: min(500px, 100%);
+  height: 100%;
+  background-color: var(--surface);
+  padding: 36px clamp(28px, 4.5vw, 55px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 18px 0 45px rgba(0, 0, 0, 0.12);
+  /* Organic S-wave curve on the right border */
+  border-top-right-radius: 170px 240px;
+  border-bottom-right-radius: 220px 360px;
+}
+
+/* Brand header with Logo directly inside the form side */
+.brand-header {
+  margin-bottom: 24px;
+}
+
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.brand-link:hover {
+  transform: translateY(-2px);
+}
+
+.brand-logo {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(86, 39, 31, 0.2));
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--forest);
+  line-height: 1.1;
+}
+
+.brand-subtitle {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--coral);
+}
+
+/* Form Elements */
+.auth-form {
+  width: 100%;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.field-input {
+  width: 100%;
+  height: 42px;
+  border: none;
+  border-bottom: 2px solid var(--line);
+  background: transparent;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--ink);
+  outline: none;
+  padding: 0 4px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field-input::placeholder {
+  color: #a89892;
+  font-weight: 400;
+}
+
+.field-input:focus {
+  border-bottom-color: var(--coral);
+}
+
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  padding-right: 40px;
+}
+
+.btn-toggle-pw {
+  position: absolute;
+  right: 4px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.btn-toggle-pw:hover {
+  color: var(--coral);
+}
+
+.eye-icon {
+  width: 19px;
+  height: 19px;
+}
+
+/* Remember me checkbox */
+.form-options {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+  margin-bottom: 30px;
+}
+
+.remember-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.remember-checkbox {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.custom-checkbox {
+  width: 19px;
+  height: 19px;
+  border: 2px solid #cdb9ab;
+  border-radius: 6px;
+  margin-right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.remember-checkbox:checked + .custom-checkbox {
+  background: var(--coral);
+  border-color: var(--coral);
+}
+
+.remember-checkbox:checked + .custom-checkbox::after {
+  content: '';
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  margin-bottom: 2px;
+}
+
+.checkbox-text {
+  font-size: 13.5px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* Actions Row: Login Button */
+.form-actions {
+  display: flex;
+  align-items: center;
+}
+
+/* Pill-shaped gradient login button combining system colors (--forest to --coral) */
+.btn-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  padding: 0 46px;
+  border: none;
+  border-radius: 26px;
+  background: linear-gradient(135deg, var(--forest) 0%, #a8206d 50%, var(--coral) 100%);
+  color: #ffffff;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(86, 39, 31, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(238, 73, 60, 0.4);
+  filter: brightness(1.08);
+}
+
+.btn-login:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 14px rgba(86, 39, 31, 0.4);
+}
+
+/* Error message notification */
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #fff1eb;
+  border-left: 4px solid var(--coral);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  color: #872e24;
+  font-size: 13.5px;
+  font-weight: 500;
+  animation: shake 0.3s ease-in-out;
+}
+
+.error-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--coral);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 860px) {
+  .login-card-window {
+    min-height: auto;
+    border-radius: 20px;
+  }
+
+  .form-container {
+    width: 100%;
+    border-radius: 20px;
+    padding: 44px 30px;
+    box-shadow: none;
+  }
+
+  .art-layer {
+    opacity: 0.15;
+  }
+
+  .planet-center-right,
+  .figure-photo-sphere {
+    right: -60px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+
+  .btn-login {
+    width: 100%;
+  }
+
+  .form-container {
+    padding: 34px 20px;
+  }
+}
+
+

@@ -1,0 +1,84 @@
+<section
+  class="client-modal"
+  id="modal-ver"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-ver-title"
+  hidden
+>
+  <div class="client-modal__backdrop" data-close-modal></div>
+  <div class="client-modal__panel client-modal__panel--details">
+    <header>
+      <div>
+        <p class="eyebrow">FICHA DEL CLIENTE</p>
+        <h2 id="modal-ver-title" data-client-field="name">Cliente</h2>
+      </div>
+      <button
+        class="modal-close"
+        type="button"
+        data-close-modal
+        aria-label="Cerrar"
+      >
+        Cerrar
+      </button>
+    </header>
+    <dl class="client-details">
+      <div>
+        <dt>Tipo</dt>
+        <dd data-client-field="type"></dd>
+      </div>
+      <div>
+        <dt>Actividad</dt>
+        <dd data-client-field="activity"></dd>
+      </div>
+      <div>
+        <dt>NIT</dt>
+        <dd data-client-field="nit"></dd>
+      </div>
+      <div>
+        <dt>CI</dt>
+        <dd data-client-field="ci"></dd>
+      </div>
+      <div>
+        <dt>Teléfono</dt>
+        <dd data-client-field="phone"></dd>
+      </div>
+      <div>
+        <dt>WhatsApp</dt>
+        <dd data-client-field="whatsapp"></dd>
+      </div>
+      <div>
+        <dt>Correo</dt>
+        <dd data-client-field="email"></dd>
+      </div>
+      <div>
+        <dt>Estado</dt>
+        <dd data-client-field="status"></dd>
+      </div>
+      <div>
+        <dt>Fecha de inicio</dt>
+        <dd data-client-field="start-date"></dd>
+      </div>
+      <div class="client-details__wide">
+        <dt>Dirección</dt>
+        <dd data-client-field="address"></dd>
+      </div>
+      <div class="client-details__wide">
+        <dt>Observaciones</dt>
+        <dd data-client-field="observations"></dd>
+      </div>
+    </dl>
+    <section class="record-audit" aria-label="Datos de registro">
+      <h3>Registro</h3>
+      <dl>
+        <div><dt>Fecha y hora</dt><dd data-client-field="created-at"></dd></div>
+        <div><dt>Registrado por</dt><dd data-client-field="created-by"></dd></div>
+      </dl>
+    </section>
+    <footer>
+      <button class="button button--quiet" type="button" data-close-modal>
+        Cerrar
+      </button>
+    </footer>
+  </div>
+</section>

@@ -1,0 +1,82 @@
+{% load static %}
+<section class="client-modal" id="modal-crear-credencial" role="dialog" aria-modal="true" aria-labelledby="modal-crear-cred-title" hidden>
+	<div class="client-modal__backdrop" data-close-modal></div>
+	<div class="client-modal__panel">
+		<header>
+			<div>
+				<p class="eyebrow">ACCESOS Y CREDENCIALES</p>
+				<h2 id="modal-crear-cred-title">Nueva credencial</h2>
+			</div>
+			<button class="modal-close" type="button" data-close-modal aria-label="Cerrar">Cerrar</button>
+		</header>
+		<form method="post" action="{% url 'credenciales:crear' %}" class="client-form">
+			{% csrf_token %}
+			{% if cliente %}
+			<input type="hidden" name="cliente_id" value="{{ cliente.pk }}">
+			{% else %}
+			<label class="client-field">
+				<span>Cliente <b>*</b></span>
+				<select name="cliente_id" required>
+					<option value="" disabled selected>Selecciona un cliente</option>
+					{% for c in clientes %}
+					<option value="{{ c.pk }}" {% if cliente_filtro == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+					{% endfor %}
+				</select>
+			</label>
+			{% endif %}
+			<input type="hidden" name="volver" value="{{ volver|default:request.get_full_path }}">
+
+			<div class="client-form__row">
+				<label class="client-field">
+					<span>Sistema / Plataforma <b>*</b></span>
+					<select name="sistema" id="cred-select-sistema" required>
+						{% for val, lab in sistemas_credenciales %}
+						<option value="{{ val }}">{{ lab }}</option>
+						{% endfor %}
+					</select>
+				</label>
+				<label class="client-field" id="cred-campo-personalizado" style="display: none;">
+					<span>Nombre de la plataforma</span>
+					<input name="sistema_personalizado" placeholder="Ej: Gestora Regional, Banco...">
+				</label>
+			</div>
+
+			<div class="client-form__row">
+				<label class="client-field">
+					<span>Usuario o Código <b>*</b></span>
+					<input name="usuario" maxlength="150" required placeholder="Usuario, NIT o correo">
+				</label>
+				<label class="client-field">
+					<span>Contraseña <b>*</b></span>
+					<div class="field-password-wrap">
+						<input type="password" name="password" maxlength="255" required placeholder="Contraseña de acceso">
+						<button type="button" class="btn-toggle-eye" title="Mostrar/ocultar contraseña" aria-label="Mostrar u ocultar contraseña">
+							<svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg>
+						</button>
+					</div>
+				</label>
+			</div>
+
+			<div class="client-form__row">
+				<label class="client-field">
+					<span>Enlace / URL</span>
+					<input type="url" name="url" placeholder="https://siat.impuestos.gob.bo">
+				</label>
+				<label class="client-field">
+					<span>Código adicional / PIN</span>
+					<input name="codigo_extra" placeholder="PIN, token o coordenadas">
+				</label>
+			</div>
+
+			<label class="client-field">
+				<span>Notas y observaciones</span>
+				<textarea name="observaciones" rows="2" placeholder="Ej: Vence cada 90 días, requiere confirmación SMS..."></textarea>
+			</label>
+
+			<footer>
+				<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+				<button class="button button--primary" type="submit">Guardar credencial</button>
+			</footer>
+		</form>
+	</div>
+</section>

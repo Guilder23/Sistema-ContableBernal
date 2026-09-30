@@ -2,6 +2,71 @@
 {% load static %}
 {% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--obligaciones{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/obligaciones/obligaciones.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">CALENDARIO TRIBUTARIO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/obligaciones/obligaciones.js' %}"></script>{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'css/obligaciones/obligaciones.css' %}"><link rel="stylesheet" href="{% static 'css/obligaciones/Modals/obligaciones_modal.css' %}">{% endblock %}
+{% block content %}
+<header class="page-heading">
+	<div><p class="eyebrow">CALENDARIO TRIBUTARIO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div>
+	{% if puede_gestionar %}<button class="obligation-button obligation-button--quiet obligation-settings-trigger" type="button" data-open-settings aria-controls="modal-obligation-settings"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#settings"></use></svg>Reglas y feriados</button>{% endif %}
+</header>
+
+<section class="obligation-toolbar" aria-label="Filtros y generación">
+	<form method="get" class="obligation-filter">
+		<label><span>Frecuencia</span><select name="periodicidad" data-filter-periodicity><option value="" {% if not periodicidad %}selected{% endif %}>Todos</option>{% for value, label in periodicidades %}<option value="{{ value }}" {% if periodicidad == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+		<label><span>Año</span><input type="number" name="anio" min="2000" max="2200" value="{{ anio }}" placeholder="Todos"></label>
+		<label><span>Período</span><select name="periodo_numero" data-filter-period-number>{% for value, label in periodo_options %}<option value="{{ value }}" {% if periodo_numero|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+		<label><span>Cliente</span><select name="cliente"><option value="">Todos</option>{% for cliente in clientes %}<option value="{{ cliente.pk }}" {% if cliente_filtro == cliente.pk|stringformat:'s' %}selected{% endif %}>{{ cliente.nombre }}</option>{% endfor %}</select></label>
+		<label><span>Estado</span><select name="estado"><option value="">Todos</option>{% for value, label in estados %}<option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+		<button class="obligation-button obligation-button--quiet" type="submit">Filtrar</button>
+	</form>
+	{% if puede_gestionar %}
+	<form method="post" action="{% url 'obligaciones:generar' %}" class="obligation-generate">
+		{% csrf_token %}
+		<div class="obligation-generate-fields">
+			<label><span>Frecuencia</span><select name="periodicidad" data-generation-frequency>{% for value, label in periodicidades %}<option value="{{ value }}" {% if generacion_periodicidad == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+			<label><span>Año</span><input type="number" name="anio" min="2000" max="2200" value="{{ generacion_anio }}" required data-generation-year></label>
+			<label><span>Período</span><select name="periodo_numero" data-generation-period>{% for value, label in generacion_periodos %}<option value="{{ value }}" {% if generacion_numero == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+		</div>
+		<div class="obligation-generate-action"><strong>Generar período</strong><span>Se omiten las obligaciones que ya existen.</span><button class="obligation-button obligation-button--primary" type="submit">Generar obligaciones</button></div>
+	</form>
+	{% endif %}
+</section>
+
+{% if puede_gestionar %}
+<section class="obligation-config" aria-labelledby="config-title">
+	<div class="obligation-section-heading"><div><p class="eyebrow">CONFIGURACIÓN POR CLIENTE</p><h2 id="config-title">Obligaciones aplicables</h2></div><span>Selecciona un cliente y marca lo que le corresponde.</span></div>
+	<form method="get" class="obligation-client-picker">
+		<input type="hidden" name="periodicidad" value="{{ periodicidad }}"><input type="hidden" name="anio" value="{{ anio }}"><input type="hidden" name="periodo_numero" value="{{ periodo_numero }}">
+		<label><span>Cliente</span><select name="config_cliente" required><option value="">Seleccionar cliente</option>{% for cliente in clientes %}<option value="{{ cliente.pk }}" {% if cliente_config.pk == cliente.pk %}selected{% endif %}>{{ cliente.nombre }}</option>{% endfor %}</select></label><button class="obligation-button obligation-button--quiet" type="submit">Cargar configuración</button>
+	</form>
+	{% if cliente_config %}
+	<form method="post" action="{% url 'obligaciones:configurar_cliente' %}" class="obligation-type-form">
+		{% csrf_token %}<input type="hidden" name="cliente_id" value="{{ cliente_config.pk }}">
+		<input type="hidden" name="periodicidad" value="{{ generacion_periodicidad }}" data-config-generation="periodicidad"><input type="hidden" name="anio" value="{{ generacion_anio }}" data-config-generation="anio"><input type="hidden" name="periodo_numero" value="{{ generacion_numero }}" data-config-generation="periodo_numero">
+		<label class="obligation-start-date"><span>Aplicar desde</span><input type="date" name="fecha_inicio" value="{% if cliente_config.fecha_inicio %}{{ cliente_config.fecha_inicio|date:'Y-m-d' }}{% endif %}"></label>
+		<div class="obligation-type-grid">{% for tipo in tipos %}<label class="obligation-type-option"><input type="checkbox" name="tipos" value="{{ tipo.pk }}" {% if tipo.pk in configuraciones_ids %}checked{% endif %}><span><strong>{{ tipo.nombre }}</strong><small>{{ tipo.get_periodicidad_display }} · {{ tipo.get_regla_vencimiento_display }}</small></span></label>{% empty %}<p>No hay tipos activos en el catálogo.</p>{% endfor %}</div>
+		<button class="obligation-button obligation-button--primary" type="submit">Guardar y generar este período</button>
+	</form>
+	{% endif %}
+</section>
+{% endif %}
+
+{% include 'obligaciones/Modals/obligaciones_modal.html' %}
+
+<section class="obligation-results" aria-labelledby="results-title">
+	<div class="obligation-results-heading"><div><p class="eyebrow">SEGUIMIENTO</p><h2 id="results-title">{{ total_periodo }} obligaciones · {{ pendientes_periodo }} pendientes · {{ vencidas_periodo }} vencidas</h2></div></div>
+	<div class="obligation-table-wrap"><table class="obligation-table"><thead><tr><th>Obligación</th><th>Cliente</th><th>Período</th><th>Vencimiento</th><th>Estado</th><th>Tarea</th></tr></thead><tbody>
+	{% for obligacion in obligaciones %}
+		<tr>
+			<td><strong>{{ obligacion.tipo.nombre }}</strong><small>{{ obligacion.tipo.get_periodicidad_display }}</small></td>
+			<td>{{ obligacion.cliente.nombre }}{% if obligacion.cliente.nit %}<small>NIT {{ obligacion.cliente.nit }}</small>{% endif %}</td>
+			<td>{{ obligacion.periodo_etiqueta }}</td>
+			<td>{% if obligacion.fecha_vencimiento %}<span class="{% if obligacion.vencida %}deadline-overdue{% endif %}">{{ obligacion.fecha_vencimiento|date:'d/m/Y' }}</span>{% else %}<span class="deadline-manual">Por definir</span>{% endif %}</td>
+			<td><span class="obligation-status obligation-status--{{ obligacion.estado }}{% if obligacion.vencida %} obligation-status--vencida{% endif %}">{% if obligacion.vencida %}Vencida{% else %}{{ obligacion.get_estado_display }}{% endif %}</span>{% if obligacion.completada_por %}<small>{{ obligacion.completada_por.get_full_name|default:obligacion.completada_por.username }}</small>{% endif %}</td>
+			<td class="obligation-actions"><a href="{% url 'tareas:index' %}?q={{ obligacion.cliente.nombre|urlencode }}">Abrir tarea</a>{% if puede_gestionar and not obligacion.fecha_vencimiento %}<form method="post" action="{% url 'obligaciones:actualizar_vencimiento' obligacion.pk %}">{% csrf_token %}<input type="date" name="fecha_vencimiento" aria-label="Vencimiento de {{ obligacion }}" required><button class="obligation-button obligation-button--quiet" type="submit">Fijar fecha</button></form>{% endif %}</td>
+		</tr>
+	{% empty %}<tr><td colspan="6" class="obligation-empty">No hay obligaciones para este período. Configura clientes y genera el período para comenzar.</td></tr>{% endfor %}
+	</tbody></table></div>
+	{% if page_obj.has_other_pages %}<nav class="obligation-pagination" aria-label="Paginación">{% if page_obj.has_previous %}<a href="?{{ query_string }}&pagina={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?{{ query_string }}&pagina={{ page_obj.next_page_number }}">Siguiente</a>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}
+{% block page_js %}<script defer src="{% static 'js/obligaciones/obligaciones.js' %}"></script><script defer src="{% static 'js/obligaciones/Modals/obligaciones_modal.js' %}"></script>{% endblock %}

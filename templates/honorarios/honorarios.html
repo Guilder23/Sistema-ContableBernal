@@ -1,7 +1,173 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+
+{% block title %}Honorarios y Cobranzas | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--honorarios{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/honorarios/honorarios.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">COBROS Y TARIFAS</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/honorarios/honorarios.js' %}"></script>{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/honorarios/honorarios.css' %}">
+<link rel="stylesheet" href="{% static 'css/honorarios/modals/honorarios_modals.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-heading clients-heading">
+  <div>
+    <p class="eyebrow">CONTROL FINANCIERO Y CARTERA</p>
+    <h1>Honorarios y Cobranzas</h1>
+    <p>Control de tarifas mensuales, facturación recurrente, extras y registro de pagos.</p>
+  </div>
+  {% if puede_gestionar %}
+  <div style="display:flex; gap:10px;">
+    <button class="button button--quiet" type="button" data-open-modal="modal-crear-cobro">
+      <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>
+      Cobro extra
+    </button>
+    <button class="button button--primary" type="button" data-open-modal="modal-generar-mensual">
+      <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#receipt"></use></svg>
+      Generar mes
+    </button>
+  </div>
+  {% endif %}
+</section>
+
+<!-- KPI Cards -->
+<div class="honorarios-kpi-grid">
+  <div class="honorarios-kpi-card">
+    <p>Total facturado (año {{ anio_filtro }})</p>
+    <strong>Bs {{ total_facturado|floatformat:2 }}</strong>
+  </div>
+  <div class="honorarios-kpi-card honorarios-kpi-card--success">
+    <p>Total cobrado</p>
+    <strong>Bs {{ total_cobrado|floatformat:2 }}</strong>
+  </div>
+  <div class="honorarios-kpi-card honorarios-kpi-card--danger">
+    <p>Pendiente por cobrar</p>
+    <strong>Bs {{ total_pendiente|floatformat:2 }}</strong>
+  </div>
+</div>
+
+<!-- Filtros -->
+<section class="clients-toolbar surface">
+  <form method="get" class="clients-filter js-live-filter">
+    <label class="client-search">
+      <span>Buscar</span>
+      <span class="search-input">
+        <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#search"></use></svg>
+        <input type="search" name="q" value="{{ busqueda }}" placeholder="Cliente, NIT o concepto">
+      </span>
+    </label>
+    <label>
+      <span>Estado</span>
+      <select name="estado" onchange="this.form.submit()">
+        <option value="">Todos los estados</option>
+        {% for val, lab in estados %}
+        <option value="{{ val }}" {% if estado_filtro == val %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Cliente</span>
+      <select name="cliente" onchange="this.form.submit()">
+        <option value="">Todos los clientes</option>
+        {% for c in clientes %}
+        <option value="{{ c.pk }}" {% if cliente_filtro == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Año</span>
+      <input type="number" name="anio" value="{{ anio_filtro }}" onchange="this.form.submit()">
+    </label>
+  </form>
+</section>
+
+<!-- Tabla de Cobros -->
+<section class="clients-table-wrap surface" aria-label="Cuentas por cobrar y honorarios">
+  <div class="clients-table-heading">
+    <h2>Cuentas por cobrar</h2>
+    <span>{{ total_cobros }} cuenta{{ total_cobros|pluralize:"s" }}</span>
+  </div>
+
+  {% if cobros %}
+  <div class="clients-table-scroll">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Concepto</th>
+          <th>Período</th>
+          <th>Monto Total</th>
+          <th>Pagado</th>
+          <th>Saldo</th>
+          <th>Estado</th>
+          {% if puede_gestionar %}<th>Acción</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for cobro in cobros %}
+        <tr>
+          <td>
+            <strong><a href="{% url 'clientes:detalle' cliente_id=cobro.cliente.pk %}" class="client-link">{{ cobro.cliente.nombre }}</a></strong>
+            <small style="display:block; color:#65746b;">NIT: {{ cobro.cliente.nit|default:'—' }}</small>
+          </td>
+          <td>{{ cobro.concepto }}</td>
+          <td>{{ cobro.get_periodo_tipo_display }} {{ cobro.anio }}</td>
+          <td><strong>Bs {{ cobro.monto_total }}</strong></td>
+          <td style="color:#15803d;">Bs {{ cobro.monto_pagado }}</td>
+          <td>
+            {% if cobro.saldo_pendiente > 0 %}
+            <strong style="color:#b91c1c;">Bs {{ cobro.saldo_pendiente }}</strong>
+            {% else %}
+            <span style="color:#65746b;">Bs 0.00</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge-pago badge-pago--{{ cobro.estado }}">{{ cobro.get_estado_display }}</span>
+          </td>
+          {% if puede_gestionar %}
+          <td>
+            {% if cobro.saldo_pendiente > 0 %}
+            <button type="button" class="button button--primary" style="min-height:30px; padding:0 10px; font-size:12.5px;" data-open-modal="modal-registrar-pago" data-cobro-id="{{ cobro.pk }}" data-cliente-nombre="{{ cobro.cliente.nombre }}" data-concepto="{{ cobro.concepto }}" data-saldo="{{ cobro.saldo_pendiente }}">
+              Cobrar
+            </button>
+            {% else %}
+            <span style="font-size:12px; color:#15803d; font-weight:600;">✓ Al día</span>
+            {% endif %}
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Paginación de honorarios" style="margin-top:20px;">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div>
+      {% if page_obj.has_previous %}
+      <a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-left"></use></svg></a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-right"></use></svg></a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <p class="clients-empty" style="text-align:center; padding:32px;">No se encontraron cobros registrados con los filtros seleccionados.</p>
+  {% endif %}
+</section>
+
+<!-- Modales -->
+{% include 'honorarios/modals/generar_mensual.html' %}
+{% include 'honorarios/modals/registrar_pago.html' %}
+{% include 'honorarios/modals/crear_cobro.html' %}
+{% endblock %}
+
+{% block page_js %}
+<script defer src="{% static 'js/clientes/clientes.js' %}"></script>
+<script defer src="{% static 'js/honorarios/honorarios.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,5 @@
+<section class="user-modal" id="modal-eliminar" role="dialog" aria-modal="true" aria-labelledby="modal-eliminar-title" hidden>
+	<div class="user-modal__backdrop" data-close-modal></div><div class="user-modal__panel user-modal__panel--compact"><header><div><p class="eyebrow">ACCIÓN PERMANENTE</p><h2 id="modal-eliminar-title">Eliminar usuario</h2></div><button class="modal-close" type="button" data-close-modal aria-label="Cerrar">Cerrar</button></header>
+	<p class="delete-copy">Se eliminará <strong data-delete-name></strong> y perderá su acceso al sistema.</p>
+	<form method="post" data-delete-form>{% csrf_token %}<footer><button class="button button--quiet" type="button" data-close-modal>Cancelar</button><button class="button button--danger" type="submit">Eliminar cuenta</button></footer></form></div>
+</section>

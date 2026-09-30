@@ -1,0 +1,39 @@
+.obligation-modal[hidden] { display: none; }
+.obligation-modal:not([hidden]) { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; }
+.obligation-modal__backdrop { position: absolute; inset: 0; background: rgb(28 26 23 / 58%); }
+.obligation-modal__panel { position: relative; display: flex; width: min(100%, 1080px); max-height: min(92vh, 900px); flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-top: 3px solid #a74e3d; border-radius: 7px; background: var(--surface); box-shadow: 0 20px 70px rgb(34 25 21 / 24%); }
+.obligation-modal__header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 18px 20px 14px; }
+.obligation-modal__header h2 { margin: 3px 0 0; font: 700 20px var(--font-display); }
+.obligation-modal__close { min-height: 36px; padding: 0 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 700; }
+.obligation-settings-tabs { display: flex; gap: 5px; padding: 0 20px; border-bottom: 1px solid var(--line); }
+.obligation-settings-tabs button { min-height: 40px; padding: 0 12px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; font-weight: 700; }
+.obligation-settings-tabs button[aria-selected="true"] { border-bottom-color: #a74e3d; color: var(--ink); }
+.obligation-settings-panel { overflow-y: auto; padding: 18px 20px 22px; }
+.obligation-settings-panel[hidden] { display: none; }
+.obligation-catalog-create { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--line); background: #fffdfa; }
+.obligation-catalog-create > strong, .obligation-catalog-list h3, .obligation-holiday-list h3 { margin: 0; font: 700 14px var(--font-display); }
+.obligation-catalog-fields { display: grid; grid-template-columns: 1.3fr 1fr 1.4fr .8fr 1fr; gap: 9px; }
+.obligation-catalog-fields label, .obligation-catalog-row label, .obligation-holiday-create label { display: grid; min-width: 0; gap: 5px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.obligation-catalog-fields input, .obligation-catalog-fields select, .obligation-catalog-row input, .obligation-catalog-row select, .obligation-holiday-create input { width: 100%; min-width: 0; height: 36px; padding: 0 8px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
+.obligation-inline-check { display: inline-flex; align-items: center; gap: 7px; color: var(--ink); font-size: 12px; }
+.obligation-inline-check input { accent-color: var(--forest); }
+.obligation-catalog-list, .obligation-holiday-list { display: grid; gap: 8px; margin-top: 18px; }
+.obligation-catalog-list h3, .obligation-holiday-list h3 { margin-bottom: 3px; }
+.obligation-catalog-row { display: grid; grid-template-columns: 1.3fr 1fr 1.4fr .65fr .9fr auto auto; gap: 8px; align-items: end; padding: 10px; border: 1px solid var(--line); background: #fff; }
+.obligation-catalog-row .obligation-inline-check { min-height: 36px; white-space: nowrap; }
+.obligation-catalog-row .obligation-button { min-height: 36px; }
+.obligation-holiday-create { display: grid; grid-template-columns: 210px minmax(220px, 1fr) auto; gap: 10px; align-items: end; padding: 14px; border: 1px solid var(--line); background: #fffdfa; }
+.obligation-holiday-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.obligation-holiday-row > span { display: grid; gap: 3px; }
+.obligation-holiday-row small { color: var(--muted); font-size: 12px; }
+@media (max-width: 680px) {
+  .obligation-modal:not([hidden]) { padding: 7px; }
+  .obligation-modal__panel { max-height: 96vh; }
+  .obligation-modal__header { padding: 14px; }
+  .obligation-settings-tabs { padding: 0 14px; }
+  .obligation-settings-panel { padding: 14px; }
+  .obligation-catalog-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .obligation-catalog-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .obligation-catalog-row label:first-of-type { grid-column: 1 / -1; }
+  .obligation-holiday-create { grid-template-columns: 1fr; }
+}

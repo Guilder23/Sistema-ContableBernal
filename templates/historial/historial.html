@@ -1,7 +1,97 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+
+{% block title %}Historial y Auditoría | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--historial{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/historial/historial.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">TRAZABILIDAD</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/historial/historial.js' %}"></script>{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/clientes/detalle.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-heading clients-heading">
+  <div>
+    <p class="eyebrow">TRAZABILIDAD Y REGISTRO DE ACTIVIDAD</p>
+    <h1>Historial y Auditoría</h1>
+    <p>Registro cronológico de cambios de clientes, credenciales, obligaciones y acciones de los usuarios.</p>
+  </div>
+</section>
+
+<section class="clients-toolbar surface">
+  <form method="get" class="clients-filter js-live-filter">
+    <label class="client-search">
+      <span>Buscar</span>
+      <span class="search-input">
+        <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#search"></use></svg>
+        <input type="search" name="q" value="{{ busqueda }}" placeholder="Cliente, título, detalle o usuario">
+      </span>
+    </label>
+    <label>
+      <span>Tipo de evento</span>
+      <select name="tipo" onchange="this.form.submit()">
+        <option value="">Todos los eventos</option>
+        {% for val, lab in tipos_accion %}
+        <option value="{{ val }}" {% if tipo_filtro == val %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Cliente</span>
+      <select name="cliente" onchange="this.form.submit()">
+        <option value="">Todos los clientes</option>
+        {% for c in clientes %}
+        <option value="{{ c.pk }}" {% if cliente_filtro == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+</section>
+
+<section class="clients-table-wrap surface" aria-label="Bitácora de eventos">
+  <div class="clients-table-heading">
+    <h2>Bitácora de eventos</h2>
+    <span>{{ total_entradas }} registro{{ total_entradas|pluralize:"s" }}</span>
+  </div>
+
+  {% if historial %}
+  <div class="history-timeline" style="margin-top:16px;">
+    {% for item in historial %}
+    <div class="history-item">
+      <span class="history-dot"></span>
+      <div class="history-content">
+        <div class="history-header">
+          <span>{{ item.creado_en|date:'d/m/Y H:i' }} · <span class="client-badge-pill">{{ item.get_tipo_accion_display }}</span></span>
+          <span>Por: <strong>{% if item.usuario %}{{ item.usuario.get_full_name|default:item.usuario.username }}{% else %}Sistema{% endif %}</strong></span>
+        </div>
+
+        <div class="history-title">
+          <a href="{% url 'clientes:detalle' cliente_id=item.cliente.pk %}" class="client-link">{{ item.cliente.nombre }}</a>: {{ item.titulo }}
+        </div>
+        {% if item.descripcion %}
+        <p class="history-desc">{{ item.descripcion }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav class="pagination" aria-label="Paginación de historial" style="margin-top:20px;">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div>
+      {% if page_obj.has_previous %}
+      <a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-left"></use></svg></a>
+      {% endif %}
+      {% if page_obj.has_next %}
+      <a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-right"></use></svg></a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <p class="clients-empty" style="text-align:center; padding:32px;">No hay eventos registrados en la bitácora.</p>
+  {% endif %}
+</section>
+{% endblock %}

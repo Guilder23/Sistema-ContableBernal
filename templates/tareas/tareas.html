@@ -2,6 +2,49 @@
 {% load static %}
 {% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--tareas{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/tareas/tareas.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">TRABAJO DEL EQUIPO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/tareas/tareas.js' %}"></script>{% endblock %}
+{% block page_css %}<link rel="stylesheet" href="{% static 'css/tareas/tareas.css' %}"><link rel="stylesheet" href="{% static 'css/tareas/modals/editar_tarea.css' %}">{% endblock %}
+{% block content %}
+<header class="page-heading">
+	<div><p class="eyebrow">TRABAJO DEL EQUIPO</p><h1>{{ titulo_modulo }}</h1><p>Asigna, prioriza y completa el trabajo que nace de cada obligación.</p></div>
+	{% if not puede_gestionar %}<span class="task-view-scope">Mis tareas asignadas</span>{% endif %}
+</header>
+
+<section class="task-summary" aria-label="Resumen de tareas">
+	<div><span>Total</span><strong>{{ total_tareas }}</strong></div>
+	<div><span>Pendientes</span><strong>{{ pendientes }}</strong></div>
+	<div><span>Vencidas</span><strong>{{ vencidas }}</strong></div>
+</section>
+
+<form method="get" class="task-filters" aria-label="Filtrar tareas">
+	<label class="task-filter-search"><span>Buscar</span><input type="search" name="q" value="{{ busqueda }}" placeholder="Cliente, obligación o NIT"></label>
+	<label><span>Frecuencia</span><select name="frecuencia"><option value="">Todas</option>{% for value, label in frecuencias %}<option value="{{ value }}" {% if frecuencia_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+	<label><span>Estado</span><select name="estado"><option value="">Todos</option>{% for value, label in estados %}<option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+	<label><span>Prioridad</span><select name="prioridad"><option value="">Todas</option>{% for value, label in prioridades %}<option value="{{ value }}" {% if prioridad_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+	{% if puede_gestionar %}<label><span>Responsable</span><select name="responsable"><option value="">Todos</option><option value="mine" {% if responsable_filtro == 'mine' %}selected{% endif %}>Mis tareas</option><option value="sin_asignar" {% if responsable_filtro == 'sin_asignar' %}selected{% endif %}>Sin asignar</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}" {% if responsable_filtro == usuario.pk|stringformat:'s' %}selected{% endif %}>{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select></label>{% endif %}
+	<button class="task-button task-button--quiet" type="submit">Filtrar</button>
+	<a class="task-filter-reset" href="{% url 'tareas:index' %}">Limpiar</a>
+</form>
+
+<section class="task-table-wrap" aria-label="Listado de tareas">
+	<table class="task-table"><thead><tr><th>Obligación</th><th>Cliente</th><th>Frecuencia</th><th>Vence</th><th>Responsable</th><th>Prioridad</th><th>Estado</th><th>Evidencia</th><th></th></tr></thead><tbody>
+	{% for tarea in tareas %}
+	<tr{% if tarea.obligacion.vencida %} class="task-table__row--overdue"{% endif %}>
+		<td><strong>{{ tarea.titulo }}</strong><small>{{ tarea.obligacion.periodo_etiqueta }}</small></td>
+		<td>{{ tarea.cliente.nombre }}{% if tarea.cliente.nit %}<small>NIT {{ tarea.cliente.nit }}</small>{% endif %}</td>
+		<td>{{ tarea.obligacion.tipo.get_periodicidad_display }}</td>
+		<td>{% if tarea.fecha_limite %}<time datetime="{{ tarea.fecha_limite|date:'Y-m-d' }}">{{ tarea.fecha_limite|date:'d/m/Y' }}</time>{% else %}<span class="task-no-date">Por definir</span>{% endif %}</td>
+		<td>{% if tarea.responsable %}{{ tarea.responsable.get_full_name|default:tarea.responsable.username }}{% else %}<span class="task-unassigned">Sin asignar</span>{% endif %}</td>
+		<td><span class="task-priority task-priority--{{ tarea.prioridad }}">{{ tarea.get_prioridad_display }}</span></td>
+		<td><span class="task-status task-status--{{ tarea.estado }}{% if tarea.obligacion.vencida %} task-status--overdue{% endif %}">{% if tarea.obligacion.vencida %}Vencida{% else %}{{ tarea.obligacion.get_estado_display }}{% endif %}</span></td>
+		<td>{% if tarea.evidencia %}<span class="task-evidence-indicator" title="{{ tarea.evidencia_nombre }}">Adjunta</span>{% else %}<span class="task-no-evidence">Sin evidencia</span>{% endif %}</td>
+		<td><button class="task-button task-button--quiet task-edit-trigger" type="button" data-open-task-modal data-task-id="{{ tarea.pk }}" data-task-title="{{ tarea.titulo }}" data-task-client="{{ tarea.cliente.nombre }}" data-task-period="{{ tarea.obligacion.periodo_etiqueta }}" data-task-frequency="{{ tarea.obligacion.tipo.get_periodicidad_display }}" data-task-due="{% if tarea.fecha_limite %}{{ tarea.fecha_limite|date:'d/m/Y' }}{% else %}Por definir{% endif %}" data-task-state="{{ tarea.estado }}" data-task-state-label="{{ tarea.obligacion.get_estado_display }}" data-task-priority="{{ tarea.prioridad }}" data-task-priority-label="{{ tarea.get_prioridad_display }}" data-task-notes="{{ tarea.observaciones }}" data-task-responsible-id="{{ tarea.responsable_id|default:'' }}" data-task-responsible="{% if tarea.responsable %}{{ tarea.responsable.get_full_name|default:tarea.responsable.username }}{% else %}Sin asignar{% endif %}" data-task-evidence="{% if tarea.evidencia %}{{ tarea.evidencia_nombre }}{% endif %}" data-task-evidence-by="{% if tarea.evidencia_subida_por %}{{ tarea.evidencia_subida_por.get_full_name|default:tarea.evidencia_subida_por.username }}{% endif %}" data-task-can-manage="{% if puede_gestionar %}true{% else %}false{% endif %}" data-assign-url="{% url 'tareas:asignar' tarea.pk %}" data-status-url="{% url 'tareas:actualizar_estado' tarea.pk %}" data-upload-url="{% url 'tareas:subir_evidencia' tarea.pk %}" data-download-url="{% url 'tareas:descargar_evidencia' tarea.pk %}" data-delete-evidence-url="{% url 'tareas:eliminar_evidencia' tarea.pk %}" data-return-url="{{ volver }}">Editar</button></td>
+	</tr>
+	{% empty %}<tr><td colspan="9" class="task-empty">{% if puede_gestionar %}No hay tareas para estos filtros. Genera obligaciones o ajusta la búsqueda.{% else %}Aún no tienes tareas asignadas.{% endif %}</td></tr>{% endfor %}
+	</tbody></table>
+</section>
+
+{% include 'tareas/modals/editar_tarea.html' %}
+
+{% if page_obj.has_other_pages %}<nav class="task-pagination" aria-label="Paginación de tareas">{% if page_obj.has_previous %}<a href="?{{ query_string }}&pagina={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?{{ query_string }}&pagina={{ page_obj.next_page_number }}">Siguiente</a>{% endif %}</nav>{% endif %}
+{% endblock %}
+{% block page_js %}<script defer src="{% static 'js/tareas/tareas.js' %}"></script><script defer src="{% static 'js/tareas/modals/editar_tarea.js' %}"></script>{% endblock %}

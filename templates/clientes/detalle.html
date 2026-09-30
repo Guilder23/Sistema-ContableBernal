@@ -1,0 +1,561 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ cliente.nombre }} | ContableBernal{% endblock %}
+{% block workspace_class %}workspace--clientes{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/clientes/detalle.css' %}">
+<link rel="stylesheet" href="{% static 'css/honorarios/honorarios.css' %}">
+<link rel="stylesheet" href="{% static 'css/honorarios/modals/honorarios_modals.css' %}">
+<link rel="stylesheet" href="{% static 'css/credenciales/modals/credenciales_modals.css' %}">
+{% if puede_gestionar %}
+<link rel="stylesheet" href="{% static 'css/clientes/modals/editar.css' %}">
+{% endif %}
+{% endblock %}
+
+
+{% block content %}
+<div class="client-detail-header">
+  <div>
+    <p class="eyebrow"><a href="{% url 'clientes:index' %}" style="text-decoration:none; color:inherit;">← DIRECTORIO DE CLIENTES</a></p>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <h1 style="margin:0; font-size:24px;">Ficha Integral del Cliente</h1>
+    </div>
+  </div>
+  <div class="client-hero-actions">
+    {% if puede_gestionar %}
+    <button type="button" class="button button--quiet" data-open-modal="modal-editar" data-edit-url="{% url 'clientes:editar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}" data-client-type-value="{{ cliente.tipo }}" data-client-nit="{{ cliente.nit|default:'' }}" data-client-ci="{{ cliente.ci }}" data-client-activity-value="{{ cliente.actividad }}" data-client-phone="{{ cliente.telefono }}" data-client-whatsapp="{{ cliente.whatsapp }}" data-client-email="{{ cliente.correo }}" data-client-address="{{ cliente.direccion }}" data-client-status-value="{{ cliente.estado }}" data-client-start-date="{{ cliente.fecha_inicio|date:'Y-m-d' }}" data-client-observations="{{ cliente.observaciones }}">
+      <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg>
+      Editar datos
+    </button>
+    {% endif %}
+    {% if puede_gest_cred %}
+    <button type="button" class="button button--primary" data-open-modal="modal-crear-credencial">
+      <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg>
+      Añadir credencial
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Hero Card -->
+<section class="client-hero-card">
+  <div class="client-hero-avatar">{{ cliente.nombre|first|upper }}</div>
+  <div class="client-hero-info">
+    <h1>
+      {{ cliente.nombre }}
+      <span class="client-badge-pill client-badge-pill--{{ cliente.estado }}">{{ cliente.get_estado_display }}</span>
+    </h1>
+    <div class="client-hero-tags">
+      <span><strong>NIT:</strong> {{ cliente.nit|default:'Sin NIT' }}</span>
+      {% if cliente.ci %}<span>• <strong>CI:</strong> {{ cliente.ci }}</span>{% endif %}
+      <span>• <strong>Tipo:</strong> {{ cliente.get_tipo_display }}</span>
+      <span>• <strong>Actividad:</strong> {{ cliente.get_actividad_display }}</span>
+      {% if cliente.fecha_inicio %}<span>• <strong>Desde:</strong> {{ cliente.fecha_inicio|date:'d/m/Y' }}</span>{% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Tabs Navigation -->
+<nav class="client-tabs-nav" aria-label="Secciones de la ficha">
+  <button type="button" class="client-tab-btn active" data-tab="tab-general">
+    <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#users"></use></svg>
+    Información general
+  </button>
+  <button type="button" class="client-tab-btn" data-tab="tab-obligaciones">
+    <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#calendar-check"></use></svg>
+    Obligaciones tributarias
+    <span class="client-tab-badge">{{ config_tipos_ids|length }}</span>
+  </button>
+  <button type="button" class="client-tab-btn" data-tab="tab-credenciales">
+    <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg>
+    Credenciales y accesos
+    <span class="client-tab-badge">{{ credenciales|length }}</span>
+  </button>
+  <button type="button" class="client-tab-btn" data-tab="tab-tareas">
+    <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#list-checks"></use></svg>
+    Tareas y seguimiento
+    {% if tareas_pendientes %}<span class="client-tab-badge" style="background:#fee2e2; color:#b91c1c;">{{ tareas_pendientes|length }}</span>{% endif %}
+  </button>
+  <button type="button" class="client-tab-btn" data-tab="tab-honorarios">
+    <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#receipt"></use></svg>
+    Honorarios y cobros
+    {% if total_cobros_pendientes > 0 %}<span class="client-tab-badge" style="background:#fee2e2; color:#b91c1c;">Bs {{ total_cobros_pendientes }}</span>{% endif %}
+  </button>
+  <button type="button" class="client-tab-btn" data-tab="tab-historial">
+    <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#history"></use></svg>
+    Historial
+  </button>
+</nav>
+
+
+<!-- TAB 1: INFORMACIÓN GENERAL -->
+<div class="client-tab-pane active" id="tab-general">
+  <div class="client-grid-two">
+    <div class="client-card">
+      <div class="client-card-header">
+        <h2>Datos tributarios y legales</h2>
+      </div>
+      <div class="info-row"><span class="info-label">Razón social</span><span class="info-value">{{ cliente.nombre }}</span></div>
+      <div class="info-row"><span class="info-label">NIT</span><span class="info-value">{{ cliente.nit|default:'No registrado' }}</span></div>
+      <div class="info-row"><span class="info-label">Cédula de Identidad (CI)</span><span class="info-value">{{ cliente.ci|default:'No registrado' }}</span></div>
+      <div class="info-row"><span class="info-label">Tipo de persona</span><span class="info-value">{{ cliente.get_tipo_display }}</span></div>
+      <div class="info-row"><span class="info-label">Rubro / Actividad</span><span class="info-value">{{ cliente.get_actividad_display }}</span></div>
+      <div class="info-row"><span class="info-label">Fecha de inicio fiscal</span><span class="info-value">{{ cliente.fecha_inicio|date:'d/m/Y'|default:'No indicada' }}</span></div>
+      <div class="info-row"><span class="info-label">Registrado por</span><span class="info-value">{% if cliente.creado_por %}{{ cliente.creado_por.get_full_name|default:cliente.creado_por.username }}{% else %}Sistema{% endif %}</span></div>
+      <div class="info-row"><span class="info-label">Fecha de registro</span><span class="info-value">{{ cliente.creado_en|date:'d/m/Y H:i' }}</span></div>
+
+    </div>
+
+    <div class="client-card">
+      <div class="client-card-header">
+        <h2>Contacto y ubicación</h2>
+      </div>
+      <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">{{ cliente.telefono|default:'No indicado' }}</span></div>
+      <div class="info-row"><span class="info-label">WhatsApp</span><span class="info-value">{{ cliente.whatsapp|default:'No indicado' }}</span></div>
+      <div class="info-row"><span class="info-label">Correo electrónico</span><span class="info-value">{{ cliente.correo|default:'No indicado' }}</span></div>
+      <div class="info-row"><span class="info-label">Dirección física</span><span class="info-value">{{ cliente.direccion|default:'No indicada' }}</span></div>
+      <div style="margin-top:14px; padding-top:10px; border-top:1px solid #f0f3f2;">
+        <span class="info-label" style="display:block; margin-bottom:6px;">Observaciones y notas internas:</span>
+        <p style="margin:0; font-size:13.5px; color:#4a5b52; line-height:1.45;">{{ cliente.observaciones|linebreaksbr|default:'Sin observaciones.' }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: OBLIGACIONES TRIBUTARIAS -->
+<div class="client-tab-pane" id="tab-obligaciones">
+  <div class="client-card">
+    <div class="client-card-header">
+      <div>
+        <h2>Configuración de obligaciones activas</h2>
+        <p style="margin:2px 0 0 0; font-size:13px; color:#65746b;">Marca las obligaciones que corresponden a {{ cliente.nombre }} para la generación automática de tareas.</p>
+      </div>
+    </div>
+
+    {% if puede_gestionar %}
+    <form method="post" action="{% url 'obligaciones:configurar_cliente' %}">
+      {% csrf_token %}
+      <input type="hidden" name="cliente_id" value="{{ cliente.pk }}">
+      <input type="hidden" name="volver" value="{% url 'clientes:detalle' cliente_id=cliente.pk %}">
+
+      <div class="obligaciones-config-group">
+        <h3>Obligaciones Mensuales (RCV, IVA 200, IT 400, Gestora, etc.)</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
+          {% for tipo in tipos_mensuales %}
+          <label class="obligacion-checkbox-card">
+            <input type="checkbox" name="tipos" value="{{ tipo.pk }}" {% if tipo.pk in config_tipos_ids %}checked{% endif %}>
+            <div class="obligacion-checkbox-card-info">
+              <strong>{{ tipo.nombre }}</strong>
+              <small>{{ tipo.get_regla_vencimiento_display }}</small>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="obligaciones-config-group">
+        <h3>Obligaciones Trimestrales (RC-IVA 610, etc.)</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
+          {% for tipo in tipos_trimestrales %}
+          <label class="obligacion-checkbox-card">
+            <input type="checkbox" name="tipos" value="{{ tipo.pk }}" {% if tipo.pk in config_tipos_ids %}checked{% endif %}>
+            <div class="obligacion-checkbox-card-info">
+              <strong>{{ tipo.nombre }}</strong>
+              <small>{{ tipo.get_regla_vencimiento_display }}</small>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="obligaciones-config-group">
+        <h3>Obligaciones Anuales (IUE 500, Estados Financieros, 605)</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:10px;">
+          {% for tipo in tipos_anuales %}
+          <label class="obligacion-checkbox-card">
+            <input type="checkbox" name="tipos" value="{{ tipo.pk }}" {% if tipo.pk in config_tipos_ids %}checked{% endif %}>
+            <div class="obligacion-checkbox-card-info">
+              <strong>{{ tipo.nombre }}</strong>
+              <small>{{ tipo.get_regla_vencimiento_display }}</small>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+        <button type="submit" class="button button--primary">
+          Guardar configuración de obligaciones
+        </button>
+      </div>
+    </form>
+    {% else %}
+    <p>Solo administradores o secretarios pueden editar las obligaciones del cliente.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- TAB 3: CREDENCIALES Y ACCESOS -->
+<div class="client-tab-pane" id="tab-credenciales">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <div>
+      <h2 style="font-size:17px; margin:0; color:var(--ink);">Credenciales y accesos protegidos</h2>
+      <p style="margin:2px 0 0 0; font-size:13px; color:#65746b;">Contraseñas seguras y auditoría de accesos a sistemas fiscales y estatales.</p>
+    </div>
+    {% if puede_gest_cred %}
+    <button type="button" class="button button--primary" data-open-modal="modal-crear-credencial">
+      <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>
+      Nueva credencial
+    </button>
+    {% endif %}
+  </div>
+
+  {% if credenciales %}
+  <div class="credenciales-grid">
+    {% for cred in credenciales %}
+    <article class="cred-card">
+      <div class="cred-card-top">
+        <span class="cred-system-badge">
+          <svg class="icon" style="width:16px; height:16px; color:#226049;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg>
+          {{ cred.nombre_sistema }}
+        </span>
+        {% if cred.url %}
+        <a href="{{ cred.url }}" target="_blank" rel="noopener noreferrer" style="font-size:12px; color:var(--coral); font-weight:600; text-decoration:none;">Ir al portal ↗</a>
+        {% endif %}
+      </div>
+
+      <div class="cred-meta-line">
+        <span><b>Usuario:</b> {{ cred.usuario }}</span>
+        <button type="button" class="btn-mini-copy" data-copy-value="{{ cred.usuario }}" title="Copiar usuario">
+          <svg class="icon" style="width:14px; height:14px;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#files"></use></svg>
+        </button>
+      </div>
+
+      <div class="cred-meta-line">
+        <span><b>Contraseña:</b> <span class="cred-password-box" id="cred-pass-{{ cred.pk }}" data-revealed="false">••••••••••••</span></span>
+        <div style="display:flex; gap:4px;">
+          <button type="button" class="btn-mini-reveal" data-cred-id="{{ cred.pk }}" title="Mostrar contraseña">
+            <svg class="icon" style="width:14px; height:14px;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg>
+          </button>
+        </div>
+      </div>
+
+      {% if cred.codigo_extra %}
+      <div class="cred-meta-line">
+        <span><b>PIN / Extra:</b> {{ cred.codigo_extra }}</span>
+        <button type="button" class="btn-mini-copy" data-copy-value="{{ cred.codigo_extra }}" title="Copiar código">
+          <svg class="icon" style="width:14px; height:14px;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#files"></use></svg>
+        </button>
+      </div>
+      {% endif %}
+
+      {% if cred.observaciones %}
+      <p style="margin:8px 0 0 0; font-size:12px; color:#5c7066;">{{ cred.observaciones }}</p>
+      {% endif %}
+
+      <div style="margin-top:8px; font-size:11px; color:#85988e;">
+        Actualizado por {{ cred.actualizado_por.username|default:'Sistema' }} el {{ cred.actualizado_en|date:'d/m/Y' }}
+      </div>
+
+      {% if puede_gest_cred %}
+      <div class="cred-card-actions">
+        <button type="button" class="icon-action icon-action--edit" title="Editar credencial" data-open-modal="modal-editar-credencial" data-edit-url="{% url 'credenciales:editar' credencial_id=cred.pk %}" data-sistema="{{ cred.sistema }}" data-sistema-pers="{{ cred.sistema_personalizado }}" data-usuario="{{ cred.usuario }}" data-url="{{ cred.url }}" data-codigo-extra="{{ cred.codigo_extra }}" data-observaciones="{{ cred.observaciones }}">
+          <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg>
+        </button>
+        <button type="button" class="icon-action icon-action--delete" title="Eliminar credencial" data-open-modal="modal-eliminar-credencial" data-delete-url="{% url 'credenciales:eliminar' credencial_id=cred.pk %}" data-sistema-nombre="{{ cred.nombre_sistema }}">
+          <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trash"></use></svg>
+        </button>
+      </div>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="client-card" style="text-align:center; padding:32px;">
+    <svg class="icon" style="width:40px; height:40px; color:#9cb1a6; margin-bottom:8px;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg>
+    <p style="margin:0; font-weight:600; color:#495e54;">No hay credenciales registradas para este cliente.</p>
+    <p style="margin:4px 0 16px 0; font-size:13px; color:#71877c;">Registra aquí los accesos de Impuestos, Gestora, CNS y otros portales.</p>
+    {% if puede_gest_cred %}
+    <button type="button" class="button button--primary" data-open-modal="modal-crear-credencial">
+      Registrar primera credencial
+    </button>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- TAB 4: TAREAS Y SEGUIMIENTO -->
+<div class="client-tab-pane" id="tab-tareas">
+  <div class="client-card">
+    <div class="client-card-header">
+      <h2>Tareas pendientes y en proceso ({{ tareas_pendientes|length }})</h2>
+      <a href="{% url 'tareas:index' %}?q={{ cliente.nombre }}" class="button button--quiet" style="font-size:12.5px; min-height:34px;">
+        Ver en módulo de tareas →
+      </a>
+    </div>
+
+    {% if tareas_pendientes %}
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>Tarea / Obligación</th>
+          <th>Período</th>
+          <th>Vencimiento</th>
+          <th>Prioridad</th>
+          <th>Responsable</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tarea in tareas_pendientes %}
+        <tr>
+          <td><strong>{{ tarea.obligacion.tipo.nombre }}</strong></td>
+          <td>{{ tarea.obligacion.periodo_etiqueta }}</td>
+          <td>
+            {% if tarea.obligacion.vencida %}
+            <span style="color:#b91c1c; font-weight:700;">🔴 {{ tarea.fecha_limite|date:'d/m/Y' }} (Vencida)</span>
+            {% elif tarea.fecha_limite == hoy %}
+            <span style="color:#ea580c; font-weight:700;">🟠 Vence hoy</span>
+            {% else %}
+            <span>{{ tarea.fecha_limite|date:'d/m/Y'|default:'Sin fecha' }}</span>
+            {% endif %}
+          </td>
+          <td><span class="client-badge-pill">{{ tarea.get_prioridad_display }}</span></td>
+          <td>{% if tarea.responsable %}{{ tarea.responsable.get_full_name|default:tarea.responsable.username }}{% else %}Sin asignar{% endif %}</td>
+          <td><span class="client-status client-status--{{ tarea.estado }}">{{ tarea.obligacion.get_estado_display }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#65746b; font-size:13.5px; margin:8px 0;">No hay tareas pendientes para este cliente.</p>
+    {% endif %}
+  </div>
+
+  {% if tareas_completadas %}
+  <div class="client-card">
+    <div class="client-card-header">
+      <h2>Últimas obligaciones completadas</h2>
+    </div>
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>Obligación</th>
+          <th>Período</th>
+          <th>Completada el</th>
+          <th>Por</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tarea in tareas_completadas %}
+        <tr>
+          <td><strong>{{ tarea.obligacion.tipo.nombre }}</strong></td>
+          <td>{{ tarea.obligacion.periodo_etiqueta }}</td>
+          <td>{{ tarea.obligacion.completada_en|date:'d/m/Y H:i'|default:'—' }}</td>
+          <td>{% if tarea.obligacion.completada_por %}{{ tarea.obligacion.completada_por.username }}{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+<!-- TAB 5: HONORARIOS Y COBROS -->
+<div class="client-tab-pane" id="tab-honorarios">
+  <div class="client-grid-two">
+    <!-- Tarifa recurrente -->
+    <div class="client-card">
+      <div class="client-card-header">
+        <div>
+          <h2>Tarifario acordado</h2>
+          <p style="margin:2px 0 0 0; font-size:12.5px; color:#65746b;">Define el honorario base y extras recurrentes en Bs.</p>
+        </div>
+      </div>
+
+      {% if puede_gestionar %}
+      <form method="post" action="{% url 'honorarios:guardar_tarifa' cliente_id=cliente.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="volver" value="{% url 'clientes:detalle' cliente_id=cliente.pk %}">
+
+        <div class="tarifa-grid-inputs">
+          <div class="tarifa-input-box">
+            <span>Mensual base (Bs)</span>
+            <input type="number" step="0.01" name="monto_mensual" id="tarifa-monto-mensual" value="{{ tarifa.monto_mensual }}" placeholder="0.00">
+          </div>
+          <div class="tarifa-input-box">
+            <span>Trimestral (Bs)</span>
+            <input type="number" step="0.01" name="monto_trimestral" value="{{ tarifa.monto_trimestral }}" placeholder="0.00">
+          </div>
+          <div class="tarifa-input-box">
+            <span>Anual / Cierre (Bs)</span>
+            <input type="number" step="0.01" name="monto_anual" value="{{ tarifa.monto_anual }}" placeholder="0.00">
+          </div>
+        </div>
+
+        <h3 style="font-size:13px; text-transform:uppercase; color:#7a8c82; margin:14px 0 8px 0;">Extras recurrentes mensuales (Bs)</h3>
+        <div class="tarifa-grid-inputs">
+          <div class="tarifa-input-box">
+            <span>Bancarización</span>
+            <input type="number" step="0.01" name="extra_bancarizacion" class="tarifa-extra-input" value="{{ tarifa.extra_bancarizacion }}" placeholder="0.00">
+          </div>
+          <div class="tarifa-input-box">
+            <span>Gestora</span>
+            <input type="number" step="0.01" name="extra_gestora" class="tarifa-extra-input" value="{{ tarifa.extra_gestora }}" placeholder="0.00">
+          </div>
+          <div class="tarifa-input-box">
+            <span>Ministerio</span>
+            <input type="number" step="0.01" name="extra_ministerio" class="tarifa-extra-input" value="{{ tarifa.extra_ministerio }}" placeholder="0.00">
+          </div>
+          <div class="tarifa-input-box">
+            <span>Caja de Salud</span>
+            <input type="number" step="0.01" name="extra_caja" class="tarifa-extra-input" value="{{ tarifa.extra_caja }}" placeholder="0.00">
+          </div>
+          <div class="tarifa-input-box">
+            <span>Otros extras</span>
+            <input type="number" step="0.01" name="extra_otros" class="tarifa-extra-input" value="{{ tarifa.extra_otros }}" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="tarifa-total-card">
+          <div>
+            <strong style="color:#1d4838; font-size:15px; display:block;">Total sugerido mensual:</strong>
+            <small style="color:#4d7061;">Monto que se facturará automáticamente cada mes.</small>
+          </div>
+          <strong id="tarifa-total-sugerido" style="font-size:20px; color:#173d32;">Bs {{ tarifa.total_mensual_sugerido }}</strong>
+        </div>
+
+        <label class="client-field">
+          <span>Observaciones del acuerdo económico</span>
+          <textarea name="observaciones" rows="2">{{ tarifa.observaciones }}</textarea>
+        </label>
+
+        <div style="display:flex; justify-content:flex-end; margin-top:14px;">
+          <button type="submit" class="button button--primary">Guardar tarifas</button>
+        </div>
+      </form>
+      {% else %}
+      <p>Solo administradores pueden modificar las tarifas del cliente.</p>
+      {% endif %}
+    </div>
+
+    <!-- Historial de Cobros y Pagos -->
+    <div class="client-card">
+      <div class="client-card-header">
+        <div>
+          <h2>Cuentas por cobrar y recibos</h2>
+          <p style="margin:2px 0 0 0; font-size:12.5px; color:#65746b;">Cobros emitidos y pagos registrados.</p>
+        </div>
+        {% if puede_gestionar %}
+        <button type="button" class="button button--quiet" style="font-size:12px; min-height:32px;" data-open-modal="modal-crear-cobro">
+          + Cobro extra
+        </button>
+        {% endif %}
+      </div>
+
+      {% if cobros_honorarios %}
+      <table class="clients-table">
+        <thead>
+          <tr>
+            <th>Concepto</th>
+            <th>Total</th>
+            <th>Saldo</th>
+            <th>Estado</th>
+            {% if puede_gestionar %}<th>Acción</th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for cobro in cobros_honorarios %}
+          <tr>
+            <td>
+              <strong>{{ cobro.concepto }}</strong>
+              <small style="display:block; color:#65746b;">{{ cobro.get_periodo_tipo_display }} {{ cobro.anio }}</small>
+            </td>
+            <td>Bs {{ cobro.monto_total }}</td>
+            <td>
+              {% if cobro.saldo_pendiente > 0 %}
+              <strong style="color:#b91c1c;">Bs {{ cobro.saldo_pendiente }}</strong>
+              {% else %}
+              <span style="color:#15803d;">Bs 0.00</span>
+              {% endif %}
+            </td>
+            <td><span class="badge-pago badge-pago--{{ cobro.estado }}">{{ cobro.get_estado_display }}</span></td>
+            {% if puede_gestionar %}
+            <td>
+              {% if cobro.saldo_pendiente > 0 %}
+              <button type="button" class="button button--primary" style="min-height:28px; padding:0 8px; font-size:12px;" data-open-modal="modal-registrar-pago" data-cobro-id="{{ cobro.pk }}" data-cliente-nombre="{{ cliente.nombre }}" data-concepto="{{ cobro.concepto }}" data-saldo="{{ cobro.saldo_pendiente }}">
+                Cobrar
+              </button>
+              {% else %}
+              <span style="font-size:11.5px; color:#15803d; font-weight:600;">✓ Al día</span>
+              {% endif %}
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p style="color:#65746b; font-size:13.5px; margin:10px 0;">No hay cobros generados aún para este cliente.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- TAB 6: HISTORIAL -->
+<div class="client-tab-pane" id="tab-historial">
+
+  <div class="client-card">
+    <div class="client-card-header">
+      <h2>Bitácora y trazabilidad de eventos</h2>
+    </div>
+
+    {% if historial %}
+    <div class="history-timeline">
+      {% for item in historial %}
+      <div class="history-item">
+        <span class="history-dot"></span>
+        <div class="history-content">
+          <div class="history-header">
+            <span>{{ item.creado_en|date:'d/m/Y H:i' }}</span>
+            <span>Por: <strong>{% if item.usuario %}{{ item.usuario.get_full_name|default:item.usuario.username }}{% else %}Sistema{% endif %}</strong></span>
+          </div>
+
+          <div class="history-title">{{ item.titulo }}</div>
+          {% if item.descripcion %}
+          <p class="history-desc">{{ item.descripcion }}</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:#65746b; font-size:13.5px;">No hay eventos registrados en el historial de este cliente.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Modales -->
+{% include 'credenciales/modals/crear.html' %}
+{% include 'credenciales/modals/editar.html' %}
+{% include 'credenciales/modals/eliminar.html' %}
+{% include 'honorarios/modals/registrar_pago.html' %}
+{% include 'honorarios/modals/crear_cobro.html' %}
+
+{% if puede_gestionar %}
+{% include 'clientes/modals/editar.html' %}
+{% endif %}
+{% endblock %}
+
+{% block page_js %}
+<script defer src="{% static 'js/clientes/clientes.js' %}"></script>
+<script defer src="{% static 'js/clientes/detalle.js' %}"></script>
+<script defer src="{% static 'js/honorarios/honorarios.js' %}"></script>
+{% if puede_gestionar %}
+<script defer src="{% static 'js/clientes/modals/editar.js' %}"></script>
+{% endif %}
+{% endblock %}
+
