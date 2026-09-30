@@ -1,3 +1,14 @@
 Django>=5.2,<5.3
 psycopg[binary]>=3.2,<4
 python-decouple>=3.8,<4
+dj-database-url>=2.2,<3
+whitenoise>=6.8,<7
+gunicorn>=21.2,<24
+
+# Imágenes
+Pillow==11.0.0
+
+# Reportes PDF
+reportlab==4.0.9
+openpyxl==3.1.2
+qrcode==8.2
