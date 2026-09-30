@@ -1,4 +1,7 @@
+from decimal import Decimal
+
 from django.contrib import messages
+
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
@@ -255,10 +258,21 @@ def detalle(request, cliente_id):
 	# Historial reciente
 	historial = cliente.historial.select_related('usuario')[:20]
 
+	# Tarifa y Cobros de honorarios
+	from apps.honorarios.models import CobroHonorario, PagoHonorario, TarifaCliente
+	tarifa, _ = TarifaCliente.objects.get_or_create(cliente=cliente)
+	cobros_honorarios = cliente.cobros_honorarios.prefetch_related('pagos').order_by('-anio', '-periodo_numero', '-creado_en')
+	total_cobros_pendientes = sum((c.saldo_pendiente for c in cobros_honorarios if c.estado in (CobroHonorario.Estado.PENDIENTE, CobroHonorario.Estado.PARCIAL)), Decimal('0.00'))
+
 	puede_gestionar = puede_gestionar_clientes(request.user)
 
 	return render(request, 'clientes/detalle.html', {
 		'cliente': cliente,
+		'tarifa': tarifa,
+		'cobros_honorarios': cobros_honorarios[:15],
+		'total_cobros_pendientes': total_cobros_pendientes,
+		'metodos_pago': PagoHonorario.MetodoPago.choices,
+		'periodos_tipo': CobroHonorario.Periodicidad.choices,
 		'configuraciones': configuraciones,
 		'config_tipos_ids': config_tipos_ids,
 		'tipos_mensuales': tipos_mensuales,
@@ -279,3 +293,4 @@ def detalle(request, cliente_id):
 		'actividades': Cliente.Actividad.choices,
 		'estados': Cliente.Estado.choices,
 	})
+

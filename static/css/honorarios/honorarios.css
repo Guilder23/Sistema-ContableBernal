@@ -1,2 +1,103 @@
-.workspace--honorarios .eyebrow, .workspace--honorarios .empty-mark { color: #347353; }
-.workspace--honorarios .empty-mark { border-color: #a9c8b5; }
+/* Estilos para el módulo de Honorarios y Pagos */
+.honorarios-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.honorarios-kpi-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+.honorarios-kpi-card p {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #65746b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.honorarios-kpi-card strong {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink);
+  display: block;
+}
+.honorarios-kpi-card--danger strong {
+  color: #b91c1c;
+}
+.honorarios-kpi-card--success strong {
+  color: #15803d;
+}
+
+/* Badges de estado de pago */
+.badge-pago {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-pago--pendiente {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.badge-pago--parcial {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+.badge-pago--pagado {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+.badge-pago--cancelado {
+  background: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+/* Tarifa layout en ficha cliente */
+.tarifa-grid-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.tarifa-input-box {
+  background: #f9fbf9;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.tarifa-input-box span {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #4f6358;
+  margin-bottom: 6px;
+}
+.tarifa-input-box input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.tarifa-total-card {
+  background: #eef7f2;
+  border: 1px solid #c2e2d0;
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}

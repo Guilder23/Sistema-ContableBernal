@@ -1,0 +1,13 @@
+/* Estilos para modales de honorarios */
+.modal-pago-summary {
+  background: #f8faf9;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.modal-pago-summary strong {
+  display: block;
+  font-size: 15px;
+  color: var(--ink);
+}

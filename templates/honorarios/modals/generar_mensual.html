@@ -1,0 +1,58 @@
+{% load static %}
+<section class="client-modal" id="modal-generar-mensual" role="dialog" aria-modal="true" aria-labelledby="modal-gen-mensual-title" hidden>
+	<div class="client-modal__backdrop" data-close-modal></div>
+	<div class="client-modal__panel client-modal__panel--small">
+		<header>
+			<div>
+				<p class="eyebrow">COBROS AUTOMÁTICOS</p>
+				<h2 id="modal-gen-mensual-title">Generar honorarios del mes</h2>
+			</div>
+			<button class="modal-close" type="button" data-close-modal aria-label="Cerrar">Cerrar</button>
+		</header>
+		<form method="post" action="{% url 'honorarios:generar_mensual' %}" class="client-form">
+			{% csrf_token %}
+			<input type="hidden" name="volver" value="{{ volver|default:request.get_full_path }}">
+
+			<p style="font-size:13.5px; color:#52655b; margin:0 0 16px 0;">
+				Esta acción creará automáticamente la cuenta por cobrar mensual para todos los clientes activos basándose en su tarifa configurada.
+			</p>
+
+			<div class="client-form__row">
+				<label class="client-field">
+					<span>Mes a cobrar <b>*</b></span>
+					<select name="mes" required>
+						{% for num, nombre in meses_opciones %}
+						<option value="{{ num }}" {% if hoy.month == num %}selected{% endif %}>{{ nombre }}</option>
+						{% endfor %}
+					</select>
+				</label>
+				<label class="client-field">
+					<span>Año <b>*</b></span>
+					<input type="number" name="anio" value="{{ hoy.year }}" min="2020" max="2100" required>
+				</label>
+			</div>
+
+			<label class="client-field">
+				<span>Tarifa por defecto si el cliente tiene Bs 0 (opcional)</span>
+				<input type="number" step="0.01" name="monto_defecto" placeholder="Ej: 300.00">
+				<small class="client-field-help">Si un cliente no tiene tarifa configurada, se usará este monto como base.</small>
+			</label>
+
+			<label class="client-field">
+				<span>Cliente específico (opcional)</span>
+				<select name="cliente_id">
+					<option value="">Todos los clientes activos</option>
+					{% for c in clientes %}
+					<option value="{{ c.pk }}">{{ c.nombre }}</option>
+					{% endfor %}
+				</select>
+			</label>
+
+
+			<footer>
+				<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+				<button class="button button--primary" type="submit">Generar cobros</button>
+			</footer>
+		</form>
+	</div>
+</section>

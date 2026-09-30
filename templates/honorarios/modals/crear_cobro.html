@@ -1,0 +1,67 @@
+{% load static %}
+<section class="client-modal" id="modal-crear-cobro" role="dialog" aria-modal="true" aria-labelledby="modal-crear-cobro-title" hidden>
+	<div class="client-modal__backdrop" data-close-modal></div>
+	<div class="client-modal__panel">
+		<header>
+			<div>
+				<p class="eyebrow">CUENTA POR COBRAR</p>
+				<h2 id="modal-crear-cobro-title">Nuevo cobro / trámite extra</h2>
+			</div>
+			<button class="modal-close" type="button" data-close-modal aria-label="Cerrar">Cerrar</button>
+		</header>
+		<form method="post" action="{% url 'honorarios:crear_cobro_manual' %}" class="client-form">
+			{% csrf_token %}
+			<input type="hidden" name="volver" value="{{ volver|default:request.get_full_path }}">
+
+			{% if cliente %}
+			<input type="hidden" name="cliente_id" value="{{ cliente.pk }}">
+			{% else %}
+			<label class="client-field">
+				<span>Cliente <b>*</b></span>
+				<select name="cliente_id" required>
+					<option value="" disabled selected>Selecciona un cliente</option>
+					{% for c in clientes %}
+					<option value="{{ c.pk }}" {% if cliente_filtro == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+					{% endfor %}
+				</select>
+			</label>
+			{% endif %}
+
+			<div class="client-form__row">
+				<label class="client-field">
+					<span>Tipo de cobro <b>*</b></span>
+					<select name="periodo_tipo" required>
+						<option value="extra">Servicio Extraordinario / Trámite</option>
+						<option value="mensual">Honorario Mensual</option>
+						<option value="trimestral">Honorario Trimestral</option>
+						<option value="anual">Honorario Anual (Cierre)</option>
+					</select>
+				</label>
+				<label class="client-field">
+					<span>Fecha límite de cobro</span>
+					<input type="date" name="fecha_vencimiento" value="{{ hoy|date:'Y-m-d' }}">
+				</label>
+			</div>
+
+			<label class="client-field">
+				<span>Concepto del cobro <b>*</b></span>
+				<input name="concepto" required placeholder="Ej: Trámite de Licencia de Funcionamiento, Bancarización adicional...">
+			</label>
+
+			<label class="client-field">
+				<span>Monto total a cobrar (Bs) <b>*</b></span>
+				<input type="number" step="0.01" name="monto_total" min="0.01" required placeholder="0.00">
+			</label>
+
+			<label class="client-field">
+				<span>Observaciones o detalles</span>
+				<textarea name="observaciones" rows="2" placeholder="Notas sobre el cobro o acuerdo con el cliente..."></textarea>
+			</label>
+
+			<footer>
+				<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+				<button class="button button--primary" type="submit">Generar cobro</button>
+			</footer>
+		</form>
+	</div>
+</section>
