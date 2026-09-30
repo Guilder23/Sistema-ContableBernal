@@ -1,0 +1,21 @@
+<section class="task-modal" id="modal-editar-tarea" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" hidden>
+	<div class="task-modal__backdrop" data-close-task-modal></div>
+	<div class="task-modal__panel">
+		<header class="task-modal__header"><div><p class="eyebrow">GESTIÓN DE TAREA</p><h2 id="task-modal-title">Actualizar tarea</h2></div><button class="task-modal__close" type="button" data-close-task-modal data-modal-close-button>Cerrar</button></header>
+		<div class="task-modal__summary"><strong data-task-summary-client></strong><span data-task-summary-period></span><span data-task-summary-due></span><span data-task-summary-state></span></div>
+		{% if puede_gestionar %}
+		<form method="post" action="#" class="task-modal__form" data-task-assignment-form>{% csrf_token %}<input type="hidden" name="volver" value="{{ volver }}">
+			<h3>Asignación</h3><div class="task-modal__form-grid"><label><span>Responsable</span><select name="responsable_id"><option value="">Sin asignar</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}">{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select></label><label><span>Prioridad</span><select name="prioridad">{% for value, label in prioridades %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label></div>
+			<label><span>Nota para el responsable</span><textarea name="observaciones" rows="3" maxlength="2000"></textarea></label><button class="task-button task-button--quiet" type="submit">Guardar asignación</button>
+		</form>
+		{% endif %}
+		<form method="post" action="#" class="task-modal__form" data-task-status-form>{% csrf_token %}<input type="hidden" name="volver" value="{{ volver }}">
+			<h3>Estado</h3><div class="task-modal__form-grid"><label><span>Cambiar estado</span><select name="estado">{% for value, label in estados %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label><button class="task-button task-button--primary" type="submit">Actualizar estado</button></div>
+		</form>
+		<section class="task-modal__form task-modal__evidence">
+			<h3>Evidencia</h3><div class="task-modal__current-evidence"><a data-task-download hidden></a><span data-task-no-evidence>Sin archivo adjunto</span><small data-task-evidence-uploader hidden></small></div>
+			<form method="post" enctype="multipart/form-data" action="#" class="task-modal__upload-form" data-task-upload-form>{% csrf_token %}<input type="hidden" name="volver" value="{{ volver }}"><label><span>Adjuntar o reemplazar PDF/imagen (máximo 10 MB)</span><input type="file" name="evidencia" accept=".pdf,.png,.jpg,.jpeg" required data-task-file></label><button class="task-button task-button--quiet" type="submit">Subir evidencia</button></form>
+			<form method="post" action="#" data-task-delete-form>{% csrf_token %}<input type="hidden" name="volver" value="{{ volver }}"><button class="task-modal__remove-evidence" type="submit">Quitar evidencia</button></form>
+		</section>
++	</div>
++</section>

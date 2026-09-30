@@ -3,5 +3,17 @@
 {% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--notificaciones{% endblock %}
 {% block page_css %}<link rel="stylesheet" href="{% static 'css/notificaciones/notificaciones.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">CENTRO DE AVISOS</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
+{% block content %}
+<header class="page-heading"><div><p class="eyebrow">CENTRO DE AVISOS</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div>{% if pendientes %}<form method="post" action="{% url 'notificaciones:marcar_todas_leidas' %}">{% csrf_token %}<button class="notification-action" type="submit">Marcar todas como leídas</button></form>{% endif %}</header>
+<nav class="notification-filters" aria-label="Filtrar notificaciones"><a href="{% url 'notificaciones:index' %}" {% if not estado_filtro %}aria-current="page"{% endif %}>Todas</a><a href="?estado=pendientes" {% if estado_filtro == 'pendientes' %}aria-current="page"{% endif %}>Pendientes{% if pendientes %} <span>{{ pendientes }}</span>{% endif %}</a><a href="?estado=leidas" {% if estado_filtro == 'leidas' %}aria-current="page"{% endif %}>Leídas</a></nav>
+<section class="notification-list" aria-label="Avisos">
+	{% for notificacion in notificaciones %}
+	<article class="notification-row{% if not notificacion.leida %} notification-row--unread{% endif %}">
+		<div class="notification-row__mark" aria-hidden="true"></div>
+		<div class="notification-row__body"><div class="notification-row__heading"><strong>{{ notificacion.titulo }}</strong><time datetime="{{ notificacion.creada_en|date:'c' }}">{{ notificacion.creada_en|date:'d/m/Y H:i' }}</time></div><p>{{ notificacion.mensaje }}</p>{% if notificacion.actor %}<small>Por {{ notificacion.actor.get_full_name|default:notificacion.actor.username }}</small>{% endif %}</div>
+		<div class="notification-row__actions">{% if notificacion.url %}<a class="notification-action" href="{{ notificacion.url }}">Abrir</a>{% endif %}{% if notificacion.leida %}<span class="notification-read-label">Leída</span>{% else %}<form method="post" action="{% url 'notificaciones:marcar_leida' notificacion.pk %}">{% csrf_token %}<button class="notification-text-action" type="submit">Marcar leída</button></form>{% endif %}</div>
+	</article>
+	{% empty %}<div class="notification-empty"><h2>No hay avisos en esta vista</h2><p>Las asignaciones y tareas completadas aparecerán aquí.</p></div>{% endfor %}
+</section>
+{% endblock %}
 {% block page_js %}<script defer src="{% static 'js/notificaciones/notificaciones.js' %}"></script>{% endblock %}

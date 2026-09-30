@@ -54,7 +54,7 @@
 
 <section class="obligation-results" aria-labelledby="results-title">
 	<div class="obligation-results-heading"><div><p class="eyebrow">SEGUIMIENTO</p><h2 id="results-title">{{ total_periodo }} obligaciones · {{ pendientes_periodo }} pendientes · {{ vencidas_periodo }} vencidas</h2></div></div>
-	<div class="obligation-table-wrap"><table class="obligation-table"><thead><tr><th>Obligación</th><th>Cliente</th><th>Período</th><th>Vencimiento</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+	<div class="obligation-table-wrap"><table class="obligation-table"><thead><tr><th>Obligación</th><th>Cliente</th><th>Período</th><th>Vencimiento</th><th>Estado</th><th>Tarea</th></tr></thead><tbody>
 	{% for obligacion in obligaciones %}
 		<tr>
 			<td><strong>{{ obligacion.tipo.nombre }}</strong><small>{{ obligacion.tipo.get_periodicidad_display }}</small></td>
@@ -62,10 +62,7 @@
 			<td>{{ obligacion.periodo_etiqueta }}</td>
 			<td>{% if obligacion.fecha_vencimiento %}<span class="{% if obligacion.vencida %}deadline-overdue{% endif %}">{{ obligacion.fecha_vencimiento|date:'d/m/Y' }}</span>{% else %}<span class="deadline-manual">Por definir</span>{% endif %}</td>
 			<td><span class="obligation-status obligation-status--{{ obligacion.estado }}{% if obligacion.vencida %} obligation-status--vencida{% endif %}">{% if obligacion.vencida %}Vencida{% else %}{{ obligacion.get_estado_display }}{% endif %}</span>{% if obligacion.completada_por %}<small>{{ obligacion.completada_por.get_full_name|default:obligacion.completada_por.username }}</small>{% endif %}</td>
-			<td class="obligation-actions">
-				<form method="post" action="{% url 'obligaciones:actualizar_estado' obligacion.pk %}">{% csrf_token %}<select name="estado" aria-label="Estado de {{ obligacion }}">{% for value, label in estados %}<option value="{{ value }}" {% if obligacion.estado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="obligation-button obligation-button--quiet" type="submit">Guardar</button></form>
-				{% if puede_gestionar and not obligacion.fecha_vencimiento %}<form method="post" action="{% url 'obligaciones:actualizar_vencimiento' obligacion.pk %}">{% csrf_token %}<input type="date" name="fecha_vencimiento" aria-label="Vencimiento de {{ obligacion }}" required><button class="obligation-button obligation-button--quiet" type="submit">Fijar fecha</button></form>{% endif %}
-			</td>
+			<td class="obligation-actions"><a href="{% url 'tareas:index' %}?q={{ obligacion.cliente.nombre|urlencode }}">Abrir tarea</a>{% if puede_gestionar and not obligacion.fecha_vencimiento %}<form method="post" action="{% url 'obligaciones:actualizar_vencimiento' obligacion.pk %}">{% csrf_token %}<input type="date" name="fecha_vencimiento" aria-label="Vencimiento de {{ obligacion }}" required><button class="obligation-button obligation-button--quiet" type="submit">Fijar fecha</button></form>{% endif %}</td>
 		</tr>
 	{% empty %}<tr><td colspan="6" class="obligation-empty">No hay obligaciones para este período. Configura clientes y genera el período para comenzar.</td></tr>{% endfor %}
 	</tbody></table></div>

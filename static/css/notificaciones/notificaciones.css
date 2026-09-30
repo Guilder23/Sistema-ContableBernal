@@ -1,2 +1,23 @@
-.workspace--notificaciones .eyebrow, .workspace--notificaciones .empty-mark { color: #a74e3d; }
-.workspace--notificaciones .empty-mark { border-color: #dbab9f; }
+.workspace--notificaciones .eyebrow { color: #a74e3d; }
+.notification-action { display: inline-flex; min-height: 34px; align-items: center; padding: 0 10px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; font-size: 11px; font-weight: 700; }
+.notification-filters { display: flex; gap: 6px; margin-bottom: 13px; border-bottom: 1px solid var(--line); }
+.notification-filters a { padding: 9px 11px; border-bottom: 2px solid transparent; color: var(--muted); font-size: 12px; }
+.notification-filters a[aria-current="page"] { border-color: #a74e3d; color: var(--ink); font-weight: 700; }
+.notification-filters span { color: #a74e3d; font-weight: 700; }
+.notification-list { display: grid; border: 1px solid var(--line); background: #fff; }
+.notification-row { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: start; gap: 13px; padding: 15px; border-bottom: 1px solid var(--line); }
+.notification-row:last-child { border-bottom: 0; }
+.notification-row--unread { background: #fffdfa; }
+.notification-row__mark { width: 8px; height: 8px; margin-top: 5px; background: transparent; }
+.notification-row--unread .notification-row__mark { border-radius: 50%; background: #a74e3d; }
+.notification-row__body { min-width: 0; }
+.notification-row__heading { display: flex; justify-content: space-between; gap: 12px; }
+.notification-row__heading strong { font-size: 13px; }
+.notification-row__heading time, .notification-row__body small, .notification-read-label { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.notification-row__body p { margin: 5px 0; color: var(--ink); font-size: 12px; line-height: 1.5; }
+.notification-row__actions { display: flex; align-items: center; gap: 10px; }
+.notification-text-action { padding: 0; border: 0; background: transparent; color: var(--forest); cursor: pointer; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.notification-empty { padding: 48px 20px; text-align: center; }
+.notification-empty h2 { margin: 0 0 6px; font: 700 16px var(--font-display); }
+.notification-empty p { margin: 0; color: var(--muted); font-size: 13px; }
+@media (max-width: 680px) { .notification-row { grid-template-columns: 10px minmax(0, 1fr); } .notification-row__actions { grid-column: 2; } .notification-row__heading { flex-direction: column; gap: 3px; } }

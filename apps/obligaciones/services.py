@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.clientes.models import Cliente
+from apps.tareas.models import Tarea
 
 from .models import ConfiguracionCliente, DiaNoLaborable, Obligacion, TipoObligacion
 
@@ -128,6 +129,7 @@ def generar_obligaciones(periodicidad, anio, numero, cliente_id=None):
 	)
 	creadas = 0
 	existentes = 0
+	tareas_creadas = 0
 	sin_vigencia = 0
 	errores = []
 
@@ -144,7 +146,7 @@ def generar_obligaciones(periodicidad, anio, numero, cliente_id=None):
 			errores.append(str(error.message))
 			continue
 
-		_, creada = Obligacion.objects.get_or_create(
+		obligacion, creada = Obligacion.objects.get_or_create(
 			cliente=cliente,
 			tipo=tipo,
 			anio=anio,
@@ -155,12 +157,15 @@ def generar_obligaciones(periodicidad, anio, numero, cliente_id=None):
 				'fecha_vencimiento': vencimiento,
 			},
 		)
+		_, tarea_creada = Tarea.objects.get_or_create(obligacion=obligacion)
 		creadas += int(creada)
 		existentes += int(not creada)
+		tareas_creadas += int(tarea_creada)
 
 	return {
 		'creadas': creadas,
 		'existentes': existentes,
+		'tareas_creadas': tareas_creadas,
 		'sin_vigencia': sin_vigencia,
 		'errores': errores,
 	}

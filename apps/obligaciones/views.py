@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -13,6 +14,7 @@ from django.views.decorators.http import require_POST
 
 from apps.clientes.models import Cliente
 from apps.clientes.permissions import puede_gestionar_clientes, solo_gestores_clientes
+from apps.tareas.models import Tarea
 
 from .models import ConfiguracionCliente, DiaNoLaborable, Obligacion, TipoObligacion
 from .services import generar_obligaciones
@@ -242,6 +244,11 @@ def generar(request):
 @require_POST
 def actualizar_estado(request, obligacion_id):
     obligacion = get_object_or_404(Obligacion, pk=obligacion_id)
+    if not puede_gestionar_clientes(request.user) and not Tarea.objects.filter(
+        obligacion=obligacion,
+        responsable=request.user,
+    ).exists():
+        return HttpResponseForbidden('Solo el responsable asignado puede cambiar el estado de esta tarea.')
     estado = request.POST.get('estado', '')
     estados_validos = {valor for valor, _ in Obligacion.Estado.choices}
     if estado not in estados_validos:

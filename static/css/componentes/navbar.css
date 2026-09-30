@@ -163,6 +163,26 @@
   color: var(--muted);
   font-size: 14px;
 }
+.popover-notification {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid #edf1ee;
+}
+.popover-notification strong {
+  color: var(--ink);
+  font-size: 12px;
+}
+.popover-notification p {
+  margin: 0;
+  color: #5e514a;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.popover-notification small {
+  color: var(--muted);
+  font-size: 10px;
+}
 .popover-link {
   display: flex;
   width: 100%;
