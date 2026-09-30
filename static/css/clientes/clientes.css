@@ -316,6 +316,12 @@
   font-weight: 500;
   line-height: 1.5;
 }
+.client-field-help {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.45;
+}
 .client-form footer,
 .client-modal__panel > footer,
 .client-modal__panel form footer {
