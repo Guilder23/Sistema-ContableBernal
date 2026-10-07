@@ -69,7 +69,7 @@
       <thead>
         <tr>
           <th>Cliente</th>
-          <th>NIT / CI</th>
+          <th>Empresa</th>
           <th>Tipo</th>
           <th>Actividad</th>
           <th>Contacto</th>
@@ -89,7 +89,7 @@
               </span>
             </div>
           </td>
-          <td>{{ cliente.nit|default:cliente.ci|default:'—' }}</td>
+          <td>{% if cliente.razon_social %}{{ cliente.razon_social }}{% else %}<span class="client-muted">—</span>{% endif %}</td>
           <td>{{ cliente.get_tipo_display }}</td>
           <td>{{ cliente.get_actividad_display }}</td>
           <td>{% if cliente.telefono %}{{ cliente.telefono }}{% elif cliente.correo %}{{ cliente.correo }}{% else %}<span class="client-muted">—</span>{% endif %}</td>
@@ -100,7 +100,7 @@
                 <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg>
               </a>
               {% if puede_gestionar %}
-              <button type="button" class="icon-action icon-action--edit" title="Editar cliente" aria-label="Editar {{ cliente.nombre }}" data-open-modal="modal-editar" data-edit-url="{% url 'clientes:editar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}" data-client-type-value="{{ cliente.tipo }}" data-client-nit="{{ cliente.nit|default:'' }}" data-client-ci="{{ cliente.ci }}" data-client-activity-value="{{ cliente.actividad }}" data-client-phone="{{ cliente.telefono }}" data-client-whatsapp="{{ cliente.whatsapp }}" data-client-email="{{ cliente.correo }}" data-client-address="{{ cliente.direccion }}" data-client-status-value="{{ cliente.estado }}" data-client-start-date="{{ cliente.fecha_inicio|date:'Y-m-d' }}" data-client-observations="{{ cliente.observaciones }}">
+              <button type="button" class="icon-action icon-action--edit" title="Editar cliente" aria-label="Editar {{ cliente.nombre }}" data-open-modal="modal-editar" data-edit-url="{% url 'clientes:editar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}" data-client-type-value="{{ cliente.tipo }}" data-client-nit="{{ cliente.nit|default:'' }}" data-client-ci="{{ cliente.ci }}" data-client-ci-complemento="{{ cliente.ci_complemento|default:'' }}" data-client-ci-expedido="{{ cliente.ci_expedido|default:'' }}" data-client-birth-date="{{ cliente.fecha_nacimiento|date:'Y-m-d' }}" data-client-change-counter="{{ cliente.cambio_contador|yesno:'true,false' }}" data-client-activity-value="{{ cliente.actividad }}" data-client-phone="{{ cliente.telefono }}" data-client-whatsapp="{{ cliente.whatsapp }}" data-client-email="{{ cliente.correo }}" data-client-address="{{ cliente.direccion }}" data-client-status-value="{{ cliente.estado }}" data-client-start-date="{{ cliente.fecha_inicio|date:'Y-m-d' }}" data-client-has-representative="{{ cliente.tiene_representante_legal|yesno:'true,false' }}" data-client-representative-name="{{ cliente.representante_legal_nombre|default:'' }}" data-client-representative-id="{{ cliente.representante_legal_carnet|default:'' }}" data-client-representative-complement="{{ cliente.representante_legal_complemento|default:'' }}" data-client-representative-expedition="{{ cliente.representante_legal_expedido|default:'' }}" data-client-representative-cellphone="{{ cliente.representante_legal_celular|default:'' }}" data-client-representative-birth-date="{{ cliente.representante_legal_fecha_nacimiento|date:'Y-m-d' }}" data-client-observations="{{ cliente.observaciones }}">
                 <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg>
               </button>
               <button type="button" class="icon-action icon-action--delete" title="Eliminar cliente" aria-label="Eliminar {{ cliente.nombre }}" data-open-modal="modal-eliminar" data-delete-url="{% url 'clientes:eliminar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}">
