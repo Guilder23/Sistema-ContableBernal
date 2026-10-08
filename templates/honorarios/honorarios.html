@@ -14,8 +14,8 @@
 <section class="page-heading clients-heading">
   <div>
     <p class="eyebrow">CONTROL FINANCIERO Y CARTERA</p>
-    <h1>Honorarios y Cobranzas</h1>
-    <p>Control de tarifas mensuales, facturación recurrente, extras y registro de pagos.</p>
+    <h1>Honorarios y cuentas por cobrar</h1>
+    <p>Configuración de tarifas, generación periódica y cobros extraordinarios. Los abonos se registran en Ingresos.</p>
   </div>
   {% if puede_gestionar %}
   <div style="display:flex; gap:10px;">
@@ -101,7 +101,6 @@
           <th>Pagado</th>
           <th>Saldo</th>
           <th>Estado</th>
-          {% if puede_gestionar %}<th>Acción</th>{% endif %}
         </tr>
       </thead>
       <tbody>
@@ -125,17 +124,6 @@
           <td>
             <span class="badge-pago badge-pago--{{ cobro.estado }}">{{ cobro.get_estado_display }}</span>
           </td>
-          {% if puede_gestionar %}
-          <td>
-            {% if cobro.saldo_pendiente > 0 %}
-            <button type="button" class="button button--primary" style="min-height:30px; padding:0 10px; font-size:12.5px;" data-open-modal="modal-registrar-pago" data-cobro-id="{{ cobro.pk }}" data-cliente-nombre="{{ cobro.cliente.nombre }}" data-concepto="{{ cobro.concepto }}" data-saldo="{{ cobro.saldo_pendiente }}">
-              Cobrar
-            </button>
-            {% else %}
-            <span style="font-size:12px; color:#15803d; font-weight:600;">✓ Al día</span>
-            {% endif %}
-          </td>
-          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
@@ -163,7 +151,6 @@
 
 <!-- Modales -->
 {% include 'honorarios/modals/generar_mensual.html' %}
-{% include 'honorarios/modals/registrar_pago.html' %}
 {% include 'honorarios/modals/crear_cobro.html' %}
 {% endblock %}
 

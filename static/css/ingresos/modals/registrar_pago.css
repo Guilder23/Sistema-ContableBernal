@@ -1,0 +1,18 @@
+.income-modal[hidden] { display: none !important; }
+.income-modal { position: fixed; z-index: 1200; inset: 0; display: grid; place-items: center; padding: 16px; }
+.income-modal__backdrop { position: absolute; inset: 0; background: rgb(22 32 28 / 55%); }
+.income-modal__panel { position: relative; width: min(560px, 100%); max-height: 92vh; overflow: auto; border: 1px solid #e5ddd3; border-top: 3px solid #4f6e8a; border-radius: 8px; background: #fff; box-shadow: 0 18px 60px rgb(20 31 26 / 24%); }
+.income-modal__panel > header { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; gap: 16px; padding: 18px 22px 14px; border-bottom: 1px solid #eee9e2; background: #fff; }
+.income-modal__panel h2 { margin: 3px 0 0; color: #263b32; font-size: 20px; }
+.income-modal__panel .eyebrow { margin: 0; font-size: 11px; font-weight: 700; }
+.income-modal__close { min-height: 34px; padding: 0 10px; border: 1px solid #ddd5cb; border-radius: 5px; background: #fff; color: #52625a; cursor: pointer; }
+.income-form { display: grid; gap: 13px; padding: 18px 22px 22px; }
+.income-form__field { display: grid; gap: 6px; color: #43534c; font-size: 13px; font-weight: 600; }
+.income-form__field b { color: #b65c48; }
+.income-form__field input, .income-form__field select, .income-form__field textarea { box-sizing: border-box; width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #dfd6cc; border-radius: 5px; background: #fff; color: #263b32; font: inherit; font-weight: 400; }
+.income-form__field textarea { resize: vertical; }
+.income-payment-summary { display: grid; grid-template-columns: 1fr 1.5fr; gap: 7px 12px; padding: 12px; border: 1px solid #e5eae6; border-radius: 6px; background: #f7faf8; font-size: 12px; }
+.income-payment-summary span { color: #718078; }
+.income-payment-summary strong { color: #2d4639; overflow-wrap: anywhere; }
+.income-form footer { display: flex; justify-content: flex-end; gap: 9px; padding-top: 4px; }
+@media (max-width: 520px) { .income-modal { padding: 8px; } .income-form { padding: 16px; } }

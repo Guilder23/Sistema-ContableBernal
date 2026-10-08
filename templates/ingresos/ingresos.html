@@ -1,7 +1,69 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+{% block title %}Ingresos | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--ingresos{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/ingresos/ingresos.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">MOVIMIENTO FINANCIERO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/ingresos/ingresos.js' %}"></script>{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/ingresos/ingresos.css' %}">
+<link rel="stylesheet" href="{% static 'css/ingresos/modals/registrar_pago.css' %}">
+{% endblock %}
+{% block content %}
+<section class="page-heading clients-heading income-heading">
+  <div><p class="eyebrow">CONTROL DE CAJA Y CARTERA</p><h1>Ingresos</h1><p>Pagos efectivamente recibidos y cobros pendientes de clientes.</p></div>
+</section>
+
+<section class="income-kpis" aria-label="Resumen de ingresos">
+  <article><span>Recibido en {{ hoy|date:'F' }}</span><strong>Bs {{ total_ingresos_mes|floatformat:2 }}</strong><small>Pagos registrados este mes</small></article>
+  <article><span>Recibido en {{ anio }}</span><strong>Bs {{ total_ingresos_anio|floatformat:2 }}</strong><small>{{ total_pagos }} pago{{ total_pagos|pluralize:"s" }} en el período</small></article>
+  <article><span>Cobros generados</span><strong>Bs {{ total_cargos|floatformat:2 }}</strong><small>{{ total_cobros }} cuenta{{ total_cobros|pluralize:"s" }} de {{ anio }}</small></article>
+  <article class="income-kpi--pending"><span>Saldo por cobrar</span><strong>Bs {{ total_pendiente|floatformat:2 }}</strong><small>Saldo pendiente de amortización</small></article>
+</section>
+
+<section class="clients-toolbar surface income-toolbar">
+  <form method="get" class="clients-filter">
+    <label class="client-search"><span>Buscar</span><span class="search-input"><input type="search" name="q" value="{{ busqueda }}" placeholder="Cliente, concepto o recibo"></span></label>
+    <label><span>Año</span><input type="number" name="anio" min="2000" max="2200" value="{{ anio }}"></label>
+    <label><span>Estado del cobro</span><select name="estado"><option value="">Todos</option>{% for value, label in estados %}<option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>Origen</span><select name="origen"><option value="">Todos</option>{% for value, label in origenes %}<option value="{{ value }}" {% if origen_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <button class="button button--quiet" type="submit">Filtrar</button>
+  </form>
+</section>
+
+<section class="clients-table-wrap surface income-table-wrap" aria-label="Cuentas por cobrar">
+  <div class="clients-table-heading"><h2>Cuentas por cobrar</h2><span>El cargo se genera según la tarifa al crear las obligaciones del período.</span></div>
+  <div class="clients-table-scroll"><table class="clients-table income-table">
+    <thead><tr><th>Cliente</th><th>Concepto / período</th><th>Total</th><th>Amortizado</th><th>Saldo</th><th>Estado</th><th>Acción</th></tr></thead>
+    <tbody>{% for cobro in cobros %}
+      <tr>
+        <td><strong>{{ cobro.cliente.nombre }}</strong>{% if cobro.cliente.razon_social %}<small class="income-subline">{{ cobro.cliente.razon_social }}</small>{% endif %}</td>
+        <td>{{ cobro.concepto }}<small class="income-subline">{{ cobro.get_periodo_tipo_display }} · {{ cobro.anio }}{% if cobro.periodo_numero %} / {{ cobro.periodo_numero }}{% endif %}</small></td>
+        <td>Bs {{ cobro.monto_total|floatformat:2 }}</td>
+        <td>Bs {{ cobro.monto_pagado|floatformat:2 }}</td>
+        <td><strong>Bs {{ cobro.saldo_pendiente|floatformat:2 }}</strong></td>
+        <td><span class="income-status income-status--{{ cobro.estado }}">{{ cobro.get_estado_display }}</span></td>
+        <td>{% if cobro.estado == 'cancelado' %}<span class="client-muted">Anulado</span>{% elif puede_gestionar and cobro.saldo_pendiente > 0 %}<button class="button button--primary income-pay-button" type="button" data-open-modal="modal-registrar-pago" data-cobro-id="{{ cobro.pk }}" data-cliente="{{ cobro.cliente.nombre }}" data-concepto="{{ cobro.concepto }}" data-saldo="{{ cobro.saldo_pendiente }}">Amortizar</button>{% elif cobro.saldo_pendiente <= 0 %}<span class="income-paid-label">Saldado</span>{% else %}<span class="client-muted">Solo lectura</span>{% endif %}</td>
+      </tr>
+    {% empty %}<tr><td colspan="7" class="clients-empty">No hay cobros para los filtros seleccionados.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if cobros_page.paginator.num_pages > 1 %}<nav class="pagination income-pagination" aria-label="Paginación de cuentas"><span>Página {{ cobros_page.number }} de {{ cobros_page.paginator.num_pages }}</span><div>{% if cobros_page.has_previous %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page_cobros={{ cobros_page.previous_page_number }}" aria-label="Página anterior">‹</a>{% endif %}{% if cobros_page.has_next %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page_cobros={{ cobros_page.next_page_number }}" aria-label="Página siguiente">›</a>{% endif %}</div></nav>{% endif %}
+</section>
+
+<section class="clients-table-wrap surface income-table-wrap" aria-label="Ingresos recibidos">
+  <div class="clients-table-heading"><h2>Ingresos recibidos</h2><span>{{ total_pagos }} pago{{ total_pagos|pluralize:"s" }} · solo dinero cobrado</span></div>
+  <div class="clients-table-scroll"><table class="clients-table income-table">
+    <thead><tr><th>Fecha</th><th>Cliente / concepto</th><th>Recibo</th><th>Forma de pago</th><th>Registrado por</th><th>Monto recibido</th></tr></thead>
+    <tbody>{% for pago in pagos %}
+      <tr><td>{{ pago.fecha_pago|date:'d/m/Y' }}</td><td><strong>{{ pago.cobro.cliente.nombre }}</strong><small class="income-subline">{{ pago.cobro.concepto }}</small></td><td>{{ pago.numero_recibo|default:'—' }}</td><td>{{ pago.get_metodo_pago_display }}</td><td>{% if pago.registrado_por %}{{ pago.registrado_por.get_full_name|default:pago.registrado_por.username }}{% else %}—{% endif %}</td><td><strong>Bs {{ pago.monto|floatformat:2 }}</strong></td></tr>
+    {% empty %}<tr><td colspan="6" class="clients-empty">No hay pagos recibidos para el año seleccionado.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if pagos_page.paginator.num_pages > 1 %}<nav class="pagination income-pagination" aria-label="Paginación de ingresos"><span>Página {{ pagos_page.number }} de {{ pagos_page.paginator.num_pages }}</span><div>{% if pagos_page.has_previous %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page_pagos={{ pagos_page.previous_page_number }}" aria-label="Página anterior">‹</a>{% endif %}{% if pagos_page.has_next %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page_pagos={{ pagos_page.next_page_number }}" aria-label="Página siguiente">›</a>{% endif %}</div></nav>{% endif %}
+</section>
+
+{% if puede_gestionar %}
+{% include 'ingresos/modals/registrar_pago.html' %}
+{% endif %}
+{% endblock %}
+{% block page_js %}
+<script defer src="{% static 'js/ingresos/ingresos.js' %}"></script>
+{% if puede_gestionar %}<script defer src="{% static 'js/ingresos/modals/registrar_pago.js' %}"></script>{% endif %}
+{% endblock %}

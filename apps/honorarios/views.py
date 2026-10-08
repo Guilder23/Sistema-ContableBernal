@@ -93,7 +93,6 @@ def index(request):
 		'estados': CobroHonorario.Estado.choices,
 		'clientes': clientes_activos,
 		'meses_opciones': meses_opciones,
-		'metodos_pago': PagoHonorario.MetodoPago.choices,
 		'puede_gestionar': puede_gestionar,
 		'hoy': hoy,
 		'volver': request.get_full_path(),
@@ -177,6 +176,13 @@ def registrar_pago(request):
 		observaciones = request.POST.get('observaciones', '').strip()
 
 		with transaction.atomic():
+			cobro = CobroHonorario.objects.select_for_update().select_related('cliente').get(pk=cobro.pk)
+			if cobro.estado == CobroHonorario.Estado.CANCELADO:
+				messages.error(request, 'No se pueden registrar pagos en una cuenta anulada.')
+				return _volver(request, cliente_id=cobro.cliente.pk)
+			if monto > cobro.saldo_pendiente:
+				messages.error(request, f'El abono no puede superar el saldo pendiente de Bs {cobro.saldo_pendiente}.')
+				return _volver(request, cliente_id=cobro.cliente.pk)
 			pago = PagoHonorario.objects.create(
 				cobro=cobro,
 				monto=monto,

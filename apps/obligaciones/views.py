@@ -196,10 +196,11 @@ def configurar_cliente(request):
         messages.warning(request, 'La configuración se guardó, pero el período seleccionado no es válido.')
         return _redirigir_cliente(cliente.pk, volver)
 
-    resultado = generar_obligaciones(periodicidad, anio, numero, cliente_id=cliente.pk)
+    resultado = generar_obligaciones(periodicidad, anio, numero, cliente_id=cliente.pk, usuario=request.user)
     mensaje = (
         f"Se guardó la configuración de {cliente.nombre}: "
-        f"{resultado['creadas']} obligaciones generadas para el período; "
+        f"{resultado['creadas']} obligaciones generadas y "
+        f"{resultado['cobros_creados']} cuentas por cobrar creadas para el período; "
         f"{resultado['existentes']} ya existían."
     )
     if resultado['sin_vigencia']:
@@ -233,8 +234,11 @@ def generar(request):
         messages.error(request, 'Selecciona una periodicidad y un período válidos.')
         return redirect('obligaciones:index')
 
-    resultado = generar_obligaciones(periodicidad, anio, numero)
-    texto = f"Se generaron {resultado['creadas']} obligaciones; {resultado['existentes']} ya existían."
+    resultado = generar_obligaciones(periodicidad, anio, numero, usuario=request.user)
+    texto = (
+        f"Se generaron {resultado['creadas']} obligaciones y "
+        f"{resultado['cobros_creados']} cuentas por cobrar; {resultado['existentes']} obligaciones ya existían."
+    )
     if resultado['sin_vigencia']:
         texto += f" {resultado['sin_vigencia']} se omitieron porque su fecha de inicio es posterior al período."
     if resultado['errores']:
