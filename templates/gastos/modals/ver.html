@@ -1,0 +1,18 @@
+<section class="expense-modal expense-view-modal" id="modal-ver" role="dialog" aria-modal="true" aria-labelledby="expense-view-title" hidden>
+  <div class="expense-modal__backdrop" data-close-expense-modal></div>
+  <div class="expense-modal__panel expense-view-modal__panel">
+    <header><div><p class="eyebrow">DETALLE DEL MOVIMIENTO</p><h2 id="expense-view-title" data-view-field="concepto">Movimiento</h2></div><button class="expense-modal__close" type="button" data-close-expense-modal aria-label="Cerrar">Cerrar</button></header>
+    <dl class="expense-view-grid">
+      <div><dt>Tipo</dt><dd data-view-field="tipo"></dd></div><div><dt>Categoría</dt><dd data-view-field="categoria"></dd></div>
+      <div><dt>Periodicidad</dt><dd data-view-field="periodicidad"></dd></div><div><dt>Fecha</dt><dd data-view-field="fecha"></dd></div>
+      <div><dt>Monto</dt><dd>Bs <span data-view-field="monto"></span></dd></div><div><dt>Estado de pago</dt><dd data-view-field="pago"></dd></div>
+      <div><dt>Proveedor</dt><dd data-view-field="proveedor"></dd></div><div><dt>Responsable</dt><dd data-view-field="responsable"></dd></div>
+      <div><dt>Comprobante</dt><dd data-view-field="comprobante"></dd></div><div><dt>Cliente</dt><dd data-view-field="cliente"></dd></div>
+      <div><dt>Recuperable</dt><dd data-view-field="recuperable"></dd></div><div><dt>Estado de recuperación</dt><dd data-view-field="recuperacion"></dd></div>
+      <div><dt>Vida útil</dt><dd data-view-field="vidaUtil"></dd></div><div><dt>Estado del activo</dt><dd data-view-field="activo"></dd></div>
+      <div><dt>Depreciación</dt><dd data-view-field="depreciacion"></dd></div><div><dt>Ubicación</dt><dd data-view-field="ubicacion"></dd></div>
+      <div class="expense-view-grid__wide"><dt>Observaciones</dt><dd data-view-field="observaciones"></dd></div>
+    </dl>
+    <footer><button class="button button--quiet" type="button" data-close-expense-modal>Cerrar</button></footer>
+  </div>
+</section>

@@ -1,0 +1,22 @@
+<section class="agenda-modal" id="modal-editar-evento" role="dialog" aria-modal="true" aria-labelledby="agenda-edit-title" {% if modal_activo != 'editar' %}hidden{% endif %}>
+  <div class="agenda-modal__backdrop" data-close-agenda-modal></div>
+  <div class="agenda-modal__panel">
+    <header><div><p class="eyebrow">ACTUALIZAR EVENTO</p><h2 id="agenda-edit-title">Editar evento</h2></div><button type="button" class="button button--quiet agenda-modal__close" data-close-agenda-modal aria-label="Cerrar">Cerrar</button></header>
+    <form method="post" action="{% if evento_edicion %}{% url 'agenda:editar' evento_id=evento_edicion.pk %}{% endif %}" class="agenda-form" data-agenda-edit-form>
+      {% csrf_token %}{% if errores.general %}<p class="agenda-form__error">{{ errores.general }}</p>{% endif %}
+      <label class="agenda-form__field agenda-form__field--wide"><span>Título <b>*</b></span><input name="titulo" data-edit-field="titulo" maxlength="160" required value="{% if modal_activo == 'editar' %}{{ datos.titulo }}{% endif %}">{% if errores.titulo %}<small class="agenda-form__error">{{ errores.titulo }}</small>{% endif %}</label>
+      <div class="agenda-form__grid">
+        <label class="agenda-form__field"><span>Tipo</span><select name="tipo" data-edit-field="tipo">{% for value, label in tipos %}<option value="{{ value }}" {% if modal_activo == 'editar' and datos.tipo == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        <label class="agenda-form__field"><span>Estado</span><select name="estado" data-edit-field="estado">{% for value, label in estados %}<option value="{{ value }}" {% if modal_activo == 'editar' and datos.estado == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        <label class="agenda-form__field"><span>Fecha <b>*</b></span><input name="fecha" data-edit-field="fecha" type="date" required value="{% if modal_activo == 'editar' %}{{ datos.fecha }}{% endif %}">{% if errores.fecha %}<small class="agenda-form__error">{{ errores.fecha }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Cliente</span><select name="cliente" data-edit-field="cliente"><option value="">Sin cliente asociado</option>{% for cliente in clientes %}<option value="{{ cliente.pk }}" {% if modal_activo == 'editar' and datos.cliente == cliente.pk|stringformat:'s' %}selected{% endif %}>{{ cliente.nombre }}</option>{% endfor %}</select>{% if errores.cliente %}<small class="agenda-form__error">{{ errores.cliente }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Hora de inicio <b>*</b></span><input name="hora_inicio" data-edit-field="hora_inicio" type="time" required value="{% if modal_activo == 'editar' %}{{ datos.hora_inicio }}{% endif %}">{% if errores.hora_inicio %}<small class="agenda-form__error">{{ errores.hora_inicio }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Hora de fin <b>*</b></span><input name="hora_fin" data-edit-field="hora_fin" type="time" required value="{% if modal_activo == 'editar' %}{{ datos.hora_fin }}{% endif %}">{% if errores.hora_fin %}<small class="agenda-form__error">{{ errores.hora_fin }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Responsable</span><select name="responsable" data-edit-field="responsable"><option value="">Sin asignar</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}" {% if modal_activo == 'editar' and datos.responsable == usuario.pk|stringformat:'s' %}selected{% endif %}>{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select>{% if errores.responsable %}<small class="agenda-form__error">{{ errores.responsable }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Lugar</span><input name="lugar" data-edit-field="lugar" maxlength="160" value="{% if modal_activo == 'editar' %}{{ datos.lugar }}{% endif %}"></label>
+      </div>
+      <label class="agenda-form__field"><span>Observaciones</span><textarea name="observaciones" data-edit-field="observaciones" rows="3" maxlength="2000">{% if modal_activo == 'editar' %}{{ datos.observaciones }}{% endif %}</textarea></label>
+      <footer><button class="button button--quiet" type="button" data-close-agenda-modal>Cancelar</button><button class="button button--primary" type="submit">Guardar cambios</button></footer>
+    </form>
+  </div>
+</section>

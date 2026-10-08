@@ -50,10 +50,50 @@ class GestionClientesTests(TestCase):
 			self.assertContains(response, f'css/clientes/modals/{modal}.css')
 			self.assertContains(response, f'js/clientes/modals/{modal}.js')
 
+	def test_crea_cliente_con_campos_complementarios_y_representante_legal(self):
+		response = self.client.post('/clientes/crear/', {
+			**self.datos_cliente(),
+			'fecha_nacimiento': '1990-02-15',
+			'ci_complemento': 'A',
+			'ci_expedido': 'LP',
+			'cambio_contador': 'on',
+			'tiene_representante_legal': 'on',
+			'representante_legal_nombre': 'Ana Maria Flores',
+			'representante_legal_carnet': '4567890',
+			'representante_legal_complemento': 'B',
+			'representante_legal_expedido': 'CBBA',
+			'representante_legal_celular': '76543210',
+			'representante_legal_fecha_nacimiento': '1985-05-20',
+		})
+		cliente = Cliente.objects.get(nit='123456789')
+		self.assertRedirects(response, f'/clientes/{cliente.pk}/')
+		self.assertEqual(cliente.fecha_nacimiento.isoformat(), '1990-02-15')
+		self.assertEqual(cliente.ci_complemento, 'A')
+		self.assertEqual(cliente.ci_expedido, 'LP')
+		self.assertTrue(cliente.cambio_contador)
+		self.assertTrue(cliente.tiene_representante_legal)
+		self.assertEqual(cliente.representante_legal_nombre, 'Ana Maria Flores')
+		self.assertEqual(cliente.representante_legal_carnet, '4567890')
+		self.assertEqual(cliente.representante_legal_complemento, 'B')
+		self.assertEqual(cliente.representante_legal_expedido, 'CBBA')
+		self.assertEqual(cliente.representante_legal_celular, '76543210')
+		self.assertEqual(cliente.representante_legal_fecha_nacimiento.isoformat(), '1985-05-20')
+
+	def test_nombre_del_cliente_y_razon_social_se_guardan_separados(self):
+		response = self.client.post('/clientes/crear/', {
+			**self.datos_cliente(),
+			'nombre': 'Juan Pérez',
+			'razon_social': 'Constructora Pérez y Asociados SRL',
+		})
+		cliente = Cliente.objects.get(nit='123456789')
+		self.assertRedirects(response, f'/clientes/{cliente.pk}/')
+		self.assertEqual(cliente.nombre, 'Juan Pérez')
+		self.assertEqual(cliente.razon_social, 'Constructora Pérez y Asociados SRL')
+
 	def test_crea_cliente_con_datos_tributarios_y_contacto(self):
 		response = self.client.post('/clientes/crear/', self.datos_cliente())
-		self.assertRedirects(response, '/clientes/')
 		cliente = Cliente.objects.get(nit='123456789')
+		self.assertRedirects(response, f'/clientes/{cliente.pk}/')
 		self.assertEqual(cliente.nombre, 'Comercial El Roble')
 		self.assertEqual(cliente.tipo, Cliente.Tipo.JURIDICA)
 		self.assertEqual(cliente.fecha_inicio.isoformat(), '2026-01-15')
@@ -74,7 +114,7 @@ class GestionClientesTests(TestCase):
 			creado_por=self.secretario,
 		)
 		response = self.client.post(f'/clientes/{cliente.pk}/editar/', self.datos_cliente(nit='987654321'))
-		self.assertRedirects(response, '/clientes/')
+		self.assertRedirects(response, f'/clientes/{cliente.pk}/')
 		cliente.refresh_from_db()
 		self.assertEqual(cliente.nombre, 'Comercial El Roble')
 		self.assertEqual(cliente.creado_por, self.secretario)
@@ -89,7 +129,8 @@ class GestionClientesTests(TestCase):
 		self.assertEqual(self.client.post('/clientes/crear/', self.datos_cliente()).status_code, 403)
 		self.client.force_login(self.secretario)
 		response = self.client.post('/clientes/crear/', self.datos_cliente())
-		self.assertRedirects(response, '/clientes/')
+		cliente = Cliente.objects.get(nit='123456789')
+		self.assertRedirects(response, f'/clientes/{cliente.pk}/')
 		self.assertTrue(Cliente.objects.filter(nit='123456789').exists())
 
 	def test_mutaciones_solo_aceptan_post(self):

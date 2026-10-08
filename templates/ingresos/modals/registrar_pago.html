@@ -1,0 +1,17 @@
+<section class="income-modal" id="modal-registrar-pago" role="dialog" aria-modal="true" aria-labelledby="income-payment-title" hidden>
+  <div class="income-modal__backdrop" data-close-income-modal></div>
+  <div class="income-modal__panel">
+    <header><div><p class="eyebrow">AMORTIZAR CUENTA</p><h2 id="income-payment-title">Registrar pago</h2></div><button type="button" class="income-modal__close" data-close-income-modal aria-label="Cerrar">Cerrar</button></header>
+    <form method="post" action="{% url 'honorarios:registrar_pago' %}" enctype="multipart/form-data" class="income-form" data-income-payment-form>
+      {% csrf_token %}<input type="hidden" name="cobro_id" data-payment-field="cobro_id"><input type="hidden" name="volver" value="{% url 'ingresos:index' %}">
+      <div class="income-payment-summary"><span>Cliente</span><strong data-payment-client></strong><span>Concepto</span><strong data-payment-concept></strong><span>Saldo actual</span><strong data-payment-balance></strong></div>
+      <label class="income-form__field"><span>Monto del abono (Bs) <b>*</b></span><input type="number" name="monto" data-payment-field="monto" min="0.01" step="0.01" required></label>
+      <label class="income-form__field"><span>Fecha de pago <b>*</b></span><input type="date" name="fecha_pago" data-payment-field="fecha_pago" value="{{ hoy|date:'Y-m-d' }}" required></label>
+      <label class="income-form__field"><span>Número de recibo</span><input name="numero_recibo" maxlength="60" placeholder="Ej. REC-00125"></label>
+      <label class="income-form__field"><span>Forma de pago <b>*</b></span><select name="metodo_pago" required>{% for value, label in metodos_pago %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label class="income-form__field"><span>Comprobante</span><input type="file" name="comprobante" accept="image/*,.pdf"></label>
+      <label class="income-form__field"><span>Observaciones</span><textarea name="observaciones" rows="3"></textarea></label>
+      <footer><button type="button" class="button button--quiet" data-close-income-modal>Cancelar</button><button type="submit" class="button button--primary">Guardar abono</button></footer>
+    </form>
+  </div>
+</section>

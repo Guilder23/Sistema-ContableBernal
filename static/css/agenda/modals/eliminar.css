@@ -1,0 +1,5 @@
+@import url("./crear.css");
+.agenda-delete-panel { width: min(440px, 100%); padding-bottom: 20px; }
+.agenda-delete-panel > header { display: block; }
+.agenda-delete-panel > header > p:last-child { margin: 12px 0 0; color: #68756e; line-height: 1.5; }
+.agenda-delete-panel form { padding: 16px 22px 0; }

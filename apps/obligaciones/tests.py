@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.clientes.models import Cliente
+from apps.honorarios.models import CobroHonorario, TarifaCliente
 
 from .models import ConfiguracionCliente, DiaNoLaborable, Obligacion, TipoObligacion
 from .services import calcular_vencimiento, generar_obligaciones, periodo_de_obligacion
@@ -78,6 +79,24 @@ class ObligacionesIntegracionTests(TestCase):
 		self.assertEqual(segunda['creadas'], 0)
 		self.assertEqual(segunda['existentes'], 1)
 		self.assertEqual(Obligacion.objects.count(), 1)
+
+	def test_generar_obligaciones_crea_un_cobro_por_cliente_y_periodo(self):
+		ConfiguracionCliente.objects.create(cliente=self.cliente, tipo=self.tipo, fecha_inicio=date(2026, 1, 1))
+		TarifaCliente.objects.create(
+			cliente=self.cliente,
+			monto_mensual='300.00',
+			extra_bancarizacion='25.00',
+		)
+		generar_obligaciones(TipoObligacion.Periodicidad.MENSUAL, 2026, 8)
+		generar_obligaciones(TipoObligacion.Periodicidad.MENSUAL, 2026, 8)
+		cobros = CobroHonorario.objects.filter(
+			cliente=self.cliente,
+			periodo_tipo=CobroHonorario.Periodicidad.MENSUAL,
+			anio=2026,
+			periodo_numero=8,
+		)
+		self.assertEqual(cobros.count(), 1)
+		self.assertEqual(cobros.get().monto_total, 325)
 
 	def test_configuracion_y_pantalla_se_integran_con_clientes(self):
 		otro_cliente = Cliente.objects.create(

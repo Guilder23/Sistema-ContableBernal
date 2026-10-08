@@ -1,0 +1,4 @@
+<section class="agenda-modal" id="modal-eliminar-evento" role="dialog" aria-modal="true" aria-labelledby="agenda-delete-title" hidden>
+  <div class="agenda-modal__backdrop" data-close-agenda-modal></div>
+  <div class="agenda-modal__panel agenda-delete-panel"><header><p class="eyebrow">ELIMINAR EVENTO</p><h2 id="agenda-delete-title">¿Eliminar de la agenda?</h2><p>Se eliminará <strong data-delete-event-title></strong>. Esta acción no se puede deshacer.</p></header><form method="post" data-agenda-delete-form>{% csrf_token %}<button type="button" class="button button--quiet" data-close-agenda-modal>Cancelar</button><button type="submit" class="button button--danger">Eliminar</button></form></div>
+</section>

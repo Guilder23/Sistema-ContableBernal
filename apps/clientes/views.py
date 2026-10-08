@@ -28,9 +28,14 @@ def _datos_formulario(request, cliente=None):
 	if request.method == 'POST':
 		return {
 			'nombre': request.POST.get('nombre', '').strip(),
+			'razon_social': request.POST.get('razon_social', '').strip(),
 			'tipo': request.POST.get('tipo', Cliente.Tipo.PERSONA_NATURAL),
 			'nit': request.POST.get('nit', '').strip(),
 			'ci': request.POST.get('ci', '').strip(),
+			'ci_complemento': request.POST.get('ci_complemento', '').strip(),
+			'ci_expedido': request.POST.get('ci_expedido', '').strip(),
+			'fecha_nacimiento': request.POST.get('fecha_nacimiento', '').strip(),
+			'cambio_contador': request.POST.get('cambio_contador') in {'1', 'on', 'true', 'True'},
 			'actividad': request.POST.get('actividad', Cliente.Actividad.OTRA),
 			'telefono': request.POST.get('telefono', '').strip(),
 			'whatsapp': request.POST.get('whatsapp', '').strip(),
@@ -38,20 +43,36 @@ def _datos_formulario(request, cliente=None):
 			'direccion': request.POST.get('direccion', '').strip(),
 			'estado': Cliente.Estado.ACTIVO if request.POST.get('estado') == 'activo' else Cliente.Estado.INACTIVO,
 			'fecha_inicio': request.POST.get('fecha_inicio', '').strip(),
+			'tiene_representante_legal': request.POST.get('tiene_representante_legal') in {'1', 'on', 'true', 'True'},
+			'representante_legal_nombre': request.POST.get('representante_legal_nombre', '').strip(),
+			'representante_legal_carnet': request.POST.get('representante_legal_carnet', '').strip(),
+			'representante_legal_complemento': request.POST.get('representante_legal_complemento', '').strip(),
+			'representante_legal_expedido': request.POST.get('representante_legal_expedido', '').strip(),
+			'representante_legal_celular': request.POST.get('representante_legal_celular', '').strip(),
+			'representante_legal_fecha_nacimiento': request.POST.get('representante_legal_fecha_nacimiento', '').strip(),
 			'observaciones': request.POST.get('observaciones', '').strip(),
 		}
 	if cliente is None:
 		return {
-			'nombre': '', 'tipo': Cliente.Tipo.PERSONA_NATURAL, 'nit': '', 'ci': '',
+			'nombre': '', 'razon_social': '', 'tipo': Cliente.Tipo.PERSONA_NATURAL, 'nit': '', 'ci': '',
+			'ci_complemento': '', 'ci_expedido': '', 'fecha_nacimiento': '', 'cambio_contador': False,
 			'actividad': Cliente.Actividad.OTRA, 'telefono': '', 'whatsapp': '',
 			'correo': '', 'direccion': '', 'estado': Cliente.Estado.ACTIVO,
-			'fecha_inicio': '', 'observaciones': '',
+			'fecha_inicio': '', 'tiene_representante_legal': False,
+			'representante_legal_nombre': '', 'representante_legal_carnet': '', 'representante_legal_complemento': '',
+			'representante_legal_expedido': '', 'representante_legal_celular': '', 'representante_legal_fecha_nacimiento': '',
+			'observaciones': '',
 		}
 	return {
 		'nombre': cliente.nombre,
+		'razon_social': cliente.razon_social,
 		'tipo': cliente.tipo,
 		'nit': cliente.nit or '',
 		'ci': cliente.ci,
+		'ci_complemento': cliente.ci_complemento,
+		'ci_expedido': cliente.ci_expedido,
+		'fecha_nacimiento': cliente.fecha_nacimiento.isoformat() if cliente.fecha_nacimiento else '',
+		'cambio_contador': cliente.cambio_contador,
 		'actividad': cliente.actividad,
 		'telefono': cliente.telefono,
 		'whatsapp': cliente.whatsapp,
@@ -59,6 +80,13 @@ def _datos_formulario(request, cliente=None):
 		'direccion': cliente.direccion,
 		'estado': cliente.estado,
 		'fecha_inicio': cliente.fecha_inicio.isoformat() if cliente.fecha_inicio else '',
+		'tiene_representante_legal': cliente.tiene_representante_legal,
+		'representante_legal_nombre': cliente.representante_legal_nombre,
+		'representante_legal_carnet': cliente.representante_legal_carnet,
+		'representante_legal_complemento': cliente.representante_legal_complemento,
+		'representante_legal_expedido': cliente.representante_legal_expedido,
+		'representante_legal_celular': cliente.representante_legal_celular,
+		'representante_legal_fecha_nacimiento': cliente.representante_legal_fecha_nacimiento.isoformat() if cliente.representante_legal_fecha_nacimiento else '',
 		'observaciones': cliente.observaciones,
 	}
 
@@ -79,12 +107,24 @@ def _validar_formulario(request, cliente=None):
 			errores['nit'] = 'Ya existe un cliente con ese NIT.'
 		if len(datos['nit']) > 20:
 			errores['nit'] = 'El NIT no puede superar 20 caracteres.'
-	if len(datos['ci']) > 20:
-		errores['ci'] = 'La CI no puede superar 20 caracteres.'
-	for campo, limite in (('telefono', 30), ('whatsapp', 30), ('correo', 254), ('direccion', 240)):
+	for campo, limite in (
+		('nombre', 180), ('razon_social', 180), ('ci', 20), ('ci_complemento', 10), ('ci_expedido', 20),
+		('representante_legal_nombre', 180), ('representante_legal_carnet', 20),
+		('representante_legal_complemento', 10), ('representante_legal_expedido', 20),
+		('representante_legal_celular', 30), ('telefono', 30), ('whatsapp', 30),
+		('correo', 254), ('direccion', 240),
+	):
 		if len(datos[campo]) > limite:
 			errores[campo] = f'Este campo no puede superar {limite} caracteres.'
-
+	if datos['tiene_representante_legal']:
+		if not datos['representante_legal_nombre']:
+			errores['representante_legal_nombre'] = 'El nombre del representante legal es obligatorio.'
+		if not datos['representante_legal_carnet']:
+			errores['representante_legal_carnet'] = 'El número de carnet del representante legal es obligatorio.'
+	if datos['fecha_nacimiento'] and parse_date(datos['fecha_nacimiento']) is None:
+		errores['fecha_nacimiento'] = 'Ingresa una fecha de nacimiento válida.'
+	if datos['representante_legal_fecha_nacimiento'] and parse_date(datos['representante_legal_fecha_nacimiento']) is None:
+		errores['representante_legal_fecha_nacimiento'] = 'Ingresa una fecha válida para el representante legal.'
 	if datos['correo']:
 		try:
 			validate_email(datos['correo'])
@@ -109,10 +149,30 @@ def _guardar_cliente(request, cliente=None):
 	with transaction.atomic():
 		if cliente is None:
 			cliente = Cliente(creado_por=request.user)
-		for campo in ('nombre', 'tipo', 'ci', 'actividad', 'telefono', 'whatsapp', 'correo', 'direccion', 'estado', 'observaciones'):
-			setattr(cliente, campo, datos[campo])
+		cliente.nombre = datos['nombre']
+		cliente.razon_social = datos['razon_social']
+		cliente.tipo = datos['tipo']
 		cliente.nit = datos['nit'] or None
+		cliente.ci = datos['ci']
+		cliente.ci_complemento = datos['ci_complemento']
+		cliente.ci_expedido = datos['ci_expedido']
+		cliente.fecha_nacimiento = parse_date(datos['fecha_nacimiento']) if datos['fecha_nacimiento'] else None
+		cliente.cambio_contador = bool(datos['cambio_contador'])
+		cliente.actividad = datos['actividad']
+		cliente.telefono = datos['telefono']
+		cliente.whatsapp = datos['whatsapp']
+		cliente.correo = datos['correo']
+		cliente.direccion = datos['direccion']
+		cliente.estado = datos['estado']
 		cliente.fecha_inicio = parse_date(datos['fecha_inicio']) if datos['fecha_inicio'] else None
+		cliente.tiene_representante_legal = bool(datos['tiene_representante_legal'])
+		cliente.representante_legal_nombre = datos['representante_legal_nombre']
+		cliente.representante_legal_carnet = datos['representante_legal_carnet']
+		cliente.representante_legal_complemento = datos['representante_legal_complemento']
+		cliente.representante_legal_expedido = datos['representante_legal_expedido']
+		cliente.representante_legal_celular = datos['representante_legal_celular']
+		cliente.representante_legal_fecha_nacimiento = parse_date(datos['representante_legal_fecha_nacimiento']) if datos['representante_legal_fecha_nacimiento'] else None
+		cliente.observaciones = datos['observaciones']
 		cliente.save()
 
 		if es_nuevo:

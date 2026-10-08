@@ -26,7 +26,7 @@
   </div>
   <div class="client-hero-actions">
     {% if puede_gestionar %}
-    <button type="button" class="button button--quiet" data-open-modal="modal-editar" data-edit-url="{% url 'clientes:editar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}" data-client-type-value="{{ cliente.tipo }}" data-client-nit="{{ cliente.nit|default:'' }}" data-client-ci="{{ cliente.ci }}" data-client-activity-value="{{ cliente.actividad }}" data-client-phone="{{ cliente.telefono }}" data-client-whatsapp="{{ cliente.whatsapp }}" data-client-email="{{ cliente.correo }}" data-client-address="{{ cliente.direccion }}" data-client-status-value="{{ cliente.estado }}" data-client-start-date="{{ cliente.fecha_inicio|date:'Y-m-d' }}" data-client-observations="{{ cliente.observaciones }}">
+    <button type="button" class="button button--quiet" data-open-modal="modal-editar" data-edit-url="{% url 'clientes:editar' cliente_id=cliente.pk %}" data-client-name="{{ cliente.nombre }}" data-client-type-value="{{ cliente.tipo }}" data-client-nit="{{ cliente.nit|default:'' }}" data-client-ci="{{ cliente.ci }}" data-client-ci-complemento="{{ cliente.ci_complemento|default:'' }}" data-client-ci-expedido="{{ cliente.ci_expedido|default:'' }}" data-client-birth-date="{{ cliente.fecha_nacimiento|date:'Y-m-d' }}" data-client-change-counter="{{ cliente.cambio_contador|yesno:'true,false' }}" data-client-activity-value="{{ cliente.actividad }}" data-client-phone="{{ cliente.telefono }}" data-client-whatsapp="{{ cliente.whatsapp }}" data-client-email="{{ cliente.correo }}" data-client-address="{{ cliente.direccion }}" data-client-status-value="{{ cliente.estado }}" data-client-start-date="{{ cliente.fecha_inicio|date:'Y-m-d' }}" data-client-has-representative="{{ cliente.tiene_representante_legal|yesno:'true,false' }}" data-client-representative-name="{{ cliente.representante_legal_nombre|default:'' }}" data-client-representative-id="{{ cliente.representante_legal_carnet|default:'' }}" data-client-representative-complement="{{ cliente.representante_legal_complemento|default:'' }}" data-client-representative-expedition="{{ cliente.representante_legal_expedido|default:'' }}" data-client-representative-cellphone="{{ cliente.representante_legal_celular|default:'' }}" data-client-representative-birth-date="{{ cliente.representante_legal_fecha_nacimiento|date:'Y-m-d' }}" data-client-observations="{{ cliente.observaciones }}">
       <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg>
       Editar datos
     </button>
@@ -98,9 +98,12 @@
       <div class="client-card-header">
         <h2>Datos tributarios y legales</h2>
       </div>
-      <div class="info-row"><span class="info-label">Razón social</span><span class="info-value">{{ cliente.nombre }}</span></div>
+      <div class="info-row"><span class="info-label">Nombre del cliente</span><span class="info-value">{{ cliente.nombre }}</span></div>
+      <div class="info-row"><span class="info-label">Razón social / nombre de empresa</span><span class="info-value">{{ cliente.razon_social|default:'No registrada' }}</span></div>
       <div class="info-row"><span class="info-label">NIT</span><span class="info-value">{{ cliente.nit|default:'No registrado' }}</span></div>
-      <div class="info-row"><span class="info-label">Cédula de Identidad (CI)</span><span class="info-value">{{ cliente.ci|default:'No registrado' }}</span></div>
+      <div class="info-row"><span class="info-label">Cédula de Identidad (CI)</span><span class="info-value">{% if cliente.ci %}{{ cliente.ci }}{% if cliente.ci_complemento %} / {{ cliente.ci_complemento }}{% endif %}{% if cliente.ci_expedido %} / {{ cliente.ci_expedido }}{% endif %}{% else %}No registrado{% endif %}</span></div>
+      <div class="info-row"><span class="info-label">Fecha de nacimiento</span><span class="info-value">{{ cliente.fecha_nacimiento|date:'d/m/Y'|default:'No indicada' }}</span></div>
+      <div class="info-row"><span class="info-label">Cambio de contador</span><span class="info-value">{% if cliente.cambio_contador %}Sí{% else %}No{% endif %}</span></div>
       <div class="info-row"><span class="info-label">Tipo de persona</span><span class="info-value">{{ cliente.get_tipo_display }}</span></div>
       <div class="info-row"><span class="info-label">Rubro / Actividad</span><span class="info-value">{{ cliente.get_actividad_display }}</span></div>
       <div class="info-row"><span class="info-label">Fecha de inicio fiscal</span><span class="info-value">{{ cliente.fecha_inicio|date:'d/m/Y'|default:'No indicada' }}</span></div>
@@ -117,6 +120,15 @@
       <div class="info-row"><span class="info-label">WhatsApp</span><span class="info-value">{{ cliente.whatsapp|default:'No indicado' }}</span></div>
       <div class="info-row"><span class="info-label">Correo electrónico</span><span class="info-value">{{ cliente.correo|default:'No indicado' }}</span></div>
       <div class="info-row"><span class="info-label">Dirección física</span><span class="info-value">{{ cliente.direccion|default:'No indicada' }}</span></div>
+      {% if cliente.tiene_representante_legal %}
+      <div style="margin-top:18px; padding-top:12px; border-top:1px solid #e9efe9;">
+        <h3 style="margin:0 0 10px 0; font-size:16px;">Representante legal</h3>
+        <div class="info-row"><span class="info-label">Nombre completo</span><span class="info-value">{{ cliente.representante_legal_nombre|default:'No registrado' }}</span></div>
+        <div class="info-row"><span class="info-label">Carnet / complemento / expedido</span><span class="info-value">{% if cliente.representante_legal_carnet %}{{ cliente.representante_legal_carnet }}{% if cliente.representante_legal_complemento %} / {{ cliente.representante_legal_complemento }}{% endif %}{% if cliente.representante_legal_expedido %} / {{ cliente.representante_legal_expedido }}{% endif %}{% else %}No registrado{% endif %}</span></div>
+        <div class="info-row"><span class="info-label">Celular</span><span class="info-value">{{ cliente.representante_legal_celular|default:'No indicado' }}</span></div>
+        <div class="info-row"><span class="info-label">Fecha de nacimiento</span><span class="info-value">{{ cliente.representante_legal_fecha_nacimiento|date:'d/m/Y'|default:'No indicada' }}</span></div>
+      </div>
+      {% endif %}
       <div style="margin-top:14px; padding-top:10px; border-top:1px solid #f0f3f2;">
         <span class="info-label" style="display:block; margin-bottom:6px;">Observaciones y notas internas:</span>
         <p style="margin:0; font-size:13.5px; color:#4a5b52; line-height:1.45;">{{ cliente.observaciones|linebreaksbr|default:'Sin observaciones.' }}</p>
@@ -447,13 +459,9 @@
       <div class="client-card-header">
         <div>
           <h2>Cuentas por cobrar y recibos</h2>
-          <p style="margin:2px 0 0 0; font-size:12.5px; color:#65746b;">Cobros emitidos y pagos registrados.</p>
+          <p style="margin:2px 0 0 0; font-size:12.5px; color:#65746b;">Resumen de cargos; los abonos se registran en Ingresos.</p>
         </div>
-        {% if puede_gestionar %}
-        <button type="button" class="button button--quiet" style="font-size:12px; min-height:32px;" data-open-modal="modal-crear-cobro">
-          + Cobro extra
-        </button>
-        {% endif %}
+        <a href="{% url 'ingresos:index' %}?q={{ cliente.nombre|urlencode }}" class="button button--quiet" style="font-size:12px; min-height:32px;">Ver en Ingresos</a>
       </div>
 
       {% if cobros_honorarios %}
@@ -464,7 +472,6 @@
             <th>Total</th>
             <th>Saldo</th>
             <th>Estado</th>
-            {% if puede_gestionar %}<th>Acción</th>{% endif %}
           </tr>
         </thead>
         <tbody>
@@ -483,17 +490,6 @@
               {% endif %}
             </td>
             <td><span class="badge-pago badge-pago--{{ cobro.estado }}">{{ cobro.get_estado_display }}</span></td>
-            {% if puede_gestionar %}
-            <td>
-              {% if cobro.saldo_pendiente > 0 %}
-              <button type="button" class="button button--primary" style="min-height:28px; padding:0 8px; font-size:12px;" data-open-modal="modal-registrar-pago" data-cobro-id="{{ cobro.pk }}" data-cliente-nombre="{{ cliente.nombre }}" data-concepto="{{ cobro.concepto }}" data-saldo="{{ cobro.saldo_pendiente }}">
-                Cobrar
-              </button>
-              {% else %}
-              <span style="font-size:11.5px; color:#15803d; font-weight:600;">✓ Al día</span>
-              {% endif %}
-            </td>
-            {% endif %}
           </tr>
           {% endfor %}
         </tbody>
@@ -542,8 +538,6 @@
 {% include 'credenciales/modals/crear.html' %}
 {% include 'credenciales/modals/editar.html' %}
 {% include 'credenciales/modals/eliminar.html' %}
-{% include 'honorarios/modals/registrar_pago.html' %}
-{% include 'honorarios/modals/crear_cobro.html' %}
 
 {% if puede_gestionar %}
 {% include 'clientes/modals/editar.html' %}

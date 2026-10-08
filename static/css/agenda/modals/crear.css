@@ -1,0 +1,11 @@
+.agenda-form { display: grid; gap: 13px; padding: 18px 22px 22px; }
+.agenda-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.agenda-form__field { display: grid; align-content: start; gap: 6px; min-width: 0; color: #43534c; font-size: 13px; font-weight: 600; }
+.agenda-form__field--wide { grid-column: 1 / -1; }
+.agenda-form__field b { color: #b65c48; }
+.agenda-form__field input, .agenda-form__field select, .agenda-form__field textarea { box-sizing: border-box; width: 100%; min-height: 39px; padding: 8px 10px; border: 1px solid #dfd6cc; border-radius: 5px; background: #fff; color: #263b32; font: inherit; font-weight: 400; }
+.agenda-form__field textarea { resize: vertical; }
+.agenda-form__field input:focus, .agenda-form__field select:focus, .agenda-form__field textarea:focus { outline: 2px solid #4f8563; outline-offset: 1px; }
+.agenda-form__error { margin: 0; color: #a33b31; font-size: 12px; font-weight: 500; }
+.agenda-form footer, .agenda-delete-panel form { display: flex; justify-content: flex-end; gap: 9px; padding-top: 4px; }
+@media (max-width: 520px) { .agenda-form { padding: 16px; } .agenda-form__grid { grid-template-columns: 1fr; } .agenda-form__field--wide { grid-column: auto; } }

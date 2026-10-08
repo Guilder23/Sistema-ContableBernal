@@ -1,0 +1,22 @@
+<section class="agenda-modal" id="modal-crear-evento" role="dialog" aria-modal="true" aria-labelledby="agenda-create-title" {% if modal_activo != 'crear' %}hidden{% endif %}>
+  <div class="agenda-modal__backdrop" data-close-agenda-modal></div>
+  <div class="agenda-modal__panel">
+    <header><div><p class="eyebrow">NUEVO EVENTO</p><h2 id="agenda-create-title">Agregar a la agenda</h2></div><button type="button" class="button button--quiet agenda-modal__close" data-close-agenda-modal aria-label="Cerrar">Cerrar</button></header>
+    <form method="post" action="{% url 'agenda:crear' %}" class="agenda-form" data-agenda-create-form>{% csrf_token %}
+      {% if errores.general %}<p class="agenda-form__error">{{ errores.general }}</p>{% endif %}
+      <label class="agenda-form__field agenda-form__field--wide"><span>Título <b>*</b></span><input name="titulo" maxlength="160" required value="{{ datos.titulo|default:'' }}" placeholder="Ej. Reunión con cliente">{% if errores.titulo %}<small class="agenda-form__error">{{ errores.titulo }}</small>{% endif %}</label>
+      <div class="agenda-form__grid">
+        <label class="agenda-form__field"><span>Tipo</span><select name="tipo">{% for value, label in tipos %}<option value="{{ value }}" {% if datos.tipo == value or not datos and value == 'cita' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{% if errores.tipo %}<small class="agenda-form__error">{{ errores.tipo }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Estado</span><select name="estado">{% for value, label in estados %}<option value="{{ value }}" {% if datos.estado == value or not datos and value == 'programado' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{% if errores.estado %}<small class="agenda-form__error">{{ errores.estado }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Fecha <b>*</b></span><input name="fecha" type="date" required value="{% if datos.fecha %}{{ datos.fecha }}{% else %}{{ hoy|date:'Y-m-d' }}{% endif %}">{% if errores.fecha %}<small class="agenda-form__error">{{ errores.fecha }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Cliente</span><select name="cliente"><option value="">Sin cliente asociado</option>{% for cliente in clientes %}<option value="{{ cliente.pk }}" {% if datos.cliente == cliente.pk|stringformat:'s' %}selected{% endif %}>{{ cliente.nombre }}</option>{% endfor %}</select>{% if errores.cliente %}<small class="agenda-form__error">{{ errores.cliente }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Hora de inicio <b>*</b></span><input name="hora_inicio" type="time" required value="{{ datos.hora_inicio|default:'' }}">{% if errores.hora_inicio %}<small class="agenda-form__error">{{ errores.hora_inicio }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Hora de fin <b>*</b></span><input name="hora_fin" type="time" required value="{{ datos.hora_fin|default:'' }}">{% if errores.hora_fin %}<small class="agenda-form__error">{{ errores.hora_fin }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Responsable</span><select name="responsable"><option value="">Sin asignar</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}" {% if datos.responsable == usuario.pk|stringformat:'s' %}selected{% endif %}>{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select>{% if errores.responsable %}<small class="agenda-form__error">{{ errores.responsable }}</small>{% endif %}</label>
+        <label class="agenda-form__field"><span>Lugar</span><input name="lugar" maxlength="160" value="{{ datos.lugar|default:'' }}" placeholder="Oficina o dirección">{% if errores.lugar %}<small class="agenda-form__error">{{ errores.lugar }}</small>{% endif %}</label>
+      </div>
+      <label class="agenda-form__field"><span>Observaciones</span><textarea name="observaciones" rows="3" maxlength="2000">{{ datos.observaciones|default:'' }}</textarea>{% if errores.observaciones %}<small class="agenda-form__error">{{ errores.observaciones }}</small>{% endif %}</label>
+      <footer><button class="button button--quiet" type="button" data-close-agenda-modal>Cancelar</button><button class="button button--primary" type="submit">Guardar evento</button></footer>
+    </form>
+  </div>
+</section>

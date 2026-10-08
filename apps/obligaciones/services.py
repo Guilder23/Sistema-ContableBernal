@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.clientes.models import Cliente
+from apps.honorarios.services import generar_cobro_periodo
 from apps.tareas.models import Tarea
 
 from .models import ConfiguracionCliente, DiaNoLaborable, Obligacion, TipoObligacion
@@ -110,7 +111,7 @@ def calcular_vencimiento(tipo, cliente, periodo_fin, dias_no_laborables=()):
 
 
 @transaction.atomic
-def generar_obligaciones(periodicidad, anio, numero, cliente_id=None):
+def generar_obligaciones(periodicidad, anio, numero, cliente_id=None, usuario=None):
 	configuraciones_consulta = (
 		ConfiguracionCliente.objects.select_related('cliente', 'tipo')
 		.filter(
@@ -130,6 +131,7 @@ def generar_obligaciones(periodicidad, anio, numero, cliente_id=None):
 	creadas = 0
 	existentes = 0
 	tareas_creadas = 0
+	cobros_creados = 0
 	sin_vigencia = 0
 	errores = []
 
@@ -158,14 +160,23 @@ def generar_obligaciones(periodicidad, anio, numero, cliente_id=None):
 			},
 		)
 		_, tarea_creada = Tarea.objects.get_or_create(obligacion=obligacion)
+		_, cobro_creado = generar_cobro_periodo(
+			cliente,
+			periodicidad,
+			anio,
+			numero,
+			usuario=usuario,
+		)
 		creadas += int(creada)
 		existentes += int(not creada)
 		tareas_creadas += int(tarea_creada)
+		cobros_creados += int(cobro_creado)
 
 	return {
 		'creadas': creadas,
 		'existentes': existentes,
 		'tareas_creadas': tareas_creadas,
+		'cobros_creados': cobros_creados,
 		'sin_vigencia': sin_vigencia,
 		'errores': errores,
 	}

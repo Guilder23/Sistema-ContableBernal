@@ -1,7 +1,105 @@
 {% extends 'base/base.html' %}
 {% load static %}
-{% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
+{% block title %}Control financiero | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--gastos{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/gastos/gastos.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">MOVIMIENTO FINANCIERO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/gastos/gastos.js' %}"></script>{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/gastos/gastos.css' %}">
+<link rel="stylesheet" href="{% static 'css/gastos/modals/registro.css' %}">
+<link rel="stylesheet" href="{% static 'css/gastos/modals/ver.css' %}">
+<link rel="stylesheet" href="{% static 'css/gastos/modals/editar.css' %}">
+<link rel="stylesheet" href="{% static 'css/gastos/modals/eliminar.css' %}">
+{% endblock %}
+{% block content %}
+<section class="page-heading clients-heading expenses-heading">
+  <div><p class="eyebrow">CONTROL INTERNO</p><h1>Gastos e inversiones</h1><p>Seguimiento de gastos operativos, activos, egresos y montos por recuperar.</p></div>
+  {% if puede_gestionar %}<button class="button button--primary" type="button" data-open-modal="modal-registro">+ Registrar movimiento</button>{% endif %}
+</section>
+
+<section class="expense-kpis" aria-label="Resumen financiero">
+  <article><span>Gastos de {{ hoy|date:'F' }}</span><strong>Bs {{ total_gastos_mes|floatformat:2 }}</strong><small>Gastos registrados este mes</small></article>
+  <article><span>Gastos anuales</span><strong>Bs {{ total_gastos_anuales|floatformat:2 }}</strong><small>EEFF, auditoría, aguinaldo y otros</small></article>
+  <article><span>Inversiones</span><strong>Bs {{ total_inversiones|floatformat:2 }}</strong><small>Compras de activos registradas</small></article>
+  <article><span>Salidas / egresos</span><strong>Bs {{ total_egresos|floatformat:2 }}</strong><small>Total de desembolsos registrados</small></article>
+  <article class="expense-kpi--warning"><span>Pendiente por recuperar</span><strong>Bs {{ total_por_cobrar|floatformat:2 }}</strong><small>Montos adelantados a clientes</small></article>
+  <article class="expense-kpi--muted"><span>Pendiente de pago</span><strong>Bs {{ total_pendiente_pago|floatformat:2 }}</strong><small>Obligaciones aún no pagadas</small></article>
+  <article><span>Depreciación acumulada</span><strong>Bs {{ total_depreciacion|floatformat:2 }}</strong><small>Activos vigentes según su vida útil</small></article>
+</section>
+
+<section class="expense-insights" aria-label="Análisis de gastos del año {{ hoy|date:'Y' }}">
+  <article class="expense-insight">
+    <header><h2>Gastos por mes</h2><span>{{ hoy|date:'Y' }}</span></header>
+    <div class="expense-month-list">{% for item in gastos_mensuales %}<div class="expense-bar-row"><span>{{ item.nombre }}</span><div class="expense-bar-track"><i style="width:{{ item.porcentaje }}%"></i></div><strong>Bs {{ item.monto|floatformat:2 }}</strong></div>{% endfor %}</div>
+  </article>
+  <article class="expense-insight">
+    <header><h2>Gastos por categoría</h2><span>{{ hoy|date:'Y' }}</span></header>
+    {% for item in gastos_por_categoria %}<div class="expense-category-row"><div><span>{{ item.nombre }}</span><strong>Bs {{ item.monto|floatformat:2 }}</strong></div><div class="expense-bar-track"><i style="width:{{ item.porcentaje }}%"></i></div></div>{% empty %}<p class="expense-insight__empty">Sin gastos registrados este año.</p>{% endfor %}
+  </article>
+  <article class="expense-insight expense-recovery-summary">
+    <header><h2>Recuperabilidad</h2><span>Acumulado</span></header>
+    <div><span>Recuperable</span><strong>Bs {{ total_recuperable|floatformat:2 }}</strong></div>
+    <div><span>No recuperable</span><strong>Bs {{ total_no_recuperable|floatformat:2 }}</strong></div>
+    <div><span>Por cobrar a clientes</span><strong>Bs {{ total_por_cobrar|floatformat:2 }}</strong></div>
+  </article>
+</section>
+
+<section class="clients-toolbar surface expense-toolbar">
+  <form method="get" class="clients-filter">
+    <label class="client-search"><span>Buscar</span><span class="search-input"><input type="search" name="q" value="{{ busqueda }}" placeholder="Concepto, proveedor, cliente o comprobante"></span></label>
+    <label><span>Tipo</span><select name="tipo"><option value="">Todos</option>{% for value, label in tipos %}<option value="{{ value }}" {% if tipo_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>Categoría</span><select name="categoria"><option value="">Todas</option>{% for value, label in categorias %}<option value="{{ value }}" {% if categoria_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>Pago</span><select name="estado_pago"><option value="">Todos</option>{% for value, label in estados_pago %}<option value="{{ value }}" {% if pago_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>Recuperación</span><select name="recuperacion"><option value="">Todas</option>{% for value, label in estados_recuperacion %}<option value="{{ value }}" {% if recuperacion_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <button class="button button--quiet" type="submit">Filtrar</button>
+  </form>
+</section>
+
+<section class="clients-table-wrap surface expense-table-wrap" aria-label="Movimientos financieros">
+  <div class="clients-table-heading"><h2>Movimientos registrados</h2><span>{{ total_registros }} registro{{ total_registros|pluralize:"s" }}</span></div>
+  <div class="clients-table-scroll">
+    <table class="clients-table expense-table">
+      <thead><tr><th>Concepto</th><th>Tipo / categoría</th><th>Fecha / frecuencia</th><th>Monto</th><th>Pago</th><th>Recuperación</th><th>Acciones</th></tr></thead>
+      <tbody>
+        {% for registro in registros %}
+        <tr>
+          <td><strong>{{ registro.concepto }}</strong>{% if registro.cliente %}<small class="expense-subline">Cliente: {{ registro.cliente.nombre }}</small>{% elif registro.proveedor %}<small class="expense-subline">{{ registro.proveedor }}</small>{% endif %}{% if registro.comprobante %}<small class="expense-subline">Comprobante: {{ registro.comprobante }}</small>{% endif %}</td>
+          <td><span class="expense-type expense-type--{{ registro.tipo }}">{{ registro.get_tipo_display }}</span><small class="expense-subline">{{ registro.get_categoria_display }}</small>{% if registro.tipo == 'inversion' %}<small class="expense-subline">{{ registro.get_estado_activo_display }} · Bs {{ registro.depreciacion_acumulada|floatformat:2 }} depreciado</small>{% endif %}</td>
+          <td>{{ registro.fecha|date:'d/m/Y' }}<small class="expense-subline">{{ registro.get_periodicidad_display }}</small></td>
+          <td><strong>Bs {{ registro.monto|floatformat:2 }}</strong></td>
+          <td><span class="expense-status expense-status--{{ registro.estado_pago }}">{{ registro.get_estado_pago_display }}</span></td>
+          <td>{% if registro.recuperable %}<span class="expense-status expense-status--{{ registro.estado_recuperacion }}">{{ registro.get_estado_recuperacion_display }}</span>{% else %}<span class="client-muted">No aplica</span>{% endif %}</td>
+          <td><div class="client-actions">
+            <button type="button" class="icon-action icon-action--view" title="Ver movimiento" aria-label="Ver {{ registro.concepto }}" data-open-modal="modal-ver"
+              data-view-concepto="{{ registro.concepto }}" data-view-tipo="{{ registro.get_tipo_display }}" data-view-categoria="{{ registro.get_categoria_display }}" data-view-periodicidad="{{ registro.get_periodicidad_display }}" data-view-monto="{{ registro.monto|floatformat:2 }}" data-view-fecha="{{ registro.fecha|date:'d/m/Y' }}" data-view-proveedor="{{ registro.proveedor|default:'No indicado' }}" data-view-responsable="{{ registro.responsable|default:'No indicado' }}" data-view-comprobante="{{ registro.comprobante|default:'No registrado' }}" data-view-pago="{{ registro.get_estado_pago_display }}" data-view-cliente="{{ registro.cliente.nombre|default:'No asociado' }}" data-view-recuperable="{{ registro.recuperable|yesno:'Sí,No' }}" data-view-recuperacion="{% if registro.recuperable %}{{ registro.get_estado_recuperacion_display }}{% else %}No aplica{% endif %}" data-view-vida-util="{% if registro.vida_util_meses %}{{ registro.vida_util_meses }} meses{% else %}No aplica{% endif %}" data-view-depreciacion="Bs {{ registro.depreciacion_mensual|floatformat:2 }} mensual · Bs {{ registro.depreciacion_acumulada|floatformat:2 }} acumulada" data-view-activo="{{ registro.get_estado_activo_display }}" data-view-ubicacion="{{ registro.ubicacion|default:'No indicada' }}" data-view-observaciones="{{ registro.observaciones|default:'Sin observaciones' }}">
+              <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg>
+            </button>
+            {% if puede_gestionar %}
+            <button type="button" class="icon-action icon-action--edit" title="Editar movimiento" aria-label="Editar {{ registro.concepto }}" data-open-modal="modal-editar"
+              data-edit-url="{% url 'gastos:editar' registro_id=registro.pk %}" data-concepto="{{ registro.concepto }}" data-tipo="{{ registro.tipo }}" data-categoria="{{ registro.categoria }}" data-periodicidad="{{ registro.periodicidad }}" data-monto="{{ registro.monto }}" data-fecha="{{ registro.fecha|date:'Y-m-d' }}" data-proveedor="{{ registro.proveedor }}" data-responsable="{{ registro.responsable }}" data-comprobante="{{ registro.comprobante }}" data-estado-pago="{{ registro.estado_pago }}" data-recuperable="{{ registro.recuperable|yesno:'true,false' }}" data-estado-recuperacion="{{ registro.estado_recuperacion }}" data-cliente="{{ registro.cliente_id|default:'' }}" data-vida-util="{{ registro.vida_util_meses|default:'' }}" data-estado-activo="{{ registro.estado_activo }}" data-ubicacion="{{ registro.ubicacion }}" data-observaciones="{{ registro.observaciones }}">
+              <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg>
+            </button>
+            <button type="button" class="icon-action icon-action--delete" title="Eliminar movimiento" aria-label="Eliminar {{ registro.concepto }}" data-open-modal="modal-eliminar" data-delete-url="{% url 'gastos:eliminar' registro_id=registro.pk %}" data-delete-concept="{{ registro.concepto }}">
+              <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trash"></use></svg>
+            </button>
+            {% else %}<span class="client-muted">Solo lectura</span>{% endif %}
+          </div></td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="clients-empty">No hay movimientos que coincidan con los filtros.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}<nav class="pagination" aria-label="Paginación de movimientos"><span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span><div>{% if page_obj.has_previous %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Página anterior">‹</a>{% endif %}{% if page_obj.has_next %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Página siguiente">›</a>{% endif %}</div></nav>{% endif %}
+</section>
+
+{% if puede_gestionar %}
+{% include 'gastos/modals/registro.html' %}
+{% include 'gastos/modals/editar.html' %}
+{% include 'gastos/modals/eliminar.html' %}
+{% endif %}
+{% include 'gastos/modals/ver.html' %}
+{% endblock %}
+{% block page_js %}
+<script defer src="{% static 'js/gastos/gastos.js' %}"></script>
+<script defer src="{% static 'js/gastos/modals/ver.js' %}"></script>
+{% if puede_gestionar %}<script defer src="{% static 'js/gastos/modals/registro.js' %}"></script><script defer src="{% static 'js/gastos/modals/editar.js' %}"></script><script defer src="{% static 'js/gastos/modals/eliminar.js' %}"></script>{% endif %}
+{% endblock %}

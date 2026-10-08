@@ -1,2 +1,37 @@
-.workspace--ingresos .eyebrow, .workspace--ingresos .empty-mark { color: #4f6e8a; }
-.workspace--ingresos .empty-mark { border-color: #b0c2d0; }
+.workspace--ingresos .eyebrow { color: #4f6e8a; }
+.income-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+.income-kpis article { min-width: 0; padding: 16px 18px; border: 1px solid #e5ddd3; border-radius: 8px; background: #fff; }
+.income-kpis article > span, .income-kpis article small { display: block; color: #69756f; font-size: 12px; }
+.income-kpis article strong { display: block; margin: 7px 0 4px; color: #244235; font-size: 21px; }
+.income-kpi--pending { border-left: 3px solid #d89c41 !important; }
+.income-toolbar { padding: 14px 16px; }
+.income-toolbar .clients-filter { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(130px, 1fr)) auto; align-items: end; gap: 12px; }
+.income-toolbar .button { min-height: 40px; }
+.income-table-wrap { margin-top: 16px; }
+.income-table { min-width: 850px; }
+.income-table-wrap .clients-table-heading { align-items: center; gap: 14px; }
+.income-table-wrap .clients-table-heading > span { color: #738078; font-size: 12px; }
+.income-subline { display: block; margin-top: 4px; color: #6d7972; font-size: 11.5px; }
+.income-status { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #fff1dd; color: #805714; font-size: 11px; font-weight: 650; white-space: nowrap; }
+.income-status--parcial { background: #e9f0f8; color: #345b79; }
+.income-status--pagado { background: #e5f2e9; color: #286440; }
+.income-status--cancelado { background: #f8e8e5; color: #9a4035; }
+.income-pay-button { min-height: 32px; padding: 0 10px; font-size: 12px; }
+.income-paid-label { color: #286440; font-size: 12px; font-weight: 650; }
+.income-pagination { margin-top: 16px; }
+@media (max-width: 1000px) {
+	.income-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.income-toolbar .clients-filter { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.income-toolbar .client-search { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+	.income-kpis { gap: 8px; }
+	.income-kpis article { padding: 13px; }
+	.income-kpis article strong { font-size: 18px; }
+	.income-toolbar .clients-filter { grid-template-columns: 1fr 1fr; }
+	.income-toolbar .client-search { grid-column: 1 / -1; }
+}
+@media (max-width: 380px) {
+	.income-kpis { grid-template-columns: 1fr; }
+	.income-toolbar .clients-filter { grid-template-columns: 1fr; }
+}
