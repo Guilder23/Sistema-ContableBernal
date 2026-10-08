@@ -1,2 +1,69 @@
-.workspace--gastos .eyebrow, .workspace--gastos .empty-mark { color: #9a6c16; }
-.workspace--gastos .empty-mark { border-color: #dfc88e; }
+.workspace--gastos .eyebrow { color: #9a6c16; }
+.expense-kpis {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 12px;
+	margin: 0 0 18px;
+}
+.expense-kpis article {
+	min-width: 0;
+	padding: 16px 18px;
+	border: 1px solid #e9ddd1;
+	border-radius: 8px;
+	background: #fff;
+}
+.expense-kpis article > span,
+.expense-kpis article small { display: block; color: #68736d; font-size: 12px; }
+.expense-kpis article strong { display: block; margin: 7px 0 4px; color: #20362f; font-size: 21px; }
+.expense-kpi--warning { border-left: 3px solid #d99b38 !important; }
+.expense-kpi--muted { border-left: 3px solid #8b9b94 !important; }
+.expense-insights { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(220px, .8fr); gap: 12px; margin-bottom: 16px; }
+.expense-insight { min-width: 0; max-height: 360px; overflow: auto; padding: 16px 18px; border: 1px solid #e9ddd1; border-radius: 8px; background: #fff; }
+.expense-insight > header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.expense-insight h2 { margin: 0; color: #263b32; font-size: 15px; }
+.expense-insight > header span { color: #758079; font-size: 11px; }
+.expense-bar-row { display: grid; grid-template-columns: 68px minmax(40px, 1fr) 88px; align-items: center; gap: 8px; margin: 7px 0; color: #58675f; font-size: 11px; }
+.expense-bar-row > strong { color: #3c4e45; text-align: right; font-size: 10px; font-weight: 600; }
+.expense-bar-track { height: 7px; overflow: hidden; border-radius: 8px; background: #edf1ed; }
+.expense-bar-track i { display: block; height: 100%; min-width: 0; border-radius: inherit; background: #559273; }
+.expense-category-row { margin: 10px 0; }
+.expense-category-row > div:first-child,
+.expense-recovery-summary > div { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 5px; color: #58675f; font-size: 11px; }
+.expense-category-row strong,
+.expense-recovery-summary strong { color: #31473c; font-size: 11px; white-space: nowrap; }
+.expense-recovery-summary > div { padding: 12px 0; border-bottom: 1px solid #edf0ec; }
+.expense-recovery-summary > div:last-child { border-bottom: 0; }
+.expense-insight__empty { color: #77827c; font-size: 12px; }
+.expense-toolbar { padding: 14px 16px; }
+.expense-toolbar .clients-filter { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(120px, 1fr)) auto; align-items: end; gap: 12px; }
+.expense-toolbar label { min-width: 0; }
+.expense-toolbar .button { min-height: 40px; }
+.expense-table-wrap { margin-top: 16px; }
+.expense-table { min-width: 960px; }
+.expense-subline { display: block; margin-top: 4px; color: #6c7772; font-size: 11.5px; }
+.expense-type,
+.expense-status { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #eef3f0; color: #31594b; font-size: 11px; font-weight: 650; white-space: nowrap; }
+.expense-type--inversion { background: #e8f0f7; color: #315c78; }
+.expense-type--egreso { background: #fff2df; color: #8b5b16; }
+.expense-status--pendiente { background: #fff1dc; color: #875811; }
+.expense-status--pagado,
+.expense-status--recuperado { background: #e6f3ea; color: #286440; }
+.expense-status--baja { background: #fbe9e7; color: #9f3b32; }
+@media (max-width: 1050px) {
+	.expense-toolbar .clients-filter { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.expense-insights { grid-template-columns: 1fr 1fr; }
+	.expense-recovery-summary { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+	.expense-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+	.expense-kpis article { padding: 13px; }
+	.expense-kpis article strong { font-size: 18px; }
+	.expense-insights { grid-template-columns: 1fr; }
+	.expense-recovery-summary { grid-column: auto; }
+	.expense-toolbar .clients-filter { grid-template-columns: 1fr 1fr; }
+	.expense-toolbar .client-search { grid-column: 1 / -1; }
+}
+@media (max-width: 420px) {
+	.expense-kpis { grid-template-columns: 1fr; }
+	.expense-toolbar .clients-filter { grid-template-columns: 1fr; }
+}

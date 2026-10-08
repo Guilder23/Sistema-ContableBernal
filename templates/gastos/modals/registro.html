@@ -1,0 +1,43 @@
+<section class="expense-modal" id="modal-registro" role="dialog" aria-modal="true" aria-labelledby="expense-modal-title" {% if modal_activo != 'modal-registro' %}hidden{% endif %}>
+  <div class="expense-modal__backdrop" data-close-expense-modal></div>
+  <div class="expense-modal__panel">
+    <header><div><p class="eyebrow">CONTROL INTERNO</p><h2 id="expense-modal-title">{% if registro_edicion %}Editar movimiento{% else %}Registrar movimiento{% endif %}</h2></div><button class="expense-modal__close" type="button" data-close-expense-modal aria-label="Cerrar">Cerrar</button></header>
+    <form method="post" action="{% url 'gastos:crear' %}" data-create-url="{% url 'gastos:crear' %}" class="expense-form" data-expense-form data-create-expense-form>
+      {% csrf_token %}
+      {% if errores.general %}<p class="expense-form__error">{{ errores.general }}</p>{% endif %}
+      <div class="expense-form__grid">
+        <label class="expense-form__field expense-form__field--wide"><span>Concepto <b>*</b></span><input name="concepto" data-expense-field="concepto" maxlength="180" required value="{{ form_data.concepto|default:'' }}" placeholder="Ej. Alquiler de oficina"></label>
+        {% if errores.concepto %}<small class="expense-form__error">{{ errores.concepto }}</small>{% endif %}
+        <label class="expense-form__field"><span>Tipo de movimiento <b>*</b></span><select name="tipo" data-expense-field="tipo" required><option value="">Seleccionar</option>{% for value, label in tipos %}<option value="{{ value }}" {% if form_data.tipo == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{% if errores.tipo %}<small class="expense-form__error">{{ errores.tipo }}</small>{% endif %}</label>
+        <label class="expense-form__field"><span>Categoría <b>*</b></span><select name="categoria" data-expense-field="categoria" required><option value="">Seleccionar</option><optgroup label="Gastos" data-categoria-tipo="gasto">{% for value, label in categorias_por_tipo.gasto %}<option value="{{ value }}" {% if form_data.categoria == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</optgroup><optgroup label="Inversiones" data-categoria-tipo="inversion">{% for value, label in categorias_por_tipo.inversion %}<option value="{{ value }}" {% if form_data.categoria == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</optgroup><optgroup label="Egresos" data-categoria-tipo="egreso">{% for value, label in categorias_por_tipo.egreso %}<option value="{{ value }}" {% if form_data.categoria == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</optgroup></select>{% if errores.categoria %}<small class="expense-form__error">{{ errores.categoria }}</small>{% endif %}</label>
+        <label class="expense-form__field"><span>Periodicidad <b>*</b></span><select name="periodicidad" data-expense-field="periodicidad" required>{% for value, label in periodicidades %}<option value="{{ value }}" {% if form_data.periodicidad == value or not form_data and value == 'unico' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>{% if errores.periodicidad %}<small class="expense-form__error">{{ errores.periodicidad }}</small>{% endif %}</label>
+        <label class="expense-form__field"><span>Monto (Bs) <b>*</b></span><input name="monto" data-expense-field="monto" type="number" min="0.01" step="0.01" required value="{{ form_data.monto|default:'' }}" placeholder="0.00">{% if errores.monto %}<small class="expense-form__error">{{ errores.monto }}</small>{% endif %}</label>
+        <label class="expense-form__field"><span>Fecha <b>*</b></span><input name="fecha" data-expense-field="fecha" type="date" required value="{% if form_data.fecha %}{{ form_data.fecha }}{% else %}{{ hoy|date:'Y-m-d' }}{% endif %}">{% if errores.fecha %}<small class="expense-form__error">{{ errores.fecha }}</small>{% endif %}</label>
+        <label class="expense-form__field"><span>Proveedor</span><input name="proveedor" data-expense-field="proveedor" maxlength="180" value="{{ form_data.proveedor|default:'' }}"></label>
+        <label class="expense-form__field"><span>Responsable</span><input name="responsable" data-expense-field="responsable" maxlength="180" value="{{ form_data.responsable|default:'' }}"></label>
+        <label class="expense-form__field"><span>Comprobante / factura</span><input name="comprobante" data-expense-field="comprobante" maxlength="120" value="{{ form_data.comprobante|default:'' }}"></label>
+        <label class="expense-form__field"><span>Estado de pago</span><select name="estado_pago" data-expense-field="estado_pago">{% for value, label in estados_pago %}<option value="{{ value }}" {% if form_data.estado_pago == value or not form_data and value == 'pendiente' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      </div>
+
+      <fieldset class="expense-form__section" data-recovery-section>
+        <legend>Salida recuperable</legend>
+        <label class="expense-form__check"><input type="checkbox" name="recuperable" value="1" data-expense-field="recuperable" {% if form_data.recuperable %}checked{% endif %}> Este monto se cobrará a un cliente</label>
+        <div class="expense-form__grid" data-recovery-fields>
+          <label class="expense-form__field"><span>Cliente <b>*</b></span><select name="cliente" data-expense-field="cliente"><option value="">Seleccionar cliente</option>{% for cliente in clientes %}<option value="{{ cliente.pk }}" {% if form_data.cliente == cliente.pk|stringformat:'s' %}selected{% endif %}>{{ cliente.nombre }}{% if cliente.razon_social %} · {{ cliente.razon_social }}{% endif %}</option>{% endfor %}</select>{% if errores.cliente %}<small class="expense-form__error">{{ errores.cliente }}</small>{% endif %}</label>
+          <label class="expense-form__field"><span>Estado de recuperación</span><select name="estado_recuperacion" data-expense-field="estado_recuperacion">{% for value, label in estados_recuperacion %}<option value="{{ value }}" {% if form_data.estado_recuperacion == value or not form_data and value == 'pendiente' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="expense-form__section" data-investment-section>
+        <legend>Datos del activo</legend>
+        <div class="expense-form__grid">
+          <label class="expense-form__field"><span>Vida útil (meses) <b>*</b></span><input name="vida_util_meses" data-expense-field="vida_util_meses" type="number" min="1" max="1200" value="{{ form_data.vida_util_meses|default:'' }}">{% if errores.vida_util_meses %}<small class="expense-form__error">{{ errores.vida_util_meses }}</small>{% endif %}</label>
+          <label class="expense-form__field"><span>Estado del activo</span><select name="estado_activo" data-expense-field="estado_activo">{% for value, label in estados_activo %}<option value="{{ value }}" {% if form_data.estado_activo == value or not form_data and value == 'en_uso' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+          <label class="expense-form__field expense-form__field--wide"><span>Ubicación</span><input name="ubicacion" data-expense-field="ubicacion" maxlength="180" value="{{ form_data.ubicacion|default:'' }}" placeholder="Ej. Oficina principal"></label>
+        </div>
+      </fieldset>
+      <label class="expense-form__field"><span>Observaciones</span><textarea name="observaciones" data-expense-field="observaciones" rows="3">{{ form_data.observaciones|default:'' }}</textarea></label>
+      <footer><button class="button button--quiet" type="button" data-close-expense-modal>Cancelar</button><button class="button button--primary" type="submit">Guardar registro</button></footer>
+    </form>
+  </div>
+</section>

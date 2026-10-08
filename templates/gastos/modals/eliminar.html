@@ -1,0 +1,7 @@
+<section class="expense-eliminar-modal" id="modal-eliminar" role="dialog" aria-modal="true" aria-labelledby="expense-delete-title" hidden>
+  <div class="expense-modal__backdrop" data-close-expense-modal></div>
+  <div class="expense-delete-modal__panel">
+    <header><p class="eyebrow">ELIMINAR REGISTRO</p><h2 id="expense-delete-title">¿Eliminar movimiento?</h2><p>Se eliminará <strong data-delete-concept></strong>. Esta acción no se puede deshacer.</p></header>
+    <form method="post" data-delete-expense-form>{% csrf_token %}<button class="button button--quiet" type="button" data-close-expense-modal>Cancelar</button><button class="button button--danger" type="submit">Eliminar</button></form>
+  </div>
+</section>

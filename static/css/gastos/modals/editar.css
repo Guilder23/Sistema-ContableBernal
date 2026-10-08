@@ -1,0 +1,2 @@
+@import url("./registro.css");
+.expense-modal#modal-editar[hidden] { display: none !important; }

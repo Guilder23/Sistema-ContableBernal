@@ -1,0 +1,7 @@
+.expense-eliminar-modal[hidden] { display: none !important; }
+.expense-eliminar-modal { position: fixed; z-index: 1200; inset: 0; display: grid; place-items: center; padding: 18px; }
+.expense-eliminar-modal .expense-modal__backdrop { position: absolute; inset: 0; background: rgb(22 32 28 / 55%); }
+.expense-delete-modal__panel { position: relative; width: min(440px, 100%); padding: 24px; border: 1px solid #e7ddd2; border-radius: 8px; background: #fff; box-shadow: 0 18px 60px rgb(20 31 26 / 24%); }
+.expense-delete-modal__panel > header > p:last-child { margin: 12px 0 20px; color: #66736c; line-height: 1.5; }
+.expense-delete-modal__panel form { display: flex; justify-content: flex-end; gap: 9px; }
+.expense-delete-modal .button--danger { min-height: 38px; padding: 0 14px; border: 1px solid #ba4c40; border-radius: 5px; background: #ba4c40; color: #fff; cursor: pointer; }
