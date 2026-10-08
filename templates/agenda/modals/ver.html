@@ -1,0 +1,13 @@
+<section class="agenda-modal" id="modal-ver-evento" role="dialog" aria-modal="true" aria-labelledby="agenda-view-title" hidden>
+  <div class="agenda-modal__backdrop" data-close-agenda-modal></div>
+  <div class="agenda-modal__panel agenda-view-panel">
+    <header><div><p class="eyebrow">DETALLE DE AGENDA</p><h2 id="agenda-view-title" data-view-field="title"></h2></div><button type="button" class="button button--quiet agenda-modal__close" data-close-agenda-modal aria-label="Cerrar">Cerrar</button></header>
+    <dl class="agenda-view-grid">
+      <div><dt>Tipo</dt><dd data-view-field="type"></dd></div><div><dt>Estado</dt><dd data-view-field="state"></dd></div>
+      <div><dt>Fecha</dt><dd data-view-field="date"></dd></div><div><dt>Horario</dt><dd><span data-view-field="start"></span>–<span data-view-field="end"></span></dd></div>
+      <div><dt>Cliente</dt><dd data-view-field="client"></dd></div><div><dt>Responsable</dt><dd data-view-field="owner"></dd></div>
+      <div><dt>Lugar</dt><dd data-view-field="place"></dd></div><div class="agenda-view-grid__wide"><dt>Observaciones</dt><dd data-view-field="notes"></dd></div>
+    </dl>
+    {% if puede_gestionar %}<footer><button type="button" class="button button--quiet" data-close-agenda-modal>Cerrar</button><button type="button" class="button button--quiet" data-edit-event-trigger>Editar</button><button type="button" class="button button--danger" data-delete-event-trigger>Eliminar</button></footer>{% else %}<footer><button type="button" class="button button--quiet" data-close-agenda-modal>Cerrar</button></footer>{% endif %}
+  </div>
+</section>
