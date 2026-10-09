@@ -1,0 +1,3 @@
+#modal-editar-servicio .service-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#modal-editar-servicio .service-form__wide { grid-column: 1 / -1; }
+@media (max-width: 560px) { #modal-editar-servicio .service-form { grid-template-columns: 1fr; } #modal-editar-servicio .service-form__wide { grid-column: auto; } }

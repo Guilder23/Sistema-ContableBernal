@@ -1,0 +1,18 @@
+<section class="service-modal" id="modal-editar-servicio" role="dialog" aria-modal="true" aria-labelledby="service-edit-title" hidden>
+  <button class="service-modal__backdrop" type="button" data-close-service-modal aria-label="Cerrar"></button>
+  <div class="service-modal__panel">
+    <header class="service-modal__header"><div><p class="eyebrow">ACTUALIZAR TRABAJO</p><h2 id="service-edit-title">Editar servicio o trámite</h2><p>Actualiza el avance, responsable o precio acordado.</p></div><button class="service-modal__close" type="button" data-close-service-modal aria-label="Cerrar">×</button></header>
+    <form method="post" class="service-form" data-edit-service-form>
+      {% csrf_token %}
+      <label class="service-form__wide"><span>Trabajo solicitado <b>*</b></span><input name="concepto" data-edit-field="concepto" maxlength="180" required></label>
+      <label class="service-form__wide"><span>Descripción / alcance</span><textarea name="descripcion" data-edit-field="descripcion" rows="3"></textarea></label>
+      <label><span>Tipo</span><select name="tipo" data-edit-field="tipo">{% for value, label in tipos %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label><span>Estado del trabajo</span><select name="estado" data-edit-field="estado">{% for value, label in estados %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label><span>Prioridad</span><select name="prioridad" data-edit-field="prioridad">{% for value, label in prioridades %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label><span>Fecha límite</span><input type="date" name="fecha_limite" data-edit-field="fecha_limite"></label>
+      {% if puede_gestionar %}<label><span>Precio acordado (Bs)</span><input type="number" name="monto_total" min="0.01" step="0.01" data-edit-field="monto_total" required></label><label><span>Responsable</span><select name="responsable" data-edit-field="responsable"><option value="">Sin asignar</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}">{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select></label>{% endif %}
+      <label class="service-form__wide"><span>Observaciones</span><textarea name="observaciones" data-edit-field="observaciones" rows="2"></textarea></label>
+      <footer class="service-modal__footer"><button class="button button--quiet" type="button" data-close-service-modal>Cancelar</button><button class="button button--primary" type="submit">Guardar cambios</button></footer>
+    </form>
+  </div>
+</section>

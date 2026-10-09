@@ -1,0 +1,28 @@
+{% load static %}
+<section class="service-modal service-view-modal" id="modal-ver-servicio-{{ servicio.pk }}" role="dialog" aria-modal="true" aria-labelledby="service-view-title-{{ servicio.pk }}" hidden>
+  <button class="service-modal__backdrop" type="button" data-close-service-modal aria-label="Cerrar"></button>
+  <div class="service-modal__panel service-view-modal__panel">
+    <header class="service-modal__header"><div><p class="eyebrow">{{ servicio.cliente.nombre }} · {{ servicio.get_tipo_display }}</p><h2 id="service-view-title-{{ servicio.pk }}">{{ servicio.concepto }}</h2><p>{{ servicio.get_estado_display }} · {{ servicio.get_estado_cobro_display }}</p></div><button class="service-modal__close" type="button" data-close-service-modal aria-label="Cerrar">×</button></header>
+    <div class="service-view-content">
+      <dl class="service-view-summary">
+        <div><dt>Cliente</dt><dd>{{ servicio.cliente.nombre }}</dd></div>
+        <div><dt>Documento</dt><dd>{{ servicio.cliente.documento|default:'No registrado' }}</dd></div>
+        <div><dt>Teléfono</dt><dd>{{ servicio.cliente.telefono|default:'No registrado' }}</dd></div>
+        <div><dt>Responsable</dt><dd>{% if servicio.responsable %}{{ servicio.responsable.get_full_name|default:servicio.responsable.username }}{% else %}Sin asignar{% endif %}</dd></div>
+        <div><dt>Solicitado</dt><dd>{{ servicio.fecha_solicitud|date:'d/m/Y' }}</dd></div>
+        <div><dt>Fecha límite</dt><dd>{{ servicio.fecha_limite|date:'d/m/Y'|default:'Sin fecha' }}</dd></div>
+        <div><dt>Precio</dt><dd>Bs {{ servicio.monto_total|floatformat:2 }}</dd></div>
+        <div><dt>Total abonado</dt><dd>Bs {{ servicio.total_pagado|floatformat:2 }}</dd></div>
+        <div><dt>Saldo pendiente</dt><dd class="service-balance--pending">Bs {{ servicio.saldo_pendiente|floatformat:2 }}</dd></div>
+      </dl>
+      {% if servicio.descripcion %}<section class="service-view-description"><h3>Alcance del trabajo</h3><p>{{ servicio.descripcion|linebreaksbr }}</p></section>{% endif %}
+      {% if servicio.observaciones %}<section class="service-view-description"><h3>Observaciones</h3><p>{{ servicio.observaciones|linebreaksbr }}</p></section>{% endif %}
+      <section class="service-payment-history"><header><h3>Historial de pagos</h3><span>{{ servicio.pagos.count }} pago{{ servicio.pagos.count|pluralize:"s" }}</span></header>
+        <div class="service-payment-history__scroll"><table><thead><tr><th>Fecha</th><th>Método</th><th>Recibo</th><th>Registrado por</th><th>Monto</th></tr></thead><tbody>
+          {% for pago in servicio.pagos.all %}<tr><td>{{ pago.fecha_pago|date:'d/m/Y' }}</td><td>{{ pago.get_metodo_pago_display }}</td><td>{{ pago.numero_recibo|default:'—' }}</td><td>{% if pago.registrado_por %}{{ pago.registrado_por.get_full_name|default:pago.registrado_por.username }}{% else %}—{% endif %}</td><td><strong>Bs {{ pago.monto|floatformat:2 }}</strong></td></tr>{% empty %}<tr><td colspan="5" class="service-history-empty">Aún no se registraron pagos.</td></tr>{% endfor %}
+        </tbody></table></div>
+      </section>
+    </div>
+    <footer class="service-modal__footer"><button class="button button--quiet" type="button" data-close-service-modal>Cerrar</button>{% if puede_gestionar and servicio.saldo_pendiente > 0 %}<button class="button button--primary" type="button" data-open-modal="modal-pago-servicio" data-pay-url="{% url 'servicios:registrar_pago' servicio_id=servicio.pk %}" data-pay-cliente="{{ servicio.cliente.nombre }}" data-pay-concepto="{{ servicio.concepto }}" data-pay-saldo="{{ servicio.saldo_pendiente }}">Registrar pago</button>{% endif %}</footer>
+  </div>
+</section>

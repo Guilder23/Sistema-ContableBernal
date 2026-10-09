@@ -1,0 +1,4 @@
+.service-delete-modal__panel { width: min(460px, 100%); }
+.service-delete-name { margin: 0 24px 10px; color: #293d32; font-weight: 700; overflow-wrap: anywhere; }
+.service-delete-warning { margin: 0 24px 16px; padding: 10px 12px; border-left: 3px solid #bd6b37; background: #fff6ed; color: #754b31; font-size: 12px; line-height: 1.5; }
+.service-delete-warning[hidden] { display: none; }

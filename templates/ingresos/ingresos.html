@@ -14,7 +14,7 @@
 
 <section class="income-kpis" aria-label="Resumen de ingresos">
   <article><span>Recibido en {{ hoy|date:'F' }}</span><strong>Bs {{ total_ingresos_mes|floatformat:2 }}</strong><small>Pagos registrados este mes</small></article>
-  <article><span>Recibido en {{ anio }}</span><strong>Bs {{ total_ingresos_anio|floatformat:2 }}</strong><small>{{ total_pagos }} pago{{ total_pagos|pluralize:"s" }} en el período</small></article>
+  <article><span>Recibido en {{ anio }}</span><strong>Bs {{ total_ingresos_anio|floatformat:2 }}</strong><small>{{ total_pagos|add:total_pagos_servicios }} pago{{ total_pagos|add:total_pagos_servicios|pluralize:"s" }} entre honorarios y trámites</small></article>
   <article><span>Cobros generados</span><strong>Bs {{ total_cargos|floatformat:2 }}</strong><small>{{ total_cobros }} cuenta{{ total_cobros|pluralize:"s" }} de {{ anio }}</small></article>
   <article class="income-kpi--pending"><span>Saldo por cobrar</span><strong>Bs {{ total_pendiente|floatformat:2 }}</strong><small>Saldo pendiente de amortización</small></article>
 </section>
@@ -49,7 +49,7 @@
 </section>
 
 <section class="clients-table-wrap surface income-table-wrap" aria-label="Ingresos recibidos">
-  <div class="clients-table-heading"><h2>Ingresos recibidos</h2><span>{{ total_pagos }} pago{{ total_pagos|pluralize:"s" }} · solo dinero cobrado</span></div>
+  <div class="clients-table-heading"><h2>Pagos de honorarios</h2><span>{{ total_pagos }} pago{{ total_pagos|pluralize:"s" }} · solo dinero cobrado</span></div>
   <div class="clients-table-scroll"><table class="clients-table income-table">
     <thead><tr><th>Fecha</th><th>Cliente / concepto</th><th>Recibo</th><th>Forma de pago</th><th>Registrado por</th><th>Monto recibido</th></tr></thead>
     <tbody>{% for pago in pagos %}
@@ -57,6 +57,17 @@
     {% empty %}<tr><td colspan="6" class="clients-empty">No hay pagos recibidos para el año seleccionado.</td></tr>{% endfor %}</tbody>
   </table></div>
   {% if pagos_page.paginator.num_pages > 1 %}<nav class="pagination income-pagination" aria-label="Paginación de ingresos"><span>Página {{ pagos_page.number }} de {{ pagos_page.paginator.num_pages }}</span><div>{% if pagos_page.has_previous %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page_pagos={{ pagos_page.previous_page_number }}" aria-label="Página anterior">‹</a>{% endif %}{% if pagos_page.has_next %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page_pagos={{ pagos_page.next_page_number }}" aria-label="Página siguiente">›</a>{% endif %}</div></nav>{% endif %}
+</section>
+
+<section class="clients-table-wrap surface income-table-wrap" aria-label="Pagos recibidos por servicios y trámites ocasionales">
+  <div class="clients-table-heading"><h2>Pagos de trámites ocasionales</h2><span>{{ total_pagos_servicios }} pago{{ total_pagos_servicios|pluralize:"s" }} · trabajos puntuales</span></div>
+  <div class="clients-table-scroll"><table class="clients-table income-table">
+    <thead><tr><th>Fecha</th><th>Cliente ocasional / trabajo</th><th>Recibo</th><th>Forma de pago</th><th>Registrado por</th><th>Monto recibido</th></tr></thead>
+    <tbody>{% for pago in pagos_servicios %}
+      <tr><td>{{ pago.fecha_pago|date:'d/m/Y' }}</td><td><strong>{{ pago.servicio.cliente.nombre }}</strong><small class="income-subline">{{ pago.servicio.concepto }} · {{ pago.servicio.get_tipo_display }}</small></td><td>{{ pago.numero_recibo|default:'—' }}</td><td>{{ pago.get_metodo_pago_display }}</td><td>{% if pago.registrado_por %}{{ pago.registrado_por.get_full_name|default:pago.registrado_por.username }}{% else %}—{% endif %}</td><td><strong>Bs {{ pago.monto|floatformat:2 }}</strong></td></tr>
+    {% empty %}<tr><td colspan="6" class="clients-empty">No hay pagos de trámites ocasionales para el año seleccionado.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if pagos_servicios_page.paginator.num_pages > 1 %}<nav class="pagination income-pagination" aria-label="Paginación de pagos de trámites"><span>Página {{ pagos_servicios_page.number }} de {{ pagos_servicios_page.paginator.num_pages }}</span><div>{% if pagos_servicios_page.has_previous %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page_pagos_servicios={{ pagos_servicios_page.previous_page_number }}" aria-label="Página anterior">‹</a>{% endif %}{% if pagos_servicios_page.has_next %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page_pagos_servicios={{ pagos_servicios_page.next_page_number }}" aria-label="Página siguiente">›</a>{% endif %}</div></nav>{% endif %}
 </section>
 
 {% if puede_gestionar %}

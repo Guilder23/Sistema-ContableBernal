@@ -1,0 +1,16 @@
+<section class="service-modal service-payment-modal" id="modal-pago-servicio" role="dialog" aria-modal="true" aria-labelledby="service-payment-title" hidden>
+  <button class="service-modal__backdrop" type="button" data-close-service-modal aria-label="Cerrar"></button>
+  <div class="service-modal__panel service-payment-modal__panel">
+    <header class="service-modal__header"><div><p class="eyebrow">ABONO DE CLIENTE OCASIONAL</p><h2 id="service-payment-title">Registrar pago</h2><p><strong data-payment-client></strong> · <span data-payment-concept></span></p></div><button class="service-modal__close" type="button" data-close-service-modal aria-label="Cerrar">×</button></header>
+    <form method="post" class="service-form" data-register-payment-form>
+      {% csrf_token %}
+      <p class="service-payment-balance">Saldo por cobrar: <strong>Bs <span data-payment-balance></span></strong></p>
+      <label><span>Monto recibido (Bs) <b>*</b></span><input type="number" name="monto" min="0.01" step="0.01" data-payment-amount required></label>
+      <label><span>Fecha de pago <b>*</b></span><input type="date" name="fecha_pago" value="{{ hoy|date:'Y-m-d' }}" required></label>
+      <label><span>Forma de pago</span><select name="metodo_pago">{% for value, label in metodos_pago %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label><span>Número de recibo</span><input name="numero_recibo" maxlength="60"></label>
+      <label class="service-form__wide"><span>Observaciones</span><textarea name="observaciones" rows="2"></textarea></label>
+      <footer class="service-modal__footer"><button class="button button--quiet" type="button" data-close-service-modal>Cancelar</button><button class="button button--primary" type="submit">Guardar pago</button></footer>
+    </form>
+  </div>
+</section>

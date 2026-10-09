@@ -1,0 +1,10 @@
+<section class="service-modal service-delete-modal" id="modal-eliminar-servicio" role="dialog" aria-modal="true" aria-labelledby="service-delete-title" hidden>
+  <button class="service-modal__backdrop" type="button" data-close-service-modal aria-label="Cerrar"></button>
+  <div class="service-modal__panel service-delete-modal__panel">
+    <header class="service-modal__header"><div><p class="eyebrow">ELIMINAR TRABAJO</p><h2 id="service-delete-title">¿Eliminar este servicio?</h2><p>Solo se puede eliminar si aún no tiene pagos registrados.</p></div><button class="service-modal__close" type="button" data-close-service-modal aria-label="Cerrar">×</button></header>
+    <form method="post" data-delete-service-form>
+      {% csrf_token %}<p class="service-delete-name" data-delete-service-name></p><p class="service-delete-warning" data-delete-service-warning hidden>Este servicio tiene pagos registrados. El historial financiero se conservará y no podrá eliminarse.</p>
+      <footer class="service-modal__footer"><button class="button button--quiet" type="button" data-close-service-modal>Cancelar</button><button class="button button--danger" type="submit" data-delete-service-submit>Eliminar</button></footer>
+    </form>
+  </div>
+</section>

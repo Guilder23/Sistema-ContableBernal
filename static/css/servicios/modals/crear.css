@@ -1,0 +1,7 @@
+#modal-crear-servicio .service-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#modal-crear-servicio .service-form__wide { grid-column: 1 / -1; }
+#modal-crear-servicio .service-form__client-fields { grid-column: 1 / -1; }
+#modal-crear-servicio .service-form__client-fields label { display: flex; flex-direction: column; }
+#modal-crear-servicio .service-form__client-fields label.service-form__wide { grid-column: 1 / -1; }
+#modal-crear-servicio [data-initial-payment-method][hidden] { display: none; }
+@media (max-width: 560px) { #modal-crear-servicio .service-form { grid-template-columns: 1fr; } #modal-crear-servicio .service-form__wide, #modal-crear-servicio .service-form__client-fields, #modal-crear-servicio .service-form__client-fields label.service-form__wide { grid-column: auto; } }

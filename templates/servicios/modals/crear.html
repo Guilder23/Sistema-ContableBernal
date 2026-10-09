@@ -1,0 +1,29 @@
+{% load static %}
+<section class="service-modal" id="modal-crear-servicio" role="dialog" aria-modal="true" aria-labelledby="service-create-title" hidden>
+  <button class="service-modal__backdrop" type="button" data-close-service-modal aria-label="Cerrar"></button>
+  <div class="service-modal__panel">
+    <header class="service-modal__header"><div><p class="eyebrow">NUEVO CLIENTE OCASIONAL</p><h2 id="service-create-title">Registrar servicio o trámite</h2><p>Este registro no crea un cliente contable ni obligaciones.</p></div><button class="service-modal__close" type="button" data-close-service-modal aria-label="Cerrar">×</button></header>
+    <form method="post" action="{% url 'servicios:crear' %}" class="service-form" data-create-service-form>
+      {% csrf_token %}
+      <label class="service-form__wide"><span>Cliente <b>*</b></span><select name="cliente_id" required data-client-choice><option value="">Seleccionar cliente ocasional</option><option value="nuevo">+ Registrar nuevo cliente ocasional</option>{% for cliente in clientes_ocasionales %}<option value="{{ cliente.pk }}">{{ cliente.nombre }}{% if cliente.documento %} · {{ cliente.documento }}{% endif %}{% if cliente.telefono %} · {{ cliente.telefono }}{% endif %}</option>{% endfor %}</select></label>
+      <fieldset class="service-form__client-fields service-form__wide" data-new-client-fields hidden><legend>Datos del cliente ocasional</legend>
+        <label><span>Nombre completo <b>*</b></span><input name="nombre_cliente" maxlength="180" data-new-client-required placeholder="Nombre y apellido"></label>
+        <label><span>Documento</span><input name="documento_cliente" maxlength="30" placeholder="CI / NIT (opcional)"></label>
+        <label><span>Teléfono</span><input name="telefono_cliente" maxlength="30" type="tel" placeholder="Número de contacto"></label>
+        <label><span>Correo</span><input name="correo_cliente" type="email" placeholder="correo@ejemplo.com"></label>
+        <label class="service-form__wide"><span>Dirección</span><input name="direccion_cliente" maxlength="240"></label>
+      </fieldset>
+      <label><span>Tipo de servicio <b>*</b></span><select name="tipo" required>{% for value, label in tipos %}<option value="{{ value }}" {% if value == 'licencia' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span>Prioridad</span><select name="prioridad">{% for value, label in prioridades %}<option value="{{ value }}" {% if value == 'normal' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label class="service-form__wide"><span>Trabajo solicitado <b>*</b></span><input name="concepto" maxlength="180" required placeholder="Ej. Licencia de funcionamiento"></label>
+      <label class="service-form__wide"><span>Descripción / alcance</span><textarea name="descripcion" rows="3" placeholder="Detalle del trabajo acordado"></textarea></label>
+      <label><span>Precio acordado (Bs) <b>*</b></span><input type="number" name="monto_total" min="0.01" step="0.01" required placeholder="0.00"></label>
+      <label><span>Fecha límite de entrega</span><input type="date" name="fecha_limite"></label>
+      <label><span>Anticipo recibido (Bs)</span><input type="number" name="pago_inicial" min="0" step="0.01" value="0.00" data-initial-payment></label>
+      <label data-initial-payment-method hidden><span>Forma de pago del anticipo</span><select name="metodo_pago">{% for value, label in metodos_pago %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      {% if puede_gestionar %}<label><span>Responsable</span><select name="responsable"><option value="">Sin asignar</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}">{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select></label>{% endif %}
+      <label class="service-form__wide"><span>Observaciones</span><textarea name="observaciones" rows="2"></textarea></label>
+      <footer class="service-modal__footer"><button class="button button--quiet" type="button" data-close-service-modal>Cancelar</button><button class="button button--primary" type="submit">Crear servicio</button></footer>
+    </form>
+  </div>
+</section>

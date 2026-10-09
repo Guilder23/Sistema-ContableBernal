@@ -1,0 +1,6 @@
+.service-payment-modal__panel { width: min(500px, 100%); }
+.service-payment-modal .service-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.service-payment-modal .service-form__wide, .service-payment-balance { grid-column: 1 / -1; }
+.service-payment-balance { margin: 0; padding: 11px 12px; border-radius: 4px; background: #f0f6f2; color: #53685c; font-size: 13px; }
+.service-payment-balance strong { color: #28746c; }
+@media (max-width: 560px) { .service-payment-modal .service-form { grid-template-columns: 1fr; } .service-payment-modal .service-form__wide, .service-payment-balance { grid-column: auto; } }

@@ -1,7 +1,74 @@
 {% extends 'base/base.html' %}
-{% load static %}
+{% load static l10n %}
 {% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--servicios{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/servicios/servicios.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">GESTIONES DEL ESTUDIO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/servicios/servicios.js' %}"></script>{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/servicios/servicios.css' %}">
+<link rel="stylesheet" href="{% static 'css/servicios/modals/crear.css' %}">
+<link rel="stylesheet" href="{% static 'css/servicios/modals/editar.css' %}">
+<link rel="stylesheet" href="{% static 'css/servicios/modals/ver.css' %}">
+<link rel="stylesheet" href="{% static 'css/servicios/modals/pago.css' %}">
+<link rel="stylesheet" href="{% static 'css/servicios/modals/eliminar.css' %}">
+{% endblock %}
+{% block content %}
+<section class="page-heading clients-heading services-heading">
+  <div><p class="eyebrow">TRABAJOS PUNTUALES</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div>
+  {% if puede_gestionar %}<button class="button button--primary" type="button" data-open-modal="modal-crear-servicio"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg> Nuevo servicio</button>{% endif %}
+</section>
+
+<section class="service-kpis" aria-label="Resumen de servicios ocasionales">
+  <article><span>Trabajos activos</span><strong>{{ total_activos }}</strong><small>En gestión o listos para entregar</small></article>
+  <article class="service-kpi--warning"><span>Saldo por cobrar</span><strong>Bs {{ total_pendiente|floatformat:2 }}</strong><small>Anticipos descontados</small></article>
+  <article class="service-kpi--success"><span>Cobrado este mes</span><strong>Bs {{ cobrado_mes|floatformat:2 }}</strong><small>Pagos recibidos en {{ hoy|date:'F' }}</small></article>
+  <article><span>Total cobrado</span><strong>Bs {{ total_cobrado|floatformat:2 }}</strong><small>Historial de pagos de trámites</small></article>
+</section>
+
+<section class="clients-toolbar surface service-toolbar">
+  <form method="get" class="clients-filter service-filters">
+    <label class="client-search"><span>Buscar</span><span class="search-input"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#search"></use></svg><input type="search" name="q" value="{{ busqueda }}" placeholder="Cliente, documento o trabajo"></span></label>
+    <label><span>Tipo</span><select name="tipo"><option value="">Todos</option>{% for value, label in tipos %}<option value="{{ value }}" {% if tipo_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>Estado del trabajo</span><select name="estado"><option value="">Todos</option>{% for value, label in estados %}<option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>Estado de cobro</span><select name="pago"><option value="">Todos</option>{% for value, label in estados_cobro %}<option value="{{ value }}" {% if pago_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <button class="button button--quiet service-filter-button" type="submit"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#filter"></use></svg><span>Filtrar</span></button>
+  </form>
+</section>
+
+<section class="clients-table-wrap surface service-table-wrap" aria-label="Trabajos puntuales y saldos">
+  <div class="clients-table-heading"><h2>Cartera de trabajos puntuales</h2><span>{{ total_servicios }} servicio{{ total_servicios|pluralize:"s" }}</span></div>
+  <div class="clients-table-scroll"><table class="clients-table service-table">
+    <thead><tr><th>Cliente / trabajo</th><th>Estado</th><th>Fecha límite</th><th>Precio</th><th>Abonado</th><th>Saldo</th><th>Cobro</th><th>Acciones</th></tr></thead>
+    <tbody>{% for servicio in servicios %}
+      <tr>
+        <td><strong>{{ servicio.cliente.nombre }}</strong><small class="service-subline">{{ servicio.get_tipo_display }} · {{ servicio.concepto }}</small>{% if servicio.cliente.telefono %}<small class="service-subline">{{ servicio.cliente.telefono }}</small>{% endif %}</td>
+        <td><span class="service-state service-state--{{ servicio.estado }}">{{ servicio.get_estado_display }}</span></td>
+        <td>{% if servicio.fecha_limite %}<span class="{% if servicio.fecha_limite < hoy and servicio.estado != 'entregado' %}service-date--overdue{% endif %}">{{ servicio.fecha_limite|date:'d/m/Y' }}</span>{% else %}<span class="client-muted">Sin fecha</span>{% endif %}</td>
+        <td>Bs {{ servicio.monto_total|floatformat:2 }}</td>
+        <td>Bs {{ servicio.total_pagado|floatformat:2 }}</td>
+        <td><strong class="{% if servicio.saldo_pendiente > 0 %}service-balance--pending{% endif %}">Bs {{ servicio.saldo_pendiente|floatformat:2 }}</strong></td>
+        <td><span class="service-payment-state service-payment-state--{{ servicio.estado_cobro }}">{{ servicio.get_estado_cobro_display }}</span></td>
+        <td><div class="service-actions">
+          <button class="service-icon-button" type="button" title="Ver trabajo y pagos" aria-label="Ver {{ servicio.concepto }}" data-open-modal="modal-ver-servicio-{{ servicio.pk }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg></button>
+          {% if puede_gestionar or servicio.responsable_id == usuario_id %}<button class="service-icon-button" type="button" title="Editar trabajo" aria-label="Editar {{ servicio.concepto }}" data-open-modal="modal-editar-servicio" data-edit-url="{% url 'servicios:actualizar' servicio_id=servicio.pk %}" data-edit-concepto="{{ servicio.concepto }}" data-edit-descripcion="{{ servicio.descripcion }}" data-edit-tipo="{{ servicio.tipo }}" data-edit-estado="{{ servicio.estado }}" data-edit-prioridad="{{ servicio.prioridad }}" data-edit-fecha="{{ servicio.fecha_limite|date:'Y-m-d' }}" data-edit-monto="{{ servicio.monto_total|unlocalize }}" data-edit-responsable="{{ servicio.responsable_id|default:'' }}" data-edit-observaciones="{{ servicio.observaciones }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg></button>{% endif %}
+          {% if puede_gestionar and servicio.saldo_pendiente > 0 %}<button class="service-icon-button service-icon-button--pay" type="button" title="Registrar pago" aria-label="Registrar pago para {{ servicio.concepto }}" data-open-modal="modal-pago-servicio" data-pay-url="{% url 'servicios:registrar_pago' servicio_id=servicio.pk %}" data-pay-cliente="{{ servicio.cliente.nombre }}" data-pay-concepto="{{ servicio.concepto }}" data-pay-saldo="{{ servicio.saldo_pendiente }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#wallet"></use></svg></button>{% endif %}
+          {% if puede_gestionar %}<button class="service-icon-button service-icon-button--delete" type="button" title="Eliminar trabajo" aria-label="Eliminar {{ servicio.concepto }}" data-open-modal="modal-eliminar-servicio" data-delete-url="{% url 'servicios:eliminar' servicio_id=servicio.pk %}" data-delete-concepto="{{ servicio.concepto }}" data-delete-pagos="{% if servicio.total_pagado %}true{% else %}false{% endif %}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trash"></use></svg></button>{% endif %}
+        </div></td>
+      </tr>
+    {% empty %}<tr><td colspan="8" class="clients-empty">No hay servicios que coincidan con los filtros.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% if page_obj.paginator.num_pages > 1 %}<nav class="pagination service-pagination" aria-label="Paginación de servicios"><span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span><div>{% if page_obj.has_previous %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Página anterior">‹</a>{% endif %}{% if page_obj.has_next %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Página siguiente">›</a>{% endif %}</div></nav>{% endif %}
+</section>
+
+{% if puede_gestionar %}{% include 'servicios/modals/crear.html' %}{% endif %}
+{% for servicio in servicios %}{% include 'servicios/modals/ver.html' with servicio=servicio %}{% endfor %}
+{% include 'servicios/modals/editar.html' %}
+{% if puede_gestionar %}{% include 'servicios/modals/pago.html' %}{% include 'servicios/modals/eliminar.html' %}{% endif %}
+{% endblock %}
+{% block page_js %}
+<script defer src="{% static 'js/servicios/servicios.js' %}"></script>
+<script defer src="{% static 'js/servicios/modals/crear.js' %}"></script>
+<script defer src="{% static 'js/servicios/modals/editar.js' %}"></script>
+<script defer src="{% static 'js/servicios/modals/ver.js' %}"></script>
+<script defer src="{% static 'js/servicios/modals/pago.js' %}"></script>
+<script defer src="{% static 'js/servicios/modals/eliminar.js' %}"></script>
+{% endblock %}
