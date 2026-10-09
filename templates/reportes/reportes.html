@@ -2,6 +2,85 @@
 {% load static %}
 {% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--reportes{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/reportes/reportes.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">ANÁLISIS DEL ESTUDIO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/clientes/clientes.css' %}">
+<link rel="stylesheet" href="{% static 'css/reportes/reportes.css' %}">
+{% endblock %}
+{% block content %}
+<section class="page-heading report-heading">
+	<div><p class="eyebrow">ANÁLISIS DEL ESTUDIO</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div>
+</section>
+
+<section class="report-toolbar surface">
+	<div class="report-toolbar__actions">
+		<form method="get" class="report-period-filter">
+			<label><span>Año</span><input type="number" name="anio" min="2000" max="2200" value="{{ anio }}"></label>
+			<label><span>Mes</span><select name="mes"><option value="">Todo el año</option>{% for numero, nombre in meses %}<option value="{{ numero }}" {% if mes == numero|stringformat:'s' %}selected{% endif %}>{{ nombre }}</option>{% endfor %}</select></label>
+			<button class="button button--quiet" type="submit">Aplicar período</button>
+		</form>
+		<a class="button button--primary report-export-button" href="{% url 'reportes:exportar_excel' %}?anio={{ anio }}{% if mes %}&amp;mes={{ mes }}{% endif %}" title="Descargar el reporte del período seleccionado en Excel">
+			<svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#files"></use></svg>
+			<span>Descargar Excel</span>
+		</a>
+	</div>
+</section>
+
+<section class="report-kpis" aria-label="Resumen del período">
+	<article class="report-kpi report-kpi--income"><span>Ingresos cobrados</span><strong>Bs {{ ingresos_servicios|floatformat:2 }}</strong><small>Honorarios y trámites puntuales</small></article>
+	<article class="report-kpi report-kpi--recovered"><span>Reembolsos recibidos</span><strong>Bs {{ recuperado_clientes|floatformat:2 }}</strong><small>Dinero recuperado de clientes</small></article>
+	<article class="report-kpi report-kpi--expense"><span>Egresos pagados</span><strong>Bs {{ egresos_pagados|floatformat:2 }}</strong><small>Salidas efectivamente pagadas</small></article>
+	<article class="report-kpi {% if flujo_neto < 0 %}report-kpi--negative{% else %}report-kpi--net{% endif %}"><span>Flujo neto de caja</span><strong>Bs {{ flujo_neto|floatformat:2 }}</strong><small>Ingresos + reembolsos − egresos pagados</small></article>
+</section>
+
+<section class="report-balances" aria-label="Saldos pendientes actuales">
+	<article><span>Pendiente de cobro · honorarios</span><strong>Bs {{ saldo_honorarios|floatformat:2 }}</strong></article>
+	<article><span>Pendiente de cobro · trámites</span><strong>Bs {{ saldo_tramites|floatformat:2 }}</strong></article>
+	<article><span>Gastos pendientes de pago · período</span><strong>Bs {{ egresos_pendientes|floatformat:2 }}</strong></article>
+	<article><span>Gastos pendientes de recuperar</span><strong>Bs {{ saldo_recuperar|floatformat:2 }}</strong></article>
+</section>
+
+<section class="report-panel report-monthly surface">
+	<header class="report-panel__heading"><div><h2>Entradas y salidas por mes</h2><p>Flujo de caja de {{ anio }} · los reembolsos se muestran como entradas.</p></div><span>{{ anio }}</span></header>
+	<div class="report-month-list">
+		{% for item in meses_reporte %}
+		<div class="report-month-row">
+			<strong>{{ item.nombre }}</strong>
+			<div class="report-month-flow"><span class="report-flow-label report-flow-label--in">Entradas</span><div class="report-track"><i class="report-bar report-bar--in" style="width:{{ item.entradas_pct }}%"></i></div><span class="report-amount">Bs {{ item.entradas|floatformat:2 }}</span></div>
+			<div class="report-month-flow"><span class="report-flow-label report-flow-label--out">Salidas</span><div class="report-track"><i class="report-bar report-bar--out" style="width:{{ item.salidas_pct }}%"></i></div><span class="report-amount">Bs {{ item.salidas|floatformat:2 }}</span></div>
+		</div>
+		{% endfor %}
+	</div>
+</section>
+
+<div class="report-breakdowns">
+	<section class="report-panel surface">
+		<header class="report-panel__heading"><div><h2>Ingresos por origen</h2><p>Pagos recibidos durante el período</p></div></header>
+		<div class="report-origin-row"><span>Honorarios recurrentes</span><strong>Bs {{ ingresos_recurrentes|floatformat:2 }}</strong></div>
+		<div class="report-origin-row"><span>Servicios extraordinarios</span><strong>Bs {{ ingresos_extraordinarios|floatformat:2 }}</strong></div>
+		<div class="report-origin-row"><span>Trámites ocasionales</span><strong>Bs {{ ingresos_tramites|floatformat:2 }}</strong></div>
+		<div class="report-origin-row report-origin-row--total"><span>Total ingresos cobrados</span><strong>Bs {{ ingresos_servicios|floatformat:2 }}</strong></div>
+	</section>
+
+	<section class="report-panel surface">
+		<header class="report-panel__heading"><div><h2>Egresos por tipo</h2><p>Solo registros marcados como pagados</p></div></header>
+		{% for item in eg_resumen %}<div class="report-category-row"><div><span>{{ item.nombre }}</span><strong>Bs {{ item.monto|floatformat:2 }}</strong></div><div class="report-track"><i class="report-bar report-bar--out" style="width:{{ item.porcentaje }}%"></i></div></div>{% empty %}<p class="report-empty">No hay egresos pagados en este período.</p>{% endfor %}
+	</section>
+</div>
+
+<section class="report-panel surface report-category-panel">
+	<header class="report-panel__heading"><div><h2>Egresos por categoría</h2><p>Principales categorías pagadas en el período</p></div></header>
+	<div class="report-category-grid">
+		{% for item in eg_categorias %}<article class="report-category-card"><div><span>{{ item.nombre }}</span><strong>Bs {{ item.monto|floatformat:2 }}</strong></div><div class="report-track"><i class="report-bar report-bar--out" style="width:{{ item.porcentaje }}%"></i></div></article>{% empty %}<p class="report-empty">No hay egresos categorizados en este período.</p>{% endfor %}
+	</div>
+</section>
+
+<section class="report-panel surface report-ledger">
+	<header class="report-panel__heading"><div><h2>Movimientos del período</h2><p>{{ total_movimientos }} registro{{ total_movimientos|pluralize:"s" }} · máximo 100 más recientes</p></div></header>
+	<div class="report-ledger-scroll"><table class="report-table"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Origen</th><th>Concepto / cliente o proveedor</th><th>Estado</th><th>Monto</th></tr></thead><tbody>
+		{% for item in movimientos %}
+		<tr><td>{{ item.fecha|date:'d/m/Y' }}</td><td><span class="report-movement report-movement--{{ item.clase }}">{% if item.clase == 'salida' %}Egreso{% elif item.clase == 'recuperacion' %}Reembolso{% else %}Ingreso{% endif %}</span></td><td>{{ item.origen }}</td><td><strong>{{ item.concepto }}</strong><small>{{ item.persona }}</small></td><td>{{ item.estado }}</td><td><strong class="{% if item.clase == 'salida' %}report-money--out{% else %}report-money--in{% endif %}">Bs {{ item.monto|floatformat:2 }}</strong></td></tr>
+		{% empty %}<tr><td colspan="6" class="report-empty">No hay movimientos para el período seleccionado.</td></tr>{% endfor %}
+	</tbody></table></div>
+</section>
+{% endblock %}
 {% block page_js %}<script defer src="{% static 'js/reportes/reportes.js' %}"></script>{% endblock %}
