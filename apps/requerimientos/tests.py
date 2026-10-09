@@ -73,6 +73,10 @@ class GestionRequerimientosTests(TestCase):
 		)
 		respuesta = self.client.get(reverse('requerimientos:index'))
 		self.assertEqual(respuesta.status_code, 200)
+		self.assertNotContains(respuesta, 'css/clientes/clientes.css')
+		self.assertContains(respuesta, 'css/requerimientos/requerimientos.css')
+		self.assertContains(respuesta, 'class="button button--primary"')
+		self.assertContains(respuesta, 'class="button button--quiet requirement-filter-button"')
 		for modal in ('crear', 'editar', 'ver', 'eliminar'):
 			self.assertContains(respuesta, f'css/requerimientos/modals/{modal}.css')
 			self.assertContains(respuesta, f'js/requerimientos/modals/{modal}.js')

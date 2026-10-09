@@ -60,6 +60,15 @@
 .requirements-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
 .requirements-heading > .button { flex: 0 0 auto; }
 .requirements-heading .icon { width: 16px; height: 16px; }
+.workspace--requerimientos .button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; border: 1px solid transparent; border-radius: 8px; cursor: pointer; font: inherit; font-size: 14px; font-weight: 600; text-decoration: none; }
+.workspace--requerimientos .button--primary { background: var(--coral); color: white; box-shadow: 0 3px 8px rgb(238 73 60 / 18%); }
+.workspace--requerimientos .button--primary:hover { background: #d83c32; box-shadow: 0 5px 12px rgb(238 73 60 / 25%); }
+.workspace--requerimientos .button--primary:active { background: #b9342b; }
+.workspace--requerimientos .button--quiet { border-color: var(--line); background: white; color: #70463c; }
+.workspace--requerimientos .button--quiet:hover { border-color: #d9a789; background: #fff7ef; }
+.workspace--requerimientos .button--danger { background: #9b3b30; color: white; }
+.workspace--requerimientos .button--danger:hover { background: #7e2e26; }
+.workspace--requerimientos .button:focus-visible { outline: 3px solid rgb(229 161 58 / 65%); outline-offset: 2px; }
 .requirement-toolbar { border-radius: 6px; border: 1px solid #e8d9cb; background: #fff; }
 .requirement-filters { grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(130px, 1fr)) auto; }
 .requirement-search__input { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 40px; padding: 0 10px; border: 1px solid #d9cfc5; border-radius: 5px; background: #fff; }
@@ -115,10 +124,13 @@
 .requirement-modal .requirement-form small { color: #79857e; font-size: 11px; }
 .requirement-modal__footer { display: flex; justify-content: flex-end; gap: 9px; padding: 14px 24px 20px; border-top: 1px solid #eee8e2; }
 .requirement-modal .button { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 0 14px; border-radius: 5px; cursor: pointer; font: inherit; font-size: 12px; font-weight: 650; }
-.requirement-modal .button--quiet { border: 1px solid #d8ded9; background: #fff; color: #46584e; }
-.requirement-modal .button--primary { border: 1px solid #7b3b2d; background: #7b3b2d; color: #fff; }
-.requirement-modal .button--primary:hover { background: #642e23; }
-.requirement-modal .button--danger { border: 1px solid #ad4438; background: #ad4438; color: #fff; }
+.requirement-modal .button--quiet { border: 1px solid var(--line); background: white; color: #70463c; }
+.requirement-modal .button--quiet:hover { border-color: #d9a789; background: #fff7ef; }
+.requirement-modal .button--primary { background: var(--coral); color: white; box-shadow: 0 3px 8px rgb(238 73 60 / 18%); }
+.requirement-modal .button--primary:hover { background: #d83c32; box-shadow: 0 5px 12px rgb(238 73 60 / 25%); }
+.requirement-modal .button--primary:active { background: #b9342b; }
+.requirement-modal .button--danger { background: #9b3b30; color: white; }
+.requirement-modal .button--danger:hover { background: #7e2e26; }
 
 @media (max-width: 800px) {
 	.requirement-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
