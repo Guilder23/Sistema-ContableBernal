@@ -2,6 +2,65 @@
 {% load static %}
 {% block title %}{{ titulo_modulo }} | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--requerimientos{% endblock %}
-{% block page_css %}<link rel="stylesheet" href="{% static 'css/requerimientos/requerimientos.css' %}">{% endblock %}
-{% block content %}<section class="page-heading"><div><p class="eyebrow">ATENCIÓN AL CLIENTE</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div></section><section class="module-panel"><div class="empty-state"><span class="empty-mark" aria-hidden="true">CB</span><h2>Módulo preparado</h2><p>Aquí se incorporarán los registros, reglas y acciones de {{ titulo_modulo|lower }}.</p></div></section>{% endblock %}
-{% block page_js %}<script defer src="{% static 'js/requerimientos/requerimientos.js' %}"></script>{% endblock %}
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/requerimientos/requerimientos.css' %}">
+<link rel="stylesheet" href="{% static 'css/requerimientos/modals/crear.css' %}">
+<link rel="stylesheet" href="{% static 'css/requerimientos/modals/editar.css' %}">
+<link rel="stylesheet" href="{% static 'css/requerimientos/modals/ver.css' %}">
+<link rel="stylesheet" href="{% static 'css/requerimientos/modals/eliminar.css' %}">
+{% endblock %}
+{% block content %}
+<section class="page-heading requirements-heading">
+  <div><p class="eyebrow">ATENCIÓN AL CLIENTE</p><h1>{{ titulo_modulo }}</h1><p>{{ descripcion_modulo }}</p></div>
+  <button class="button button--primary" type="button" data-open-modal="modal-crear"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg> Nuevo requerimiento</button>
+</section>
+
+{% include 'requerimientos/modals/crear.html' %}
+
+<section class="requirement-toolbar surface">
+  <form method="get" class="requirement-filters">
+    <label class="requirement-search"><span>Buscar</span><span class="requirement-search__input"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#search"></use></svg><input type="search" name="q" value="{{ busqueda }}" placeholder="Solicitud o cliente"></span></label>
+    <label><span>Estado</span><select name="estado"><option value="">Todos</option>{% for value, label in estados %}<option value="{{ value }}" {% if estado_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>Prioridad</span><select name="prioridad"><option value="">Todas</option>{% for value, label in prioridades %}<option value="{{ value }}" {% if prioridad_filtro == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+    <label><span>Responsable</span><select name="responsable"><option value="">Todos</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}" {% if responsable_filtro == usuario.pk|stringformat:'s' %}selected{% endif %}>{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select></label>
+    <button class="button button--quiet requirement-filter-button" type="submit"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#filter"></use></svg><span>Filtrar</span></button>
+  </form>
+</section>
+
+<section class="requirement-list surface" aria-label="Requerimientos de clientes">
+  <header class="requirement-list__heading"><div><h2>Solicitudes</h2><span>{{ total_requerimientos }} registro{{ total_requerimientos|pluralize:"s" }}</span></div></header>
+  <div class="requirement-table-scroll">
+    <table class="requirement-table">
+      <thead><tr><th>Requerimiento</th><th>Cliente</th><th>Estado</th><th>Prioridad</th><th>Responsable</th><th>Fecha límite</th><th>Acciones</th></tr></thead>
+      <tbody>
+        {% for item in requerimientos %}
+        <tr>
+          <td class="requirement-table__request"><strong>{{ item.titulo }}</strong><small>{{ item.descripcion|truncatechars:105 }}</small></td>
+          <td>{{ item.cliente.nombre }}</td>
+          <td><span class="requirement-status requirement-status--{{ item.estado }}">{{ item.get_estado_display }}</span></td>
+          <td><span class="requirement-priority requirement-priority--{{ item.prioridad }}">{{ item.get_prioridad_display }}</span></td>
+          <td>{% if item.responsable %}{{ item.responsable.get_full_name|default:item.responsable.username }}{% else %}Sin asignar{% endif %}</td>
+          <td>{% if item.fecha_limite %}<span class="{% if item.fecha_limite < hoy and item.estado != 'terminado' %}requirement-deadline--overdue{% endif %}">{{ item.fecha_limite|date:'d/m/Y' }}</span>{% else %}<span class="requirement-muted">Sin fecha</span>{% endif %}</td>
+          <td><div class="requirement-actions">
+            <button class="requirement-icon-button requirement-icon-button--view" type="button" title="Ver requerimiento" aria-label="Ver {{ item.titulo }}" data-open-modal="modal-ver-{{ item.pk }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg></button>
+            {% if puede_gestionar or item.responsable_id == usuario_id %}<button class="requirement-icon-button requirement-icon-button--edit" type="button" title="Editar requerimiento" aria-label="Editar {{ item.titulo }}" data-open-modal="modal-editar" data-edit-url="{% url 'requerimientos:actualizar' requerimiento_id=item.pk %}" data-edit-title="{{ item.titulo }}" data-edit-description="{{ item.descripcion }}" data-edit-state="{{ item.estado }}" data-edit-priority="{{ item.prioridad }}" data-edit-due="{{ item.fecha_limite|date:'Y-m-d' }}" data-edit-responsible="{{ item.responsable_id|default:'' }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg></button>{% endif %}
+            {% if puede_gestionar %}<button class="requirement-icon-button requirement-icon-button--delete" type="button" title="Eliminar requerimiento" aria-label="Eliminar {{ item.titulo }}" data-open-modal="modal-eliminar" data-delete-url="{% url 'requerimientos:eliminar' requerimiento_id=item.pk %}" data-delete-title="{{ item.titulo }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trash"></use></svg></button>{% endif %}
+          </div></td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="requirement-empty">No hay requerimientos que coincidan con los filtros.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}<nav class="pagination" aria-label="Paginación de requerimientos"><span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span><div>{% if page_obj.has_previous %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Página anterior">‹</a>{% endif %}{% if page_obj.has_next %}<a class="page-arrow" href="?{% if query_string %}{{ query_string }}&amp;{% endif %}page={{ page_obj.next_page_number }}" aria-label="Página siguiente">›</a>{% endif %}</div></nav>{% endif %}
+</section>
+{% for item in requerimientos %}{% include 'requerimientos/modals/ver.html' with requerimiento=item %}{% endfor %}
+{% include 'requerimientos/modals/editar.html' %}
+{% include 'requerimientos/modals/eliminar.html' %}
+{% endblock %}
+{% block page_js %}
+<script defer src="{% static 'js/requerimientos/requerimientos.js' %}"></script>
+<script defer src="{% static 'js/requerimientos/modals/crear.js' %}"></script>
+<script defer src="{% static 'js/requerimientos/modals/editar.js' %}"></script>
+<script defer src="{% static 'js/requerimientos/modals/ver.js' %}"></script>
+<script defer src="{% static 'js/requerimientos/modals/eliminar.js' %}"></script>
+{% endblock %}

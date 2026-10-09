@@ -17,8 +17,8 @@ from apps.clientes.permissions import puede_gestionar_clientes, solo_gestores_cl
 from apps.historial.models import EntradaHistorial
 from apps.historial.services import registrar_historial
 
-from .models import CobroHonorario, PagoHonorario, TarifaCliente
-from .services import MESES_NOMBRES, generar_honorarios_mensuales
+from .models import CobroHonorario, DetalleCobroHonorario, PagoHonorario, TarifaCliente
+from .services import MESES_NOMBRES, generar_honorarios_mensuales, generar_seprec_anual
 
 
 def _volver(request, default_url='honorarios:index', cliente_id=None):
@@ -43,10 +43,11 @@ def index(request):
 	estado_filtro = request.GET.get('estado', '').strip()
 	cliente_filtro = request.GET.get('cliente', '').strip()
 	anio_filtro = request.GET.get('anio', str(hoy.year)).strip()
+	tipo_ingreso_filtro = request.GET.get('tipo_ingreso', '').strip()
 
 	cobros = (
 		CobroHonorario.objects.select_related('cliente', 'generado_por')
-		.prefetch_related('pagos')
+		.prefetch_related('pagos', 'detalles')
 		.all()
 	)
 
@@ -63,11 +64,21 @@ def index(request):
 		cobros = cobros.filter(cliente_id=int(cliente_filtro))
 	if anio_filtro.isdigit():
 		cobros = cobros.filter(anio=int(anio_filtro))
+	if tipo_ingreso_filtro in {valor for valor, _ in CobroHonorario.TipoIngreso.choices}:
+		cobros = cobros.filter(tipo_ingreso=tipo_ingreso_filtro)
 
 	# Totales para KPI resumen
 	total_facturado = sum((c.monto_total for c in cobros), Decimal('0.00'))
 	total_cobrado = sum((c.monto_pagado for c in cobros), Decimal('0.00'))
 	total_pendiente = sum((c.saldo_pendiente for c in cobros), Decimal('0.00'))
+	total_cobrado_recurrente = sum(
+		(c.monto_pagado for c in cobros if c.tipo_ingreso == CobroHonorario.TipoIngreso.RECURRENTE),
+		Decimal('0.00'),
+	)
+	total_cobrado_extraordinario = sum(
+		(c.monto_pagado for c in cobros if c.tipo_ingreso == CobroHonorario.TipoIngreso.EXTRAORDINARIO),
+		Decimal('0.00'),
+	)
 
 	paginador = Paginator(cobros, 25)
 	query_params = request.GET.copy()
@@ -85,12 +96,17 @@ def index(request):
 		'total_facturado': total_facturado,
 		'total_cobrado': total_cobrado,
 		'total_pendiente': total_pendiente,
+		'total_cobrado_recurrente': total_cobrado_recurrente,
+		'total_cobrado_extraordinario': total_cobrado_extraordinario,
 		'query_string': query_params.urlencode(),
 		'busqueda': busqueda,
 		'estado_filtro': estado_filtro,
+		'tipo_ingreso_filtro': tipo_ingreso_filtro,
 		'cliente_filtro': cliente_filtro,
 		'anio_filtro': anio_filtro,
 		'estados': CobroHonorario.Estado.choices,
+		'tipos_ingreso': CobroHonorario.TipoIngreso.choices,
+		'servicios_cobro': DetalleCobroHonorario.TipoServicio.choices,
 		'clientes': clientes_activos,
 		'meses_opciones': meses_opciones,
 		'puede_gestionar': puede_gestionar,
@@ -114,6 +130,7 @@ def guardar_tarifa(request, cliente_id):
 		tarifa.extra_ministerio = Decimal(request.POST.get('extra_ministerio', '0') or '0')
 		tarifa.extra_caja = Decimal(request.POST.get('extra_caja', '0') or '0')
 		tarifa.extra_otros = Decimal(request.POST.get('extra_otros', '0') or '0')
+		tarifa.extra_seprec = Decimal(request.POST.get('extra_seprec', '0') or '0')
 		tarifa.observaciones = request.POST.get('observaciones', '').strip()
 		tarifa.save()
 
@@ -155,6 +172,24 @@ def generar_mensual(request):
 	messages.success(request, msg)
 	return _volver(request)
 
+
+@solo_gestores_clientes
+@require_POST
+def generar_seprec(request):
+	try:
+		anio = int(request.POST.get('anio', timezone.localdate().year))
+		if not 2000 <= anio <= 2200:
+			raise ValueError
+	except (TypeError, ValueError):
+		messages.error(request, 'El año indicado no es válido.')
+		return _volver(request)
+	resultado = generar_seprec_anual(anio, usuario=request.user)
+	messages.success(
+		request,
+		f"SEPREC {anio}: {resultado['creados']} cobro(s) generado(s), "
+		f"{resultado['existentes']} ya existían y {resultado['omitidos']} cliente(s) sin tarifa SEPREC.",
+	)
+	return _volver(request)
 
 
 @solo_gestores_clientes
@@ -220,32 +255,60 @@ def crear_cobro_manual(request):
 		monto_total = Decimal(request.POST.get('monto_total', '0') or '0')
 		fecha_vencimiento = parse_date(request.POST.get('fecha_vencimiento', ''))
 		periodo_tipo = request.POST.get('periodo_tipo', CobroHonorario.Periodicidad.EXTRA)
+		tipo_ingreso = request.POST.get('tipo_ingreso', CobroHonorario.TipoIngreso.EXTRAORDINARIO)
+		tipo_servicio = request.POST.get('tipo_servicio', DetalleCobroHonorario.TipoServicio.TRAMITE)
 		observaciones = request.POST.get('observaciones', '').strip()
 
-		if not concepto or monto_total <= Decimal('0.00'):
+		if (
+			not concepto
+			or not monto_total.is_finite()
+			or monto_total <= Decimal('0.00')
+			or tipo_ingreso not in {value for value, _ in CobroHonorario.TipoIngreso.choices}
+			or periodo_tipo not in {value for value, _ in CobroHonorario.Periodicidad.choices}
+			or tipo_servicio not in {value for value, _ in DetalleCobroHonorario.TipoServicio.choices}
+		):
 			messages.error(request, 'El concepto y un monto válido son obligatorios.')
+			return _volver(request, cliente_id=cliente.pk)
+		servicios_recurrentes = {
+			DetalleCobroHonorario.TipoServicio.HONORARIO,
+			DetalleCobroHonorario.TipoServicio.SEPREC,
+			DetalleCobroHonorario.TipoServicio.MINISTERIO,
+			DetalleCobroHonorario.TipoServicio.CAJA,
+			DetalleCobroHonorario.TipoServicio.GESTORA,
+		}
+		servicio_es_recurrente = tipo_servicio in servicios_recurrentes
+		if servicio_es_recurrente != (tipo_ingreso == CobroHonorario.TipoIngreso.RECURRENTE):
+			messages.error(request, 'La clasificación del ingreso no coincide con el tipo de servicio seleccionado.')
 			return _volver(request, cliente_id=cliente.pk)
 
 		hoy = timezone.localdate()
-		cobro = CobroHonorario.objects.create(
-			cliente=cliente,
-			periodo_tipo=periodo_tipo,
-			anio=hoy.year,
-			periodo_numero=hoy.month,
-			concepto=concepto,
-			monto_base=monto_total,
-			monto_extras=Decimal('0.00'),
-			monto_total=monto_total,
-			fecha_vencimiento=fecha_vencimiento or hoy,
-			observaciones=observaciones,
-			generado_por=request.user,
-		)
+		with transaction.atomic():
+			cobro = CobroHonorario.objects.create(
+				cliente=cliente,
+				periodo_tipo=periodo_tipo,
+				tipo_ingreso=tipo_ingreso,
+				anio=hoy.year,
+				periodo_numero=hoy.month,
+				concepto=concepto,
+				monto_base=monto_total,
+				monto_extras=Decimal('0.00'),
+				monto_total=monto_total,
+				fecha_vencimiento=fecha_vencimiento or hoy,
+				observaciones=observaciones,
+				generado_por=request.user,
+			)
+			DetalleCobroHonorario.objects.create(
+				cobro=cobro,
+				tipo_servicio=tipo_servicio,
+				concepto=concepto,
+				monto=monto_total,
+			)
 
 		registrar_historial(
 			cliente=cliente,
 			usuario=request.user,
 			tipo_accion=EntradaHistorial.TipoAccion.PAGO,
-			titulo=f'Cobro extraordinario generado: Bs {monto_total}',
+			titulo=f"Cobro {cobro.get_tipo_ingreso_display().lower()} generado: Bs {monto_total}",
 			descripcion=f'Concepto: {concepto}',
 		)
 

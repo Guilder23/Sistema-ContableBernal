@@ -7,12 +7,45 @@ from apps.clientes.models import Cliente
 from apps.historial.models import EntradaHistorial
 from apps.historial.services import registrar_historial
 
-from .models import CobroHonorario, TarifaCliente
+from .models import CobroHonorario, DetalleCobroHonorario, TarifaCliente
 
 MESES_NOMBRES = (
 	'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
 	'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 )
+
+
+def _guardar_detalles_recurrentes(cobro, tarifa, periodo_tipo):
+	if periodo_tipo == CobroHonorario.Periodicidad.MENSUAL:
+		monto_base = tarifa.monto_mensual
+		servicios = (
+			(DetalleCobroHonorario.TipoServicio.GESTORA, 'Gestora', tarifa.extra_gestora),
+			(DetalleCobroHonorario.TipoServicio.MINISTERIO, 'Ministerio', tarifa.extra_ministerio),
+			(DetalleCobroHonorario.TipoServicio.CAJA, 'Caja', tarifa.extra_caja),
+			(DetalleCobroHonorario.TipoServicio.OTRO, 'Bancarización', tarifa.extra_bancarizacion),
+			(DetalleCobroHonorario.TipoServicio.OTRO, 'Otros servicios recurrentes', tarifa.extra_otros),
+		)
+	elif periodo_tipo == CobroHonorario.Periodicidad.ANUAL:
+		monto_base = tarifa.monto_anual
+		servicios = ((DetalleCobroHonorario.TipoServicio.SEPREC, 'SEPREC anual', tarifa.extra_seprec),)
+	else:
+		monto_base = tarifa.monto_trimestral
+		servicios = ()
+	if monto_base > Decimal('0.00'):
+		DetalleCobroHonorario.objects.create(
+			cobro=cobro,
+			tipo_servicio=DetalleCobroHonorario.TipoServicio.HONORARIO,
+			concepto='Honorario contable',
+			monto=monto_base,
+		)
+	for tipo_servicio, concepto, monto in servicios:
+		if monto > Decimal('0.00'):
+			DetalleCobroHonorario.objects.create(
+				cobro=cobro,
+				tipo_servicio=tipo_servicio,
+				concepto=concepto,
+				monto=monto,
+			)
 
 
 def generar_cobro_periodo(cliente, periodo_tipo, anio, periodo_numero, usuario=None):
@@ -42,7 +75,7 @@ def generar_cobro_periodo(cliente, periodo_tipo, anio, periodo_numero, usuario=N
 		fecha_vencimiento = None
 	elif periodo_tipo == CobroHonorario.Periodicidad.ANUAL:
 		monto_base = tarifa.monto_anual
-		monto_extras = Decimal('0.00')
+		monto_extras = tarifa.extra_seprec
 		periodo = f'Ejercicio fiscal {anio}'
 		fecha_vencimiento = None
 	else:
@@ -67,6 +100,9 @@ def generar_cobro_periodo(cliente, periodo_tipo, anio, periodo_numero, usuario=N
 		},
 	)
 	if creado:
+		cobro.tipo_ingreso = CobroHonorario.TipoIngreso.RECURRENTE
+		cobro.save(update_fields=('tipo_ingreso', 'actualizado_en'))
+		_guardar_detalles_recurrentes(cobro, tarifa, periodo_tipo)
 		registrar_historial(
 			cliente=cliente,
 			usuario=usuario,
@@ -127,6 +163,9 @@ def generar_honorarios_mensuales(anio, mes, usuario=None, cliente_id=None, inclu
 
 
 		if creado:
+			cobro.tipo_ingreso = CobroHonorario.TipoIngreso.RECURRENTE
+			cobro.save(update_fields=('tipo_ingreso', 'actualizado_en'))
+			_guardar_detalles_recurrentes(cobro, tarifa, CobroHonorario.Periodicidad.MENSUAL)
 			creados += 1
 			registrar_historial(
 				cliente=cliente,
@@ -143,3 +182,30 @@ def generar_honorarios_mensuales(anio, mes, usuario=None, cliente_id=None, inclu
 		'existentes': existentes,
 		'omitidos_cero': omitidos_cero,
 	}
+
+
+@transaction.atomic
+def generar_seprec_anual(anio, usuario=None, cliente_id=None):
+	clientes = Cliente.objects.filter(estado=Cliente.Estado.ACTIVO).select_related('tarifa')
+	if cliente_id:
+		clientes = clientes.filter(pk=cliente_id)
+	creados = 0
+	existentes = 0
+	omitidos = 0
+	for cliente in clientes:
+		tarifa = getattr(cliente, 'tarifa', None)
+		if not tarifa or tarifa.extra_seprec <= Decimal('0.00'):
+			omitidos += 1
+			continue
+		cobro, creado = generar_cobro_periodo(
+			cliente,
+			CobroHonorario.Periodicidad.ANUAL,
+			anio,
+			0,
+			usuario=usuario,
+		)
+		if creado:
+			creados += 1
+		else:
+			existentes += 1
+	return {'creados': creados, 'existentes': existentes, 'omitidos': omitidos}

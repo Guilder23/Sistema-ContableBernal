@@ -1,0 +1,19 @@
+<section class="requirement-modal" id="modal-editar" role="dialog" aria-modal="true" aria-labelledby="requirement-edit-title" hidden>
+  <button class="requirement-modal__backdrop" type="button" data-close-modal aria-label="Cerrar"></button>
+  <div class="requirement-modal__panel">
+    <header class="requirement-modal__header">
+      <div><p class="eyebrow">ACTUALIZAR SOLICITUD</p><h2 id="requirement-edit-title">Editar requerimiento</h2><p>Actualiza los datos y el avance del trabajo.</p></div>
+      <button class="requirement-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button>
+    </header>
+    <form method="post" class="requirement-form" data-edit-requirement-form>
+      {% csrf_token %}
+      <label class="requirement-form__wide"><span>Nombre del requerimiento <b>*</b></span><input name="titulo" data-edit-field="titulo" maxlength="180" required></label>
+      <label class="requirement-form__wide"><span>Descripción <b>*</b></span><textarea name="descripcion" data-edit-field="descripcion" rows="4" required></textarea></label>
+      <label><span>Estado</span><select name="estado" data-edit-field="estado">{% for value, label in estados %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select><small>Avanza en orden: Nuevo, En proceso y Terminado.</small></label>
+      <label><span>Prioridad</span><select name="prioridad" data-edit-field="prioridad">{% for value, label in prioridades %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></label>
+      <label><span>Fecha límite</span><input type="date" name="fecha_limite" data-edit-field="fecha_limite"></label>
+      {% if puede_gestionar %}<label><span>Responsable</span><select name="responsable" data-edit-field="responsable"><option value="">Sin asignar</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}">{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select></label>{% endif %}
+      <footer class="requirement-modal__footer"><button class="button button--quiet" type="button" data-close-modal>Cancelar</button><button class="button button--primary" type="submit">Guardar cambios</button></footer>
+    </form>
+  </div>
+</section>

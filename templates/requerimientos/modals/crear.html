@@ -1,0 +1,20 @@
+<section class="requirement-modal requirement-modal--create" id="modal-crear" role="dialog" aria-modal="true" aria-labelledby="requirement-create-title" hidden>
+  <button class="requirement-modal__backdrop" type="button" data-close-modal aria-label="Cerrar"></button>
+  <div class="requirement-modal__panel">
+    <header class="requirement-modal__header">
+      <div><p class="eyebrow">ATENCIÓN AL CLIENTE</p><h2 id="requirement-create-title">Nuevo requerimiento</h2><p>Registra la solicitud y asigna su seguimiento.</p></div>
+      <button class="requirement-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button>
+    </header>
+    <form method="post" action="{% url 'requerimientos:crear' %}" enctype="multipart/form-data" class="requirement-form" data-create-requirement-form>
+      {% csrf_token %}
+      <label><span>Cliente <b>*</b></span><select name="cliente" required><option value="">Seleccionar cliente</option>{% for cliente in clientes %}<option value="{{ cliente.pk }}">{{ cliente.nombre }}{% if cliente.razon_social %} · {{ cliente.razon_social }}{% endif %}</option>{% endfor %}</select></label>
+      <label><span>Nombre del requerimiento <b>*</b></span><input name="titulo" maxlength="180" required placeholder="Ej. Certificado de impuestos"></label>
+      <label class="requirement-form__wide"><span>Descripción <b>*</b></span><textarea name="descripcion" rows="4" required placeholder="Describe lo que solicita el cliente"></textarea></label>
+      <label><span>Prioridad</span><select name="prioridad">{% for value, label in prioridades %}<option value="{{ value }}" {% if value == 'normal' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
+      <label><span>Fecha límite</span><input type="date" name="fecha_limite"></label>
+      {% if puede_gestionar %}<label><span>Responsable</span><select name="responsable"><option value="">Sin asignar</option>{% for usuario in usuarios %}<option value="{{ usuario.pk }}">{{ usuario.get_full_name|default:usuario.username }}</option>{% endfor %}</select></label>{% endif %}
+      <label class="requirement-form__wide"><span>Archivos</span><input type="file" name="archivos" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx"><small>Máximo 10 MB por archivo.</small></label>
+      <footer class="requirement-modal__footer"><button class="button button--quiet" type="button" data-close-modal>Cancelar</button><button class="button button--primary" type="submit">Crear requerimiento</button></footer>
+    </form>
+  </div>
+</section>

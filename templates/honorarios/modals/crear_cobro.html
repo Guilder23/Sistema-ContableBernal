@@ -29,6 +29,21 @@
 
 			<div class="client-form__row">
 				<label class="client-field">
+					<span>Clasificación del ingreso <b>*</b></span>
+					<select name="tipo_ingreso" required>
+						{% for value, label in tipos_ingreso %}<option value="{{ value }}" {% if value == 'extraordinario' %}selected{% endif %}>{{ label }}</option>{% endfor %}
+					</select>
+				</label>
+				<label class="client-field">
+					<span>Servicio <b>*</b></span>
+					<select name="tipo_servicio" required>
+						{% for value, label in servicios_cobro %}<option value="{{ value }}" {% if value == 'tramite' %}selected{% endif %}>{{ label }}</option>{% endfor %}
+					</select>
+				</label>
+			</div>
+
+			<div class="client-form__row">
+				<label class="client-field">
 					<span>Tipo de cobro <b>*</b></span>
 					<select name="periodo_tipo" required>
 						<option value="extra">Servicio Extraordinario / Trámite</option>

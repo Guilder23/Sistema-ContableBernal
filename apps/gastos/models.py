@@ -124,3 +124,41 @@ class RegistroFinanciero(models.Model):
 
 	def __str__(self):
 		return f'{self.concepto} - Bs {self.monto}'
+
+	@property
+	def monto_recuperado(self):
+		return sum((recuperacion.monto for recuperacion in self.recuperaciones.all()), Decimal('0.00'))
+
+	@property
+	def saldo_por_recuperar(self):
+		if not self.recuperable or self.estado_recuperacion == self.EstadoRecuperacion.RECUPERADO:
+			return Decimal('0.00')
+		return max(Decimal('0.00'), self.monto - self.monto_recuperado)
+
+
+class RecuperacionGasto(models.Model):
+	registro = models.ForeignKey(RegistroFinanciero, on_delete=models.CASCADE, related_name='recuperaciones')
+	monto = models.DecimalField(max_digits=12, decimal_places=2)
+	fecha = models.DateField(default=timezone.localdate)
+	comprobante = models.CharField(max_length=120, blank=True, default='')
+	observaciones = models.TextField(blank=True, default='')
+	registrado_por = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
+		related_name='recuperaciones_gasto_registradas',
+	)
+	creado_en = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		ordering = ('fecha', 'pk')
+		verbose_name = 'recuperación de gasto'
+		verbose_name_plural = 'recuperaciones de gastos'
+
+	def clean(self):
+		if self.monto is not None and self.monto <= 0:
+			raise ValidationError({'monto': 'El monto recuperado debe ser mayor a cero.'})
+
+	def __str__(self):
+		return f'Recuperación Bs {self.monto} - {self.registro.concepto}'

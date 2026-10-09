@@ -1,0 +1,10 @@
+<section class="requirement-modal requirement-delete-modal" id="modal-eliminar" role="dialog" aria-modal="true" aria-labelledby="requirement-delete-title" hidden>
+  <button class="requirement-modal__backdrop" type="button" data-close-modal aria-label="Cerrar"></button>
+  <div class="requirement-modal__panel requirement-delete-modal__panel">
+    <header class="requirement-modal__header"><div><p class="eyebrow">ELIMINAR REGISTRO</p><h2 id="requirement-delete-title">¿Eliminar requerimiento?</h2><p>Se eliminarán también sus comentarios y archivos adjuntos.</p></div><button class="requirement-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button></header>
+    <form method="post" data-delete-requirement-form>
+      {% csrf_token %}<p class="requirement-delete-name" data-delete-title></p>
+      <footer class="requirement-modal__footer"><button class="button button--quiet" type="button" data-close-modal>Cancelar</button><button class="button button--danger" type="submit">Eliminar requerimiento</button></footer>
+    </form>
+  </div>
+</section>

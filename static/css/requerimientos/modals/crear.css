@@ -1,0 +1,3 @@
+.requirement-modal--create .requirement-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.requirement-modal--create .requirement-form__wide { grid-column: 1 / -1; }
+@media (max-width: 560px) { .requirement-modal--create .requirement-form { grid-template-columns: 1fr; } .requirement-modal--create .requirement-form__wide { grid-column: auto; } }

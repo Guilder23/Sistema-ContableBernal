@@ -1,0 +1,33 @@
+{% load static %}
+<section class="requirement-modal requirement-view-modal" id="modal-ver-{{ requerimiento.pk }}" role="dialog" aria-modal="true" aria-labelledby="requirement-view-title-{{ requerimiento.pk }}" hidden>
+  <button class="requirement-modal__backdrop" type="button" data-close-modal aria-label="Cerrar"></button>
+  <div class="requirement-modal__panel requirement-view-modal__panel">
+    <header class="requirement-modal__header">
+      <div><p class="eyebrow">{{ requerimiento.cliente.nombre }}</p><h2 id="requirement-view-title-{{ requerimiento.pk }}">{{ requerimiento.titulo }}</h2><p>{{ requerimiento.get_estado_display }} · Prioridad {{ requerimiento.get_prioridad_display }}</p></div>
+      <button class="requirement-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button>
+    </header>
+    <div class="requirement-view-content">
+      <section class="requirement-view-summary">
+        <div><span>Responsable</span><strong>{% if requerimiento.responsable %}{{ requerimiento.responsable.get_full_name|default:requerimiento.responsable.username }}{% else %}Sin asignar{% endif %}</strong></div>
+        <div><span>Fecha límite</span><strong>{% if requerimiento.fecha_limite %}{{ requerimiento.fecha_limite|date:'d/m/Y' }}{% else %}Sin fecha{% endif %}</strong></div>
+        <div><span>Creado</span><strong>{{ requerimiento.creado_en|date:'d/m/Y H:i' }}</strong></div>
+      </section>
+      <section class="requirement-view-description"><h3>Descripción</h3><p>{{ requerimiento.descripcion|linebreaksbr }}</p></section>
+      <section class="requirement-followup-section">
+        <header><h3>Archivos</h3><span>{{ requerimiento.archivos.count }}</span></header>
+        <div class="requirement-file-list">{% for archivo in requerimiento.archivos.all %}<a href="{% url 'requerimientos:descargar_archivo' archivo_id=archivo.pk %}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#files"></use></svg>{{ archivo.nombre }}</a>{% empty %}<p class="requirement-muted">No hay archivos adjuntos.</p>{% endfor %}</div>
+        <form method="post" action="{% url 'requerimientos:adjuntar' requerimiento_id=requerimiento.pk %}" enctype="multipart/form-data" class="requirement-inline-form">
+          {% csrf_token %}<label><span>Adjuntar archivos</span><input type="file" name="archivos" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx" required></label><button class="button button--quiet" type="submit">Adjuntar</button>
+        </form>
+      </section>
+      <section class="requirement-followup-section">
+        <header><h3>Comentarios</h3><span>{{ requerimiento.comentarios.count }}</span></header>
+        <div class="requirement-comment-list">{% for comentario in requerimiento.comentarios.all %}<article class="requirement-comment"><div><strong>{% if comentario.autor %}{{ comentario.autor.get_full_name|default:comentario.autor.username }}{% else %}Usuario{% endif %}</strong><time>{{ comentario.creado_en|date:'d/m/Y H:i' }}</time></div><p>{{ comentario.texto|linebreaksbr }}</p></article>{% empty %}<p class="requirement-muted">Todavía no hay comentarios.</p>{% endfor %}</div>
+        <form method="post" action="{% url 'requerimientos:comentar' requerimiento_id=requerimiento.pk %}" class="requirement-comment-form">
+          {% csrf_token %}<label><span>Agregar comentario</span><textarea name="texto" rows="2" maxlength="5000" required></textarea></label><button class="button button--primary" type="submit">Comentar</button>
+        </form>
+      </section>
+    </div>
+    <footer class="requirement-modal__footer"><button class="button button--quiet" type="button" data-close-modal>Cerrar</button></footer>
+  </div>
+</section>

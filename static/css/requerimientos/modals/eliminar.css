@@ -1,0 +1,4 @@
+.requirement-delete-modal__panel { width: min(440px, 100%); }
+.requirement-delete-name { margin: 0 24px 18px; color: #33473d; font-weight: 700; overflow-wrap: anywhere; }
+.requirement-delete-modal .button--danger { border: 1px solid #ad4438; background: #ad4438; color: #fff; }
+.requirement-delete-modal .button--danger:hover { background: #91382e; }

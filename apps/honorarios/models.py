@@ -20,6 +20,7 @@ class TarifaCliente(models.Model):
 	extra_ministerio = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 	extra_caja = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 	extra_otros = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+	extra_seprec = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
 
 	observaciones = models.TextField(blank=True)
 	actualizado_en = models.DateTimeField(auto_now=True)
@@ -44,6 +45,10 @@ class TarifaCliente(models.Model):
 
 
 class CobroHonorario(models.Model):
+	class TipoIngreso(models.TextChoices):
+		RECURRENTE = 'recurrente', 'Recurrente'
+		EXTRAORDINARIO = 'extraordinario', 'Extraordinario'
+
 	class Estado(models.TextChoices):
 		PENDIENTE = 'pendiente', 'Pendiente'
 		PARCIAL = 'parcial', 'Pago Parcial'
@@ -65,6 +70,11 @@ class CobroHonorario(models.Model):
 		max_length=15,
 		choices=Periodicidad.choices,
 		default=Periodicidad.MENSUAL,
+	)
+	tipo_ingreso = models.CharField(
+		max_length=16,
+		choices=TipoIngreso.choices,
+		default=TipoIngreso.RECURRENTE,
 	)
 	anio = models.PositiveSmallIntegerField()
 	periodo_numero = models.PositiveSmallIntegerField(default=0, help_text='Mes (1-12) o Trimestre (1-4)')
@@ -115,6 +125,32 @@ class CobroHonorario(models.Model):
 
 	def __str__(self):
 		return f'{self.cliente.nombre} - {self.concepto} (Bs {self.monto_total})'
+
+
+class DetalleCobroHonorario(models.Model):
+	class TipoServicio(models.TextChoices):
+		HONORARIO = 'honorario', 'Honorario contable'
+		SEPREC = 'seprec', 'SEPREC'
+		MINISTERIO = 'ministerio', 'Ministerio'
+		CAJA = 'caja', 'Caja'
+		GESTORA = 'gestora', 'Gestora'
+		LICENCIA = 'licencia', 'Licencia'
+		TRAMITE = 'tramite', 'Trámite'
+		CERTIFICADO = 'certificado', 'Certificado'
+		OTRO = 'otro', 'Otro'
+
+	cobro = models.ForeignKey(CobroHonorario, on_delete=models.CASCADE, related_name='detalles')
+	tipo_servicio = models.CharField(max_length=16, choices=TipoServicio.choices)
+	concepto = models.CharField(max_length=200)
+	monto = models.DecimalField(max_digits=10, decimal_places=2)
+
+	class Meta:
+		ordering = ('pk',)
+		verbose_name = 'detalle de honorario'
+		verbose_name_plural = 'detalles de honorarios'
+
+	def __str__(self):
+		return f'{self.concepto} - Bs {self.monto}'
 
 
 class PagoHonorario(models.Model):

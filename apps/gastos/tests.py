@@ -38,6 +38,41 @@ class GestionGastosTests(TestCase):
 		self.assertEqual(str(registro.monto), '350.50')
 		self.assertEqual(registro.tipo, RegistroFinanciero.Tipo.EGRESO)
 
+	def test_registra_recuperaciones_parciales_y_calcula_el_saldo(self):
+		registro = RegistroFinanciero.objects.create(
+			concepto='Trámite cliente',
+			tipo=RegistroFinanciero.Tipo.EGRESO,
+			categoria=RegistroFinanciero.Categoria.OTRO,
+			monto='100.00',
+			fecha='2026-10-08',
+			recuperable=True,
+			cliente=self.cliente,
+		)
+		url = f'/gastos/{registro.pk}/recuperar/'
+		primera = self.client.post(url, {'monto': '40.00', 'fecha': '2026-10-09'})
+		self.assertRedirects(primera, '/gastos/')
+		registro.refresh_from_db()
+		self.assertEqual(str(registro.monto_recuperado), '40.00')
+		self.assertEqual(str(registro.saldo_por_recuperar), '60.00')
+		self.assertEqual(registro.estado_recuperacion, RegistroFinanciero.EstadoRecuperacion.PENDIENTE)
+		self.client.post(url, {'monto': '60.00', 'fecha': '2026-10-10'})
+		registro.refresh_from_db()
+		self.assertEqual(registro.estado_recuperacion, RegistroFinanciero.EstadoRecuperacion.RECUPERADO)
+		self.assertEqual(str(registro.saldo_por_recuperar), '0.00')
+
+	def test_no_permite_recuperar_mas_que_el_saldo(self):
+		registro = RegistroFinanciero.objects.create(
+			concepto='Certificado',
+			tipo=RegistroFinanciero.Tipo.EGRESO,
+			categoria=RegistroFinanciero.Categoria.OTRO,
+			monto='100.00',
+			fecha='2026-10-08',
+			recuperable=True,
+			cliente=self.cliente,
+		)
+		self.client.post(f'/gastos/{registro.pk}/recuperar/', {'monto': '100.01', 'fecha': '2026-10-09'})
+		self.assertFalse(registro.recuperaciones.exists())
+
 	def test_registra_gasto_normal_sin_campos_de_activo_ni_recuperacion(self):
 		response = self.client.post('/gastos/crear/', {
 			'concepto': 'Alquiler oficina',

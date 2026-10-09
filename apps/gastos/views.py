@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -13,7 +14,7 @@ from django.views.decorators.http import require_POST
 from apps.clientes.models import Cliente
 from apps.clientes.permissions import puede_gestionar_clientes, solo_gestores_clientes
 
-from .models import RegistroFinanciero
+from .models import RecuperacionGasto, RegistroFinanciero
 
 
 MESES_ES = (
@@ -105,8 +106,6 @@ def _validar_y_guardar(request, registro=None):
 		errores['fecha'] = 'Ingresa una fecha válida.'
 	if datos['estado_pago'] not in {value for value, _ in RegistroFinanciero.EstadoPago.choices}:
 		errores['estado_pago'] = 'Selecciona un estado de pago válido.'
-	if datos['recuperable'] and datos['estado_recuperacion'] not in {value for value, _ in RegistroFinanciero.EstadoRecuperacion.choices}:
-		errores['estado_recuperacion'] = 'Selecciona un estado de recuperación válido.'
 	if datos['tipo'] == RegistroFinanciero.Tipo.INVERSION and datos['estado_activo'] not in {value for value, _ in RegistroFinanciero.EstadoActivo.choices}:
 		errores['estado_activo'] = 'Selecciona un estado de activo válido.'
 	if any(len(datos[campo]) > limite for campo, limite in (
@@ -132,6 +131,11 @@ def _validar_y_guardar(request, registro=None):
 				errores['cliente'] = 'El cliente seleccionado no existe.'
 	if datos['recuperable'] and cliente is None:
 		errores['cliente'] = 'Selecciona el cliente al que se cobrará este egreso recuperable.'
+	if registro and registro.recuperaciones.exists():
+		if cliente and cliente.pk != registro.cliente_id:
+			errores['cliente'] = 'No se puede cambiar el cliente después de registrar una recuperación.'
+		if monto is not None and monto < registro.monto_recuperado:
+			errores['monto'] = 'El monto no puede ser menor a lo que ya se recuperó.'
 	if datos['tipo'] == RegistroFinanciero.Tipo.INVERSION and not vida_util:
 		errores['vida_util_meses'] = 'Indica la vida útil de la inversión en meses.'
 	if datos['tipo'] != RegistroFinanciero.Tipo.INVERSION and vida_util:
@@ -151,7 +155,20 @@ def _validar_y_guardar(request, registro=None):
 	registro.comprobante = datos['comprobante']
 	registro.estado_pago = datos['estado_pago']
 	registro.recuperable = datos['recuperable']
-	registro.estado_recuperacion = datos['estado_recuperacion'] if datos['recuperable'] else RegistroFinanciero.EstadoRecuperacion.PENDIENTE
+	if datos['recuperable']:
+		monto_recuperado = registro.monto_recuperado if registro.pk else Decimal('0.00')
+		recuperacion_historica = (
+			registro.pk
+			and registro.estado_recuperacion == RegistroFinanciero.EstadoRecuperacion.RECUPERADO
+			and not registro.recuperaciones.exists()
+		)
+		registro.estado_recuperacion = (
+			RegistroFinanciero.EstadoRecuperacion.RECUPERADO
+			if recuperacion_historica or monto_recuperado >= monto
+			else RegistroFinanciero.EstadoRecuperacion.PENDIENTE
+		)
+	else:
+		registro.estado_recuperacion = RegistroFinanciero.EstadoRecuperacion.PENDIENTE
 	registro.cliente = cliente if datos['recuperable'] else None
 	registro.vida_util_meses = vida_util if datos['tipo'] == RegistroFinanciero.Tipo.INVERSION else None
 	registro.estado_activo = datos['estado_activo'] if datos['tipo'] == RegistroFinanciero.Tipo.INVERSION else RegistroFinanciero.EstadoActivo.EN_USO
@@ -167,7 +184,7 @@ def _validar_y_guardar(request, registro=None):
 
 def _contexto_index(request, form_data=None, errores=None, modal_activo='', registro_edicion=None):
 	hoy = timezone.localdate()
-	registros = RegistroFinanciero.objects.select_related('cliente', 'creado_por').all()
+	registros = RegistroFinanciero.objects.select_related('cliente', 'creado_por').prefetch_related('recuperaciones').all()
 	busqueda = request.GET.get('q', '').strip()
 	tipo_filtro = request.GET.get('tipo', '').strip()
 	categoria_filtro = request.GET.get('categoria', '').strip()
@@ -269,7 +286,7 @@ def _contexto_index(request, form_data=None, errores=None, modal_activo='', regi
 		'total_gastos_anuales': gastos_anuales.aggregate(total=Sum('monto'))['total'] or Decimal('0.00'),
 		'total_inversiones': inversiones.aggregate(total=Sum('monto'))['total'] or Decimal('0.00'),
 		'total_egresos': eg_resumen.aggregate(total=Sum('monto'))['total'] or Decimal('0.00'),
-		'total_por_cobrar': por_cobrar.aggregate(total=Sum('monto'))['total'] or Decimal('0.00'),
+		'total_por_cobrar': sum((registro.saldo_por_recuperar for registro in por_cobrar.prefetch_related('recuperaciones')), Decimal('0.00')),
 		'total_pendiente_pago': pendientes_pago.aggregate(total=Sum('monto'))['total'] or Decimal('0.00'),
 		'total_depreciacion': total_depreciacion,
 		'total_recuperable': total_recuperable,
@@ -310,6 +327,47 @@ def editar(request, registro_id):
 		return redirect('gastos:index')
 	contexto = _contexto_index(request, datos, errores, 'modal-editar', registro)
 	return render(request, 'gastos/gastos.html', contexto, status=400)
+
+
+@solo_gestores_clientes
+@require_POST
+def registrar_recuperacion(request, registro_id):
+	try:
+		monto = Decimal(request.POST.get('monto', '0') or '0')
+		if not monto.is_finite() or monto <= 0 or monto.as_tuple().exponent < -2:
+			raise InvalidOperation
+	except (InvalidOperation, TypeError, ValueError):
+		messages.error(request, 'Ingresa un monto recuperado válido, con hasta dos decimales.')
+		return redirect('gastos:index')
+	fecha = parse_date(request.POST.get('fecha', ''))
+	if fecha is None:
+		messages.error(request, 'Ingresa una fecha válida para la recuperación.')
+		return redirect('gastos:index')
+	with transaction.atomic():
+		registro = get_object_or_404(RegistroFinanciero.objects.select_for_update(), pk=registro_id)
+		if not registro.recuperable:
+			messages.error(request, 'Este movimiento no está marcado como recuperable.')
+			return redirect('gastos:index')
+		saldo = registro.saldo_por_recuperar
+		if monto > saldo:
+			messages.error(request, f'El monto supera el saldo pendiente de Bs {saldo:.2f}.')
+			return redirect('gastos:index')
+		RecuperacionGasto.objects.create(
+			registro=registro,
+			monto=monto,
+			fecha=fecha,
+			comprobante=request.POST.get('comprobante', '').strip()[:120],
+			observaciones=request.POST.get('observaciones', '').strip(),
+			registrado_por=request.user,
+		)
+		registro.estado_recuperacion = (
+			RegistroFinanciero.EstadoRecuperacion.RECUPERADO
+			if registro.monto_recuperado >= registro.monto
+			else RegistroFinanciero.EstadoRecuperacion.PENDIENTE
+		)
+		registro.save(update_fields=('estado_recuperacion', 'actualizado_en'))
+	messages.success(request, f'Se registró la recuperación de Bs {monto:.2f}.')
+	return redirect('gastos:index')
 
 
 @solo_gestores_clientes

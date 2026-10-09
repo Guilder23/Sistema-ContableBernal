@@ -1,0 +1,25 @@
+.requirement-view-modal__panel { width: min(760px, 100%); }
+.requirement-view-content { display: grid; gap: 20px; max-height: min(66vh, 680px); overflow: auto; padding: 20px 24px; }
+.requirement-view-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.requirement-view-summary > div { display: grid; gap: 4px; }
+.requirement-view-summary span, .requirement-view-description h3, .requirement-followup-section h3 { color: #68786e; font-size: 11px; font-weight: 700; }
+.requirement-view-summary strong { color: #263a30; font-size: 13px; }
+.requirement-view-description h3, .requirement-followup-section h3 { margin: 0; text-transform: uppercase; }
+.requirement-view-description p { margin: 7px 0 0; color: #405249; font-size: 13px; line-height: 1.6; }
+.requirement-followup-section { display: grid; gap: 10px; border-top: 1px solid #e6ebe7; padding-top: 15px; }
+.requirement-followup-section > header { display: flex; justify-content: space-between; align-items: center; }
+.requirement-followup-section > header span { color: #708077; font-size: 12px; }
+.requirement-file-list, .requirement-comment-list { display: grid; gap: 8px; }
+.requirement-file-list a { display: flex; align-items: center; gap: 8px; width: fit-content; color: #28644a; font-size: 13px; text-decoration: none; }
+.requirement-file-list a:hover { text-decoration: underline; }
+.requirement-file-list .icon { width: 16px; height: 16px; }
+.requirement-inline-form, .requirement-comment-form { display: flex; align-items: end; gap: 10px; }
+.requirement-inline-form label, .requirement-comment-form label { display: grid; flex: 1; gap: 6px; min-width: 0; }
+.requirement-inline-form label > span, .requirement-comment-form label > span { color: #52665b; font-size: 12px; font-weight: 650; }
+.requirement-inline-form input, .requirement-comment-form textarea { min-width: 0; border: 1px solid #cbd7cf; border-radius: 4px; padding: 9px; font: inherit; }
+.requirement-comment { border-left: 2px solid #c5d8cb; padding-left: 10px; }
+.requirement-comment > div { display: flex; align-items: center; gap: 9px; }
+.requirement-comment strong { color: #34483d; font-size: 12px; }
+.requirement-comment time { color: #78867e; font-size: 11px; }
+.requirement-comment p { margin: 4px 0 0; color: #52645a; font-size: 13px; }
+@media (max-width: 560px) { .requirement-view-content { padding: 16px; } .requirement-view-summary { grid-template-columns: 1fr 1fr; } .requirement-inline-form, .requirement-comment-form { align-items: stretch; flex-direction: column; } }

@@ -24,7 +24,6 @@
         <label class="expense-form__check"><input type="checkbox" name="recuperable" value="1" data-expense-field="recuperable" {% if form_data.recuperable %}checked{% endif %}> Este monto se cobrará a un cliente</label>
         <div class="expense-form__grid" data-recovery-fields>
           <label class="expense-form__field"><span>Cliente <b>*</b></span><select name="cliente" data-expense-field="cliente"><option value="">Seleccionar cliente</option>{% for cliente in clientes %}<option value="{{ cliente.pk }}" {% if form_data.cliente == cliente.pk|stringformat:'s' %}selected{% endif %}>{{ cliente.nombre }}{% if cliente.razon_social %} · {{ cliente.razon_social }}{% endif %}</option>{% endfor %}</select>{% if errores.cliente %}<small class="expense-form__error">{{ errores.cliente }}</small>{% endif %}</label>
-          <label class="expense-form__field"><span>Estado de recuperación</span><select name="estado_recuperacion" data-expense-field="estado_recuperacion">{% for value, label in estados_recuperacion %}<option value="{{ value }}" {% if form_data.estado_recuperacion == value or not form_data and value == 'pendiente' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label>
         </div>
       </fieldset>
 
