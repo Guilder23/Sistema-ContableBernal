@@ -14,6 +14,8 @@ from django.views.decorators.http import require_GET, require_POST
 
 from apps.clientes.models import Cliente
 from apps.clientes.permissions import puede_gestionar_clientes
+from apps.historial.models import EntradaHistorial
+from apps.historial.services import registrar_historial
 
 from .models import ArchivoRequerimiento, ComentarioRequerimiento, Requerimiento
 
@@ -139,6 +141,15 @@ def crear(request):
 		requerimiento.delete()
 		messages.error(request, 'No se pudo guardar uno de los archivos adjuntos.')
 		return redirect('requerimientos:index')
+	registrar_historial(
+		cliente=cliente,
+		usuario=request.user,
+		tipo_accion=EntradaHistorial.TipoAccion.TAREA,
+		seccion=EntradaHistorial.Seccion.REQUERIMIENTOS,
+		referencia=titulo,
+		titulo=f'Requerimiento creado: {titulo}',
+		descripcion=f'Prioridad: {requerimiento.get_prioridad_display()}',
+	)
 	messages.success(request, 'Requerimiento creado.')
 	return redirect('requerimientos:index')
 
@@ -188,6 +199,15 @@ def actualizar(request, requerimiento_id):
 	if estado_nuevo == Requerimiento.Estado.TERMINADO and requerimiento.terminado_en is None:
 		requerimiento.terminado_en = timezone.now()
 	requerimiento.save()
+	registrar_historial(
+		cliente=requerimiento.cliente,
+		usuario=request.user,
+		tipo_accion=EntradaHistorial.TipoAccion.TAREA,
+		seccion=EntradaHistorial.Seccion.REQUERIMIENTOS,
+		referencia=requerimiento.titulo,
+		titulo=f'Requerimiento actualizado: {requerimiento.titulo}',
+		descripcion=f'Estado: {requerimiento.get_estado_display()} · Prioridad: {requerimiento.get_prioridad_display()}',
+	)
 	messages.success(request, 'Se actualizaron los datos del requerimiento.')
 	return redirect('requerimientos:index')
 
@@ -199,9 +219,18 @@ def eliminar(request, requerimiento_id):
 		return HttpResponseForbidden('No tienes permiso para eliminar requerimientos.')
 	requerimiento = get_object_or_404(Requerimiento, pk=requerimiento_id)
 	titulo = requerimiento.titulo
+	cliente = requerimiento.cliente
 	for adjunto in requerimiento.archivos.all():
 		adjunto.archivo.delete(save=False)
 	requerimiento.delete()
+	registrar_historial(
+		cliente=cliente,
+		usuario=request.user,
+		tipo_accion=EntradaHistorial.TipoAccion.OTRO,
+		seccion=EntradaHistorial.Seccion.REQUERIMIENTOS,
+		referencia=titulo,
+		titulo=f'Requerimiento eliminado: {titulo}',
+	)
 	messages.success(request, f'Se eliminó el requerimiento «{titulo}».')
 	return redirect('requerimientos:index')
 
@@ -215,6 +244,15 @@ def comentar(request, requerimiento_id):
 		messages.error(request, 'El comentario es obligatorio y no puede superar 5000 caracteres.')
 	else:
 		ComentarioRequerimiento.objects.create(requerimiento=requerimiento, autor=request.user, texto=texto)
+		registrar_historial(
+			cliente=requerimiento.cliente,
+			usuario=request.user,
+			tipo_accion=EntradaHistorial.TipoAccion.TAREA,
+			seccion=EntradaHistorial.Seccion.REQUERIMIENTOS,
+			referencia=requerimiento.titulo,
+			titulo=f'Comentario agregado a requerimiento: {requerimiento.titulo}',
+			descripcion=texto[:500],
+		)
 		messages.success(request, 'Comentario agregado.')
 	return redirect('requerimientos:index')
 
@@ -236,6 +274,15 @@ def adjuntar(request, requerimiento_id):
 	except ValidationError:
 		messages.error(request, 'No se pudo guardar uno de los archivos adjuntos.')
 	else:
+		registrar_historial(
+			cliente=requerimiento.cliente,
+			usuario=request.user,
+			tipo_accion=EntradaHistorial.TipoAccion.DOCUMENTO,
+			seccion=EntradaHistorial.Seccion.DOCUMENTOS,
+			referencia=requerimiento.titulo,
+			titulo=f'Archivo adjuntado a requerimiento: {requerimiento.titulo}',
+			descripcion=', '.join(Path(archivo.name).name for archivo in archivos),
+		)
 		messages.success(request, 'Archivo(s) adjuntado(s).')
 	return redirect('requerimientos:index')
 

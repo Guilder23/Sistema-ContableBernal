@@ -6,6 +6,8 @@ from django.db import transaction
 
 from apps.clientes.models import Cliente
 from apps.honorarios.services import generar_cobro_periodo
+from apps.historial.models import EntradaHistorial
+from apps.historial.services import registrar_historial
 from apps.tareas.models import Tarea
 
 from .models import ConfiguracionCliente, DiaNoLaborable, Obligacion, TipoObligacion
@@ -160,6 +162,26 @@ def generar_obligaciones(periodicidad, anio, numero, cliente_id=None, usuario=No
 			},
 		)
 		_, tarea_creada = Tarea.objects.get_or_create(obligacion=obligacion)
+		if creada:
+			registrar_historial(
+				cliente=cliente,
+				usuario=usuario,
+				tipo_accion=EntradaHistorial.TipoAccion.OBLIGACION,
+				seccion=EntradaHistorial.Seccion.OBLIGACIONES,
+				referencia=tipo.nombre,
+				titulo=f'Obligación generada: {tipo.nombre}',
+				descripcion=f'{obligacion.periodo_etiqueta} · Vence: {vencimiento:%d/%m/%Y}' if vencimiento else obligacion.periodo_etiqueta,
+			)
+		if tarea_creada:
+			registrar_historial(
+				cliente=cliente,
+				usuario=usuario,
+				tipo_accion=EntradaHistorial.TipoAccion.TAREA,
+				seccion=EntradaHistorial.Seccion.TAREAS,
+				referencia=tipo.nombre,
+				titulo=f'Tarea creada: {tipo.nombre}',
+				descripcion=obligacion.periodo_etiqueta,
+			)
 		_, cobro_creado = generar_cobro_periodo(
 			cliente,
 			periodicidad,

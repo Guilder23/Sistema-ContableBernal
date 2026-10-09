@@ -13,6 +13,8 @@ from django.views.decorators.http import require_POST
 
 from apps.clientes.models import Cliente
 from apps.clientes.permissions import puede_gestionar_clientes, solo_gestores_clientes
+from apps.historial.models import EntradaHistorial
+from apps.historial.services import registrar_historial
 
 from .models import RecuperacionGasto, RegistroFinanciero
 
@@ -79,6 +81,7 @@ def _datos_post(request):
 
 
 def _validar_y_guardar(request, registro=None):
+	es_nuevo = registro is None
 	datos = _datos_post(request)
 	errores = {}
 	valores = {value for value, _ in RegistroFinanciero.Tipo.choices}
@@ -179,6 +182,15 @@ def _validar_y_guardar(request, registro=None):
 	except ValidationError as error:
 		return None, datos, {'general': ' '.join(error.messages)}
 	registro.save()
+	registrar_historial(
+		cliente=registro.cliente,
+		usuario=request.user,
+		tipo_accion=EntradaHistorial.TipoAccion.CREACION if es_nuevo else EntradaHistorial.TipoAccion.MODIFICACION,
+		seccion=EntradaHistorial.Seccion.GASTOS,
+		referencia=registro.concepto,
+		titulo=f"{'Gasto' if es_nuevo else 'Gasto actualizado'}: {registro.concepto}",
+		descripcion=f'Tipo: {registro.get_tipo_display()} · Monto: Bs {registro.monto:.2f}',
+	)
 	return registro, datos, {}
 
 
@@ -352,7 +364,7 @@ def registrar_recuperacion(request, registro_id):
 		if monto > saldo:
 			messages.error(request, f'El monto supera el saldo pendiente de Bs {saldo:.2f}.')
 			return redirect('gastos:index')
-		RecuperacionGasto.objects.create(
+		recuperacion = RecuperacionGasto.objects.create(
 			registro=registro,
 			monto=monto,
 			fecha=fecha,
@@ -366,6 +378,15 @@ def registrar_recuperacion(request, registro_id):
 			else RegistroFinanciero.EstadoRecuperacion.PENDIENTE
 		)
 		registro.save(update_fields=('estado_recuperacion', 'actualizado_en'))
+		registrar_historial(
+			cliente=registro.cliente,
+			usuario=request.user,
+			tipo_accion=EntradaHistorial.TipoAccion.PAGO,
+			seccion=EntradaHistorial.Seccion.GASTOS,
+			referencia=registro.concepto,
+			titulo=f'Reembolso de gasto registrado: Bs {recuperacion.monto:.2f}',
+			descripcion=f'Cliente: {registro.cliente.nombre} · Saldo por recuperar: Bs {registro.saldo_por_recuperar:.2f}',
+		)
 	messages.success(request, f'Se registró la recuperación de Bs {monto:.2f}.')
 	return redirect('gastos:index')
 
@@ -375,6 +396,15 @@ def registrar_recuperacion(request, registro_id):
 def eliminar(request, registro_id):
 	registro = get_object_or_404(RegistroFinanciero, pk=registro_id)
 	concepto = registro.concepto
+	registrar_historial(
+		cliente=registro.cliente,
+		usuario=request.user,
+		tipo_accion=EntradaHistorial.TipoAccion.OTRO,
+		seccion=EntradaHistorial.Seccion.GASTOS,
+		referencia=concepto,
+		titulo=f'Registro financiero eliminado: {concepto}',
+		descripcion=f'Monto: Bs {registro.monto:.2f}',
+	)
 	registro.delete()
 	messages.success(request, f'Se eliminó el registro «{concepto}».')
 	return redirect('gastos:index')

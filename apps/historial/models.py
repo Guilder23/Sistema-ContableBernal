@@ -3,6 +3,26 @@ from django.db import models
 
 
 class EntradaHistorial(models.Model):
+	class Seccion(models.TextChoices):
+		PANEL = 'dashboard', 'Panel de gestión'
+		CLIENTES = 'clientes', 'Clientes'
+		CREDENCIALES = 'credenciales', 'Credenciales'
+		OBLIGACIONES = 'obligaciones', 'Obligaciones'
+		TAREAS = 'tareas', 'Tareas'
+		DOCUMENTOS = 'documentos', 'Documentos'
+		SERVICIOS = 'servicios', 'Servicios y trámites'
+		REQUERIMIENTOS = 'requerimientos', 'Requerimientos'
+		AGENDA = 'agenda', 'Agenda'
+		GASTOS = 'gastos', 'Gastos'
+		HONORARIOS = 'honorarios', 'Honorarios'
+		INGRESOS = 'ingresos', 'Ingresos'
+		USUARIOS = 'usuarios', 'Usuarios'
+		NOTIFICACIONES = 'notificaciones', 'Notificaciones'
+		CONFIGURACION = 'configuracion', 'Administración'
+		REPORTES = 'reportes', 'Reportes'
+		HISTORIAL = 'historial', 'Historial y auditoría'
+		OTRO = 'otro', 'Otro'
+
 	class TipoAccion(models.TextChoices):
 		CREACION = 'creacion', 'Creación'
 		MODIFICACION = 'modificacion', 'Modificación'
@@ -15,7 +35,9 @@ class EntradaHistorial(models.Model):
 
 	cliente = models.ForeignKey(
 		'clientes.Cliente',
-		on_delete=models.CASCADE,
+		null=True,
+		blank=True,
+		on_delete=models.SET_NULL,
 		related_name='historial',
 	)
 	usuario = models.ForeignKey(
@@ -30,6 +52,8 @@ class EntradaHistorial(models.Model):
 		choices=TipoAccion.choices,
 		default=TipoAccion.OTRO,
 	)
+	seccion = models.CharField(max_length=20, choices=Seccion.choices, default=Seccion.OTRO)
+	referencia = models.CharField(max_length=180, blank=True, default='')
 	titulo = models.CharField(max_length=150)
 	descripcion = models.TextField(blank=True)
 	creado_en = models.DateTimeField(auto_now_add=True)

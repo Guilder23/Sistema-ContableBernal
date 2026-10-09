@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.clientes.models import Cliente
+from apps.historial.models import EntradaHistorial
 from apps.usuarios.models import PerfilUsuario
 
 from .models import EventoAgenda
@@ -60,6 +61,13 @@ class GestionAgendaTests(TestCase):
 		self.assertContains(respuesta, 'class="icon-action icon-action--edit agenda-upcoming__edit"')
 		self.assertContains(respuesta, 'data-open-modal="modal-editar-evento"')
 		self.assertEqual(respuesta.context['eventos_mes'], 1)
+
+	def test_crear_evento_registra_historial(self):
+		self.client.post(reverse('agenda:crear'), self.datos_evento())
+		evento_historial = EntradaHistorial.objects.get(seccion=EntradaHistorial.Seccion.AGENDA)
+		self.assertEqual(evento_historial.cliente, self.cliente)
+		self.assertEqual(evento_historial.usuario, self.admin)
+		self.assertIn('Reunión de seguimiento', evento_historial.referencia)
 
 	def test_rechaza_cruce_de_horario_para_el_mismo_responsable(self):
 		EventoAgenda.objects.create(

@@ -11,6 +11,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from apps.historial.models import EntradaHistorial
+from apps.historial.services import registrar_historial
+
 from .models import PerfilUsuario
 from .permissions import solo_administradores
 
@@ -212,6 +215,15 @@ def _contexto_listado(request, datos=None, errores=None, modal_activo='', usuari
 def crear(request):
 	usuario, datos, errores = _guardar_usuario(request, es_nuevo=True)
 	if usuario:
+		registrar_historial(
+			cliente=None,
+			usuario=request.user,
+			tipo_accion=EntradaHistorial.TipoAccion.CREACION,
+			seccion=EntradaHistorial.Seccion.USUARIOS,
+			referencia=usuario.username,
+			titulo=f'Usuario creado: {usuario.username}',
+			descripcion=f'Rol asignado: {usuario.perfil.get_rol_display()}',
+		)
 		messages.success(request, f'La cuenta {usuario.username} fue creada.')
 		return redirect('usuarios:index')
 	contexto = _contexto_listado(request, datos=datos, errores=errores, modal_activo='modal-crear')
@@ -224,6 +236,15 @@ def editar(request, usuario_id):
 	usuario = get_object_or_404(get_user_model().objects.select_related('perfil'), pk=usuario_id)
 	usuario_guardado, datos, errores = _guardar_usuario(request, usuario=usuario)
 	if usuario_guardado:
+		registrar_historial(
+			cliente=None,
+			usuario=request.user,
+			tipo_accion=EntradaHistorial.TipoAccion.MODIFICACION,
+			seccion=EntradaHistorial.Seccion.USUARIOS,
+			referencia=usuario_guardado.username,
+			titulo=f'Usuario actualizado: {usuario_guardado.username}',
+			descripcion=f'Rol actual: {usuario_guardado.perfil.get_rol_display()} · Activo: {"Sí" if usuario_guardado.is_active else "No"}',
+		)
 		messages.success(request, f'La cuenta {usuario_guardado.username} fue actualizada.')
 		return redirect('usuarios:index')
 	contexto = _contexto_listado(
@@ -251,6 +272,14 @@ def eliminar(request, usuario_id):
 		messages.error(request, 'No puedes eliminar el único administrador activo.')
 	else:
 		username = usuario.username
+		registrar_historial(
+			cliente=None,
+			usuario=request.user,
+			tipo_accion=EntradaHistorial.TipoAccion.OTRO,
+			seccion=EntradaHistorial.Seccion.USUARIOS,
+			referencia=username,
+			titulo=f'Usuario eliminado: {username}',
+		)
 		usuario.delete()
 		messages.success(request, f'La cuenta {username} fue eliminada.')
 	return redirect('usuarios:index')

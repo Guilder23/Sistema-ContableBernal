@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.clientes.models import Cliente
+from apps.historial.models import EntradaHistorial
 
 from .models import ClienteOcasional, PagoServicioTramite, ServicioTramite
 
@@ -40,6 +41,10 @@ class ServiciosOcasionalesTests(TestCase):
 		self.assertEqual(str(servicio.total_pagado), '150.00')
 		self.assertEqual(str(servicio.saldo_pendiente), '350.00')
 		self.assertEqual(servicio.estado_cobro, ServicioTramite.EstadoCobro.PARCIAL)
+		evento = EntradaHistorial.objects.get(seccion=EntradaHistorial.Seccion.SERVICIOS)
+		self.assertIsNone(evento.cliente)
+		self.assertEqual(evento.usuario, self.admin)
+		self.assertIn('María Ocasional', evento.referencia)
 
 	def test_registra_saldo_final_y_este_aparece_en_ingresos(self):
 		cliente = ClienteOcasional.objects.create(nombre='Cliente de licencia')

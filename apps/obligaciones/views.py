@@ -14,6 +14,8 @@ from django.views.decorators.http import require_POST
 
 from apps.clientes.models import Cliente
 from apps.clientes.permissions import puede_gestionar_clientes, solo_gestores_clientes
+from apps.historial.models import EntradaHistorial
+from apps.historial.services import registrar_historial
 from apps.tareas.models import Tarea
 
 from .models import ConfiguracionCliente, DiaNoLaborable, Obligacion, TipoObligacion
@@ -169,6 +171,15 @@ def configurar_cliente(request):
                 if fecha_inicio:
                     configuracion.fecha_inicio = fecha_inicio
                 configuracion.save(update_fields=('activa', 'fecha_inicio'))
+    registrar_historial(
+        cliente=cliente,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.OBLIGACION,
+        seccion=EntradaHistorial.Seccion.OBLIGACIONES,
+        referencia=cliente.nombre,
+        titulo='Configuración de obligaciones actualizada',
+        descripcion=f'{len(tipos)} tipo(s) activo(s) para el cliente.',
+    )
 
     periodicidad = request.POST.get('periodicidad', TipoObligacion.Periodicidad.MENSUAL)
     hoy = timezone.localdate()
@@ -274,6 +285,15 @@ def actualizar_estado(request, obligacion_id):
         obligacion.completada_por = None
         obligacion.completada_en = None
     obligacion.save(update_fields=('estado', 'completada_por', 'completada_en', 'actualizada_en'))
+    registrar_historial(
+        cliente=obligacion.cliente,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.OBLIGACION,
+        seccion=EntradaHistorial.Seccion.OBLIGACIONES,
+        referencia=obligacion.tipo.nombre,
+        titulo=f'Estado de obligación actualizado: {obligacion.tipo.nombre}',
+        descripcion=f'{obligacion.periodo_etiqueta} · {obligacion.get_estado_display()}',
+    )
     messages.success(request, 'Se actualizó el estado de la obligación.')
     return redirect('obligaciones:index')
 
@@ -288,6 +308,15 @@ def actualizar_vencimiento(request, obligacion_id):
     else:
         obligacion.fecha_vencimiento = fecha_vencimiento
         obligacion.save(update_fields=('fecha_vencimiento', 'actualizada_en'))
+        registrar_historial(
+            cliente=obligacion.cliente,
+            usuario=request.user,
+            tipo_accion=EntradaHistorial.TipoAccion.OBLIGACION,
+            seccion=EntradaHistorial.Seccion.OBLIGACIONES,
+            referencia=obligacion.tipo.nombre,
+            titulo=f'Vencimiento actualizado: {obligacion.tipo.nombre}',
+            descripcion=f'{obligacion.periodo_etiqueta} · Nueva fecha: {fecha_vencimiento:%d/%m/%Y}',
+        )
         messages.success(request, 'Se guardó la fecha de vencimiento.')
     return redirect('obligaciones:index')
 
@@ -332,6 +361,15 @@ def _guardar_tipo(request, tipo=None):
         messages.error(request, ' '.join(error.messages))
         return redirect('obligaciones:index')
     tipo.save()
+    registrar_historial(
+        cliente=None,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.MODIFICACION,
+        seccion=EntradaHistorial.Seccion.OBLIGACIONES,
+        referencia=tipo.nombre,
+        titulo=f'Tipo de obligación guardado: {tipo.nombre}',
+        descripcion=f'Periodicidad: {tipo.get_periodicidad_display()}',
+    )
     messages.success(request, f'Se guardó el tipo de obligación {tipo.nombre}.')
     return redirect('obligaciones:index')
 
@@ -359,6 +397,14 @@ def crear_dia_no_laborable(request):
         return redirect('obligaciones:index')
     _, creado = DiaNoLaborable.objects.get_or_create(fecha=fecha, defaults={'descripcion': descripcion})
     if creado:
+        registrar_historial(
+            cliente=None,
+            usuario=request.user,
+            tipo_accion=EntradaHistorial.TipoAccion.CREACION,
+            seccion=EntradaHistorial.Seccion.OBLIGACIONES,
+            referencia=descripcion,
+            titulo=f'Día no laborable registrado: {fecha:%d/%m/%Y}',
+        )
         messages.success(request, f'Se registró el día no laborable {fecha:%d/%m/%Y}.')
     else:
         messages.warning(request, 'Ya existe un día no laborable con esa fecha.')
@@ -369,6 +415,14 @@ def crear_dia_no_laborable(request):
 @require_POST
 def eliminar_dia_no_laborable(request, dia_id):
     dia = get_object_or_404(DiaNoLaborable, pk=dia_id)
+    registrar_historial(
+        cliente=None,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.OTRO,
+        seccion=EntradaHistorial.Seccion.OBLIGACIONES,
+        referencia=dia.descripcion,
+        titulo=f'Día no laborable eliminado: {dia.fecha:%d/%m/%Y}',
+    )
     dia.delete()
     messages.success(request, 'Se eliminó el día no laborable.')
     return redirect('obligaciones:index')

@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.shortcuts import render
 
 from apps.clientes.models import Cliente
+from apps.clientes.permissions import puede_gestionar_clientes
 from apps.historial.models import EntradaHistorial
 
 
@@ -11,19 +12,27 @@ from apps.historial.models import EntradaHistorial
 def index(request):
 	busqueda = request.GET.get('q', '').strip()
 	tipo_accion = request.GET.get('tipo', '').strip()
+	seccion = request.GET.get('seccion', '').strip()
 	cliente_id = request.GET.get('cliente', '').strip()
 
+	puede_ver_todo = puede_gestionar_clientes(request.user)
 	historial = EntradaHistorial.objects.select_related('cliente', 'usuario').all()
+	if not puede_ver_todo:
+		historial = historial.filter(usuario=request.user)
 
 	if busqueda:
 		historial = historial.filter(
 			Q(cliente__nombre__icontains=busqueda)
+			| Q(referencia__icontains=busqueda)
+			| Q(seccion__icontains=busqueda)
 			| Q(titulo__icontains=busqueda)
 			| Q(descripcion__icontains=busqueda)
 			| Q(usuario__username__icontains=busqueda)
 		)
 	if tipo_accion in {valor for valor, _ in EntradaHistorial.TipoAccion.choices}:
 		historial = historial.filter(tipo_accion=tipo_accion)
+	if seccion in {valor for valor, _ in EntradaHistorial.Seccion.choices}:
+		historial = historial.filter(seccion=seccion)
 	if cliente_id.isdigit():
 		historial = historial.filter(cliente_id=int(cliente_id))
 
@@ -41,7 +50,10 @@ def index(request):
 		'query_string': query_params.urlencode(),
 		'busqueda': busqueda,
 		'tipo_filtro': tipo_accion,
+		'seccion_filtro': seccion,
 		'cliente_filtro': cliente_id,
 		'tipos_accion': EntradaHistorial.TipoAccion.choices,
+		'secciones': EntradaHistorial.Seccion.choices,
 		'clientes': clientes,
+		'puede_ver_todo': puede_ver_todo,
 	})

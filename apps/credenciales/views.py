@@ -119,6 +119,8 @@ def crear(request):
 		cliente=cliente,
 		usuario=request.user,
 		tipo_accion=EntradaHistorial.TipoAccion.CREDENCIAL,
+		seccion=EntradaHistorial.Seccion.CREDENCIALES,
+		referencia=cliente.nombre,
 		titulo=f'Credencial creada: {credencial.nombre_sistema}',
 		descripcion=f'Usuario: {usuario}',
 	)
@@ -160,6 +162,8 @@ def editar(request, credencial_id):
 		cliente=cliente,
 		usuario=request.user,
 		tipo_accion=EntradaHistorial.TipoAccion.CREDENCIAL,
+		seccion=EntradaHistorial.Seccion.CREDENCIALES,
+		referencia=cliente.nombre,
 		titulo=f'Credencial actualizada: {credencial.nombre_sistema}',
 		descripcion=f'Usuario: {usuario}',
 	)
@@ -180,6 +184,8 @@ def eliminar(request, credencial_id):
 		cliente=cliente,
 		usuario=request.user,
 		tipo_accion=EntradaHistorial.TipoAccion.CREDENCIAL,
+		seccion=EntradaHistorial.Seccion.CREDENCIALES,
+		referencia=cliente.nombre,
 		titulo=f'Credencial eliminada: {sistema_nombre}',
 		descripcion=f'Sistema {sistema_nombre} eliminado de la ficha del cliente.',
 	)

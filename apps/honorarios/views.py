@@ -138,6 +138,7 @@ def guardar_tarifa(request, cliente_id):
 			cliente=cliente,
 			usuario=request.user,
 			tipo_accion=EntradaHistorial.TipoAccion.PAGO,
+			seccion=EntradaHistorial.Seccion.HONORARIOS,
 			titulo='Tarifa de honorarios actualizada',
 			descripcion=f'Mensual: Bs {tarifa.monto_mensual} · Total recurrente sugerido: Bs {tarifa.total_mensual_sugerido}',
 		)
@@ -233,6 +234,7 @@ def registrar_pago(request):
 				cliente=cobro.cliente,
 				usuario=request.user,
 				tipo_accion=EntradaHistorial.TipoAccion.PAGO,
+				seccion=EntradaHistorial.Seccion.INGRESOS,
 				titulo=f'Pago registrado: Bs {monto}',
 				descripcion=f'Recibo: {numero_recibo or "S/N"} · Concepto: {cobro.concepto} · Método: {pago.get_metodo_pago_display()}',
 			)
@@ -308,6 +310,7 @@ def crear_cobro_manual(request):
 			cliente=cliente,
 			usuario=request.user,
 			tipo_accion=EntradaHistorial.TipoAccion.PAGO,
+			seccion=EntradaHistorial.Seccion.HONORARIOS,
 			titulo=f"Cobro {cobro.get_tipo_ingreso_display().lower()} generado: Bs {monto_total}",
 			descripcion=f'Concepto: {concepto}',
 		)

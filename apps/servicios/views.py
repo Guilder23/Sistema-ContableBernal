@@ -13,6 +13,8 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_GET, require_POST
 
 from apps.clientes.permissions import puede_gestionar_clientes, solo_gestores_clientes
+from apps.historial.models import EntradaHistorial
+from apps.historial.services import registrar_historial
 
 from .models import ClienteOcasional, PagoServicioTramite, ServicioTramite
 
@@ -184,6 +186,18 @@ def crear(request):
                 observaciones='Anticipo recibido al registrar el servicio.',
                 registrado_por=request.user,
             )
+    registrar_historial(
+        cliente=None,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.CREACION,
+        seccion=EntradaHistorial.Seccion.SERVICIOS,
+        referencia=f'{cliente.nombre} · {servicio.concepto}',
+        titulo=f'Servicio ocasional registrado: {servicio.concepto}',
+        descripcion=(
+            f'Cliente: {cliente.nombre} · Precio: Bs {monto_total:.2f} · '
+            f'Anticipo: Bs {pago_inicial:.2f} · Saldo: Bs {servicio.saldo_pendiente:.2f}'
+        ),
+    )
     messages.success(request, f'Se registró «{concepto}» para {cliente.nombre}.')
     return redirect('servicios:index')
 
@@ -239,6 +253,15 @@ def actualizar(request, servicio_id):
     servicio.fecha_entrega = timezone.localdate() if estado == ServicioTramite.Estado.ENTREGADO else None
     servicio.observaciones = request.POST.get('observaciones', servicio.observaciones).strip()
     servicio.save()
+    registrar_historial(
+        cliente=None,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.MODIFICACION,
+        seccion=EntradaHistorial.Seccion.SERVICIOS,
+        referencia=f'{servicio.cliente.nombre} · {servicio.concepto}',
+        titulo=f'Servicio ocasional actualizado: {servicio.concepto}',
+        descripcion=f'Estado: {servicio.get_estado_display()} · Saldo: Bs {servicio.saldo_pendiente:.2f}',
+    )
     messages.success(request, f'Se actualizaron los datos de «{servicio.concepto}».')
     return redirect('servicios:index')
 
@@ -261,7 +284,7 @@ def registrar_pago(request, servicio_id):
         if importe > saldo:
             messages.error(request, f'El pago supera el saldo pendiente de Bs {saldo:.2f}.')
             return redirect('servicios:index')
-        PagoServicioTramite.objects.create(
+        pago = PagoServicioTramite.objects.create(
             servicio=servicio,
             monto=importe,
             fecha_pago=fecha,
@@ -269,6 +292,15 @@ def registrar_pago(request, servicio_id):
             numero_recibo=request.POST.get('numero_recibo', '').strip()[:60],
             observaciones=request.POST.get('observaciones', '').strip(),
             registrado_por=request.user,
+        )
+        registrar_historial(
+            cliente=None,
+            usuario=request.user,
+            tipo_accion=EntradaHistorial.TipoAccion.PAGO,
+            seccion=EntradaHistorial.Seccion.SERVICIOS,
+            referencia=f'{servicio.cliente.nombre} · {servicio.concepto}',
+            titulo=f'Pago de trámite recibido: Bs {pago.monto:.2f}',
+            descripcion=f'Cliente: {servicio.cliente.nombre} · Saldo pendiente: Bs {servicio.saldo_pendiente:.2f}',
         )
     messages.success(request, f'Se registró un pago de Bs {importe:.2f}.')
     return redirect('servicios:index')
@@ -282,6 +314,14 @@ def eliminar(request, servicio_id):
         messages.error(request, 'No se puede eliminar un servicio con pagos registrados; conserva su historial financiero.')
         return redirect('servicios:index')
     concepto = servicio.concepto
+    registrar_historial(
+        cliente=None,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.OTRO,
+        seccion=EntradaHistorial.Seccion.SERVICIOS,
+        referencia=f'{servicio.cliente.nombre} · {concepto}',
+        titulo=f'Servicio ocasional eliminado: {concepto}',
+    )
     servicio.delete()
     messages.success(request, f'Se eliminó el servicio «{concepto}».')
     return redirect('servicios:index')

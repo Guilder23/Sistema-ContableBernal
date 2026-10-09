@@ -16,6 +16,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from apps.clientes.permissions import puede_gestionar_clientes
+from apps.historial.models import EntradaHistorial
+from apps.historial.services import registrar_historial
 from apps.notificaciones.models import Notificacion
 from apps.obligaciones.models import Obligacion, TipoObligacion
 from apps.usuarios.models import PerfilUsuario
@@ -129,6 +131,15 @@ def asignar(request, tarea_id):
     tarea.prioridad = prioridad
     tarea.observaciones = observaciones
     tarea.save(update_fields=('responsable', 'asignada_por', 'prioridad', 'observaciones', 'actualizada_en'))
+    registrar_historial(
+        cliente=tarea.cliente,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.TAREA,
+        seccion=EntradaHistorial.Seccion.TAREAS,
+        referencia=tarea.titulo,
+        titulo=f'Tarea asignada o actualizada: {tarea.titulo}',
+        descripcion=f"Responsable: {responsable.get_full_name() or responsable.username if responsable else 'Sin asignar'} · Prioridad: {tarea.get_prioridad_display()}",
+    )
     if responsable and responsable.pk != request.user.pk and responsable.pk != responsable_anterior_id:
         Notificacion.objects.create(
             destinatario=responsable,
@@ -163,6 +174,15 @@ def actualizar_estado(request, tarea_id):
         obligacion.completada_por = None
         obligacion.completada_en = None
     obligacion.save(update_fields=('estado', 'completada_por', 'completada_en', 'actualizada_en'))
+    registrar_historial(
+        cliente=tarea.cliente,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.TAREA,
+        seccion=EntradaHistorial.Seccion.TAREAS,
+        referencia=tarea.titulo,
+        titulo=f'Estado de tarea actualizado: {tarea.titulo}',
+        descripcion=f'Estado: {obligacion.get_estado_display()}',
+    )
     if estado == Obligacion.Estado.COMPLETADA and estado_anterior != Obligacion.Estado.COMPLETADA:
         responsables = get_user_model().objects.filter(is_active=True).filter(
             Q(is_superuser=True)
@@ -206,6 +226,15 @@ def subir_evidencia(request, tarea_id):
         return _volver(request)
 
     tarea.save(update_fields=('evidencia', 'evidencia_subida_por', 'actualizada_en'))
+    registrar_historial(
+        cliente=tarea.cliente,
+        usuario=request.user,
+        tipo_accion=EntradaHistorial.TipoAccion.DOCUMENTO,
+        seccion=EntradaHistorial.Seccion.DOCUMENTOS,
+        referencia=tarea.titulo,
+        titulo=f'Evidencia agregada a tarea: {tarea.titulo}',
+        descripcion=tarea.evidencia_nombre,
+    )
     if archivo_anterior and archivo_anterior != tarea.evidencia.name:
         tarea.evidencia.storage.delete(archivo_anterior)
     messages.success(request, 'Se guardó la evidencia de la tarea.')
@@ -233,8 +262,18 @@ def descargar_evidencia(request, tarea_id):
 def eliminar_evidencia(request, tarea_id):
     tarea = get_object_or_404(_tareas_visibles(request.user), pk=tarea_id)
     if tarea.evidencia:
+        nombre_evidencia = tarea.evidencia_nombre
         tarea.evidencia.delete(save=False)
         tarea.evidencia_subida_por = None
         tarea.save(update_fields=('evidencia', 'evidencia_subida_por', 'actualizada_en'))
+        registrar_historial(
+            cliente=tarea.cliente,
+            usuario=request.user,
+            tipo_accion=EntradaHistorial.TipoAccion.DOCUMENTO,
+            seccion=EntradaHistorial.Seccion.DOCUMENTOS,
+            referencia=tarea.titulo,
+            titulo=f'Evidencia eliminada de tarea: {tarea.titulo}',
+            descripcion=nombre_evidencia,
+        )
         messages.success(request, 'Se eliminó la evidencia de la tarea.')
     return _volver(request)

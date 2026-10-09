@@ -15,6 +15,7 @@
     <p class="eyebrow">TRAZABILIDAD Y REGISTRO DE ACTIVIDAD</p>
     <h1>Historial y Auditoría</h1>
     <p>Registro cronológico de cambios de clientes, credenciales, obligaciones y acciones de los usuarios.</p>
+    {% if not puede_ver_todo %}<p class="history-scope-note">Mostrando las acciones registradas por tu usuario en todo el sistema.</p>{% endif %}
   </div>
 </section>
 
@@ -33,6 +34,15 @@
         <option value="">Todos los eventos</option>
         {% for val, lab in tipos_accion %}
         <option value="{{ val }}" {% if tipo_filtro == val %}selected{% endif %}>{{ lab }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>
+      <span>Sección</span>
+      <select name="seccion" onchange="this.form.submit()">
+        <option value="">Todas las secciones</option>
+        {% for val, lab in secciones %}
+        <option value="{{ val }}" {% if seccion_filtro == val %}selected{% endif %}>{{ lab }}</option>
         {% endfor %}
       </select>
     </label>
@@ -66,7 +76,8 @@
         </div>
 
         <div class="history-title">
-          <a href="{% url 'clientes:detalle' cliente_id=item.cliente.pk %}" class="client-link">{{ item.cliente.nombre }}</a>: {{ item.titulo }}
+          <span class="client-badge-pill">{{ item.get_seccion_display }}</span>
+          {% if item.cliente %}<a href="{% url 'clientes:detalle' cliente_id=item.cliente.pk %}" class="client-link">{{ item.cliente.nombre }}</a>{% elif item.referencia %}<strong>{{ item.referencia }}</strong>{% endif %}: {{ item.titulo }}
         </div>
         {% if item.descripcion %}
         <p class="history-desc">{{ item.descripcion }}</p>

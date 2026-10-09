@@ -14,6 +14,8 @@ from django.views.decorators.http import require_POST
 
 from apps.clientes.models import Cliente
 from apps.clientes.permissions import puede_gestionar_clientes, solo_gestores_clientes
+from apps.historial.models import EntradaHistorial
+from apps.historial.services import registrar_historial
 
 from .models import EventoAgenda
 
@@ -42,6 +44,7 @@ def _datos_post(request):
 
 @transaction.atomic
 def _validar_y_guardar(request, evento=None):
+	es_nuevo = evento is None
 	datos = _datos_post(request)
 	errores = {}
 	fecha = parse_date(datos['fecha'])
@@ -103,6 +106,15 @@ def _validar_y_guardar(request, evento=None):
 			errores[campo] = ' '.join(mensajes)
 		return None, datos, errores
 	evento.save()
+	registrar_historial(
+		cliente=evento.cliente,
+		usuario=request.user,
+		tipo_accion=EntradaHistorial.TipoAccion.CREACION if es_nuevo else EntradaHistorial.TipoAccion.MODIFICACION,
+		seccion=EntradaHistorial.Seccion.AGENDA,
+		referencia=evento.titulo,
+		titulo=f"{'Evento creado' if es_nuevo else 'Evento actualizado'}: {evento.titulo}",
+		descripcion=f'{evento.fecha:%d/%m/%Y} · {evento.hora_inicio:%H:%M}–{evento.hora_fin:%H:%M}',
+	)
 	return evento, datos, {}
 
 
@@ -238,6 +250,15 @@ def editar(request, evento_id):
 def eliminar(request, evento_id):
 	evento = get_object_or_404(EventoAgenda, pk=evento_id)
 	titulo = evento.titulo
+	registrar_historial(
+		cliente=evento.cliente,
+		usuario=request.user,
+		tipo_accion=EntradaHistorial.TipoAccion.OTRO,
+		seccion=EntradaHistorial.Seccion.AGENDA,
+		referencia=titulo,
+		titulo=f'Evento eliminado de agenda: {titulo}',
+		descripcion=f'Fecha: {evento.fecha:%d/%m/%Y}',
+	)
 	evento.delete()
 	messages.success(request, f'Se eliminó «{titulo}» de la agenda.')
 	return redirect('agenda:index')

@@ -180,6 +180,7 @@ def _guardar_cliente(request, cliente=None):
 				cliente=cliente,
 				usuario=request.user,
 				tipo_accion=EntradaHistorial.TipoAccion.CREACION,
+				seccion=EntradaHistorial.Seccion.CLIENTES,
 				titulo='Cliente creado',
 				descripcion=f'Registro inicial como {cliente.get_tipo_display()} ({cliente.get_actividad_display()}).',
 			)
@@ -188,6 +189,7 @@ def _guardar_cliente(request, cliente=None):
 				cliente=cliente,
 				usuario=request.user,
 				tipo_accion=EntradaHistorial.TipoAccion.MODIFICACION,
+				seccion=EntradaHistorial.Seccion.CLIENTES,
 				titulo='Datos del cliente actualizados',
 				descripcion=f'Estado: {cliente.get_estado_display()} · Actividad: {cliente.get_actividad_display()}',
 			)
@@ -277,6 +279,15 @@ def editar(request, cliente_id):
 def eliminar(request, cliente_id):
 	cliente = get_object_or_404(Cliente, pk=cliente_id)
 	nombre = cliente.nombre
+	registrar_historial(
+		cliente=cliente,
+		usuario=request.user,
+		tipo_accion=EntradaHistorial.TipoAccion.OTRO,
+		seccion=EntradaHistorial.Seccion.CLIENTES,
+		referencia=nombre,
+		titulo=f'Cliente eliminado: {nombre}',
+		descripcion='La ficha del cliente fue eliminada.',
+	)
 	cliente.delete()
 	messages.success(request, f'El cliente {nombre} fue eliminado.')
 	return redirect('clientes:index')

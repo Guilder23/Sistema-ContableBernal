@@ -107,6 +107,7 @@ def generar_cobro_periodo(cliente, periodo_tipo, anio, periodo_numero, usuario=N
 			cliente=cliente,
 			usuario=usuario,
 			tipo_accion=EntradaHistorial.TipoAccion.PAGO,
+			seccion=EntradaHistorial.Seccion.HONORARIOS,
 			titulo=f'Cobro de honorarios generado: {periodo}',
 			descripcion=f'Monto total a cobrar: Bs {monto_total}',
 		)
@@ -171,6 +172,7 @@ def generar_honorarios_mensuales(anio, mes, usuario=None, cliente_id=None, inclu
 				cliente=cliente,
 				usuario=usuario,
 				tipo_accion=EntradaHistorial.TipoAccion.PAGO,
+				seccion=EntradaHistorial.Seccion.HONORARIOS,
 				titulo=f'Honorario mensual generado: {nombre_mes} {anio}',
 				descripcion=f'Monto total a cobrar: Bs {total}',
 			)
