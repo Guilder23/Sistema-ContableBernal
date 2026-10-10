@@ -1,5 +1,5 @@
 {% extends 'base/base.html' %}
-{% load static %}
+{% load static l10n %}
 
 {% block title %}{{ cliente.nombre }} | ContableBernal{% endblock %}
 {% block workspace_class %}workspace--clientes{% endblock %}
@@ -151,7 +151,7 @@
     <form method="post" action="{% url 'obligaciones:configurar_cliente' %}">
       {% csrf_token %}
       <input type="hidden" name="cliente_id" value="{{ cliente.pk }}">
-      <input type="hidden" name="volver" value="{% url 'clientes:detalle' cliente_id=cliente.pk %}">
+      <input type="hidden" name="volver" value="{% url 'clientes:detalle' cliente_id=cliente.pk %}#tab-obligaciones">
 
       <div class="obligaciones-config-group">
         <h3>Obligaciones Mensuales (RCV, IVA 200, IT 400, Gestora, etc.)</h3>
@@ -391,20 +391,20 @@
       {% if puede_gestionar %}
       <form method="post" action="{% url 'honorarios:guardar_tarifa' cliente_id=cliente.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="volver" value="{% url 'clientes:detalle' cliente_id=cliente.pk %}">
+        <input type="hidden" name="volver" value="{% url 'clientes:detalle' cliente_id=cliente.pk %}#tab-honorarios">
 
         <div class="tarifa-grid-inputs">
           <div class="tarifa-input-box">
             <span>Mensual base (Bs)</span>
-            <input type="number" step="0.01" name="monto_mensual" id="tarifa-monto-mensual" value="{{ tarifa.monto_mensual }}" placeholder="0.00">
+            <input type="number" step="0.01" name="monto_mensual" id="tarifa-monto-mensual" value="{{ tarifa.monto_mensual|unlocalize }}" placeholder="0.00">
           </div>
           <div class="tarifa-input-box">
             <span>Trimestral (Bs)</span>
-            <input type="number" step="0.01" name="monto_trimestral" value="{{ tarifa.monto_trimestral }}" placeholder="0.00">
+            <input type="number" step="0.01" name="monto_trimestral" value="{{ tarifa.monto_trimestral|unlocalize }}" placeholder="0.00">
           </div>
           <div class="tarifa-input-box">
             <span>Anual / Cierre (Bs)</span>
-            <input type="number" step="0.01" name="monto_anual" value="{{ tarifa.monto_anual }}" placeholder="0.00">
+            <input type="number" step="0.01" name="monto_anual" value="{{ tarifa.monto_anual|unlocalize }}" placeholder="0.00">
           </div>
         </div>
 
@@ -412,23 +412,23 @@
         <div class="tarifa-grid-inputs">
           <div class="tarifa-input-box">
             <span>Bancarización</span>
-            <input type="number" step="0.01" name="extra_bancarizacion" class="tarifa-extra-input" value="{{ tarifa.extra_bancarizacion }}" placeholder="0.00">
+            <input type="number" step="0.01" name="extra_bancarizacion" class="tarifa-extra-input" value="{{ tarifa.extra_bancarizacion|unlocalize }}" placeholder="0.00">
           </div>
           <div class="tarifa-input-box">
             <span>Gestora</span>
-            <input type="number" step="0.01" name="extra_gestora" class="tarifa-extra-input" value="{{ tarifa.extra_gestora }}" placeholder="0.00">
+            <input type="number" step="0.01" name="extra_gestora" class="tarifa-extra-input" value="{{ tarifa.extra_gestora|unlocalize }}" placeholder="0.00">
           </div>
           <div class="tarifa-input-box">
             <span>Ministerio</span>
-            <input type="number" step="0.01" name="extra_ministerio" class="tarifa-extra-input" value="{{ tarifa.extra_ministerio }}" placeholder="0.00">
+            <input type="number" step="0.01" name="extra_ministerio" class="tarifa-extra-input" value="{{ tarifa.extra_ministerio|unlocalize }}" placeholder="0.00">
           </div>
           <div class="tarifa-input-box">
             <span>Caja de Salud</span>
-            <input type="number" step="0.01" name="extra_caja" class="tarifa-extra-input" value="{{ tarifa.extra_caja }}" placeholder="0.00">
+            <input type="number" step="0.01" name="extra_caja" class="tarifa-extra-input" value="{{ tarifa.extra_caja|unlocalize }}" placeholder="0.00">
           </div>
           <div class="tarifa-input-box">
             <span>Otros extras</span>
-            <input type="number" step="0.01" name="extra_otros" class="tarifa-extra-input" value="{{ tarifa.extra_otros }}" placeholder="0.00">
+            <input type="number" step="0.01" name="extra_otros" class="tarifa-extra-input" value="{{ tarifa.extra_otros|unlocalize }}" placeholder="0.00">
           </div>
         </div>
 
@@ -436,7 +436,7 @@
         <div class="tarifa-grid-inputs">
           <div class="tarifa-input-box">
             <span>SEPREC anual</span>
-            <input type="number" min="0" step="0.01" name="extra_seprec" value="{{ tarifa.extra_seprec|default:'0.00' }}" placeholder="0.00">
+            <input type="number" min="0" step="0.01" name="extra_seprec" value="{{ tarifa.extra_seprec|default:'0.00'|unlocalize }}" placeholder="0.00">
           </div>
         </div>
 
@@ -469,7 +469,12 @@
           <h2>Cuentas por cobrar y recibos</h2>
           <p style="margin:2px 0 0 0; font-size:12.5px; color:#65746b;">Resumen de cargos; los abonos se registran en Ingresos.</p>
         </div>
-        <a href="{% url 'ingresos:index' %}?q={{ cliente.nombre|urlencode }}" class="button button--quiet" style="font-size:12px; min-height:32px;">Ver en Ingresos</a>
+        <div style="display:flex; gap:8px;">
+          {% if puede_gestionar %}
+          <button type="button" class="button button--primary" data-open-modal="modal-crear-cobro">Nuevo cobro</button>
+          {% endif %}
+          <a href="{% url 'ingresos:index' %}?q={{ cliente.nombre|urlencode }}" class="button button--quiet" style="font-size:12px; min-height:32px;">Ver en Ingresos</a>
+        </div>
       </div>
 
       {% if cobros_honorarios %}
@@ -546,6 +551,9 @@
 {% include 'credenciales/modals/crear.html' %}
 {% include 'credenciales/modals/editar.html' %}
 {% include 'credenciales/modals/eliminar.html' %}
+{% if puede_gestionar %}
+{% include 'honorarios/modals/crear_cobro.html' %}
+{% endif %}
 
 {% if puede_gestionar %}
 {% include 'clientes/modals/editar.html' %}

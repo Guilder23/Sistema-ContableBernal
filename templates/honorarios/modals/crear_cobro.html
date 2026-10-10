@@ -11,7 +11,7 @@
 		</header>
 		<form method="post" action="{% url 'honorarios:crear_cobro_manual' %}" class="client-form">
 			{% csrf_token %}
-			<input type="hidden" name="volver" value="{{ volver|default:request.get_full_path }}">
+			<input type="hidden" name="volver" value="{% if cliente %}{% url 'clientes:detalle' cliente_id=cliente.pk %}#tab-honorarios{% else %}{{ volver|default:request.get_full_path }}{% endif %}">
 
 			{% if cliente %}
 			<input type="hidden" name="cliente_id" value="{{ cliente.pk }}">

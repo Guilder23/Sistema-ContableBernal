@@ -119,6 +119,7 @@ class ObligacionesIntegracionTests(TestCase):
 			'periodo_numero': '9',
 		})
 		self.assertEqual(respuesta.status_code, 302)
+		self.assertEqual(respuesta['Location'], f"{reverse('clientes:detalle', args=[self.cliente.pk])}#tab-obligaciones")
 		self.assertTrue(ConfiguracionCliente.objects.filter(cliente=self.cliente, tipo=self.tipo, activa=True).exists())
 		self.assertTrue(Obligacion.objects.filter(
 			cliente=self.cliente,

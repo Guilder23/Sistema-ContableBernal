@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -30,7 +31,7 @@ def _volver(request, default_url='honorarios:index', cliente_id=None):
 	):
 		return redirect(destino)
 	if cliente_id:
-		return redirect('clientes:detalle', cliente_id=cliente_id)
+		return redirect(f"{reverse('clientes:detalle', args=[cliente_id])}#tab-honorarios")
 	return redirect(default_url)
 
 

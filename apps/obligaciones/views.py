@@ -33,13 +33,14 @@ def _redirigir_cliente(cliente_id, volver=''):
     if volver:
         return redirect(volver)
     if cliente_id:
-        return redirect(f'{reverse("obligaciones:index")}?config_cliente={cliente_id}')
+        url = f'{reverse("clientes:detalle", args=[cliente_id])}#tab-obligaciones'
+        return redirect(url)
     return redirect('obligaciones:index')
 
 
 def _url_periodo_cliente(cliente_id, periodicidad, anio, numero, volver=''):
     if volver:
-        return redirect(volver)
+        return volver
     return f'{reverse("obligaciones:index")}?{urlencode({"config_cliente": cliente_id})}'
 
 

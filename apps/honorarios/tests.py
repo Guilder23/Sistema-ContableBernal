@@ -1,7 +1,7 @@
 from datetime import date
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from apps.clientes.models import Cliente
@@ -10,6 +10,10 @@ from .models import CobroHonorario, DetalleCobroHonorario, PagoHonorario, Tarifa
 from .services import generar_honorarios_mensuales, generar_seprec_anual
 
 
+@override_settings(STORAGES={
+	'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+	'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+})
 class AmortizacionCobrosTests(TestCase):
 	def setUp(self):
 		self.admin = get_user_model().objects.create_superuser(username='admin_ingresos', password='ClaveLocal123!')
@@ -99,3 +103,39 @@ class AmortizacionCobrosTests(TestCase):
 		cobro = CobroHonorario.objects.get(concepto='Certificado de impuestos')
 		self.assertEqual(cobro.tipo_ingreso, CobroHonorario.TipoIngreso.EXTRAORDINARIO)
 		self.assertEqual(cobro.detalles.get().tipo_servicio, DetalleCobroHonorario.TipoServicio.CERTIFICADO)
+
+	def test_guarda_tarifa_y_la_muestra_en_la_ficha_del_cliente(self):
+		respuesta = self.client.post(reverse('honorarios:guardar_tarifa', args=[self.cliente.pk]), {
+			'monto_mensual': '750.00',
+			'monto_trimestral': '1200.00',
+			'monto_anual': '1800.00',
+			'extra_bancarizacion': '25.00',
+			'extra_gestora': '30.00',
+			'extra_ministerio': '0.00',
+			'extra_caja': '0.00',
+			'extra_otros': '0.00',
+			'extra_seprec': '55.00',
+			'observaciones': 'Acuerdo vigente',
+		})
+		self.assertRedirects(respuesta, f"{reverse('clientes:detalle', args=[self.cliente.pk])}#tab-honorarios", fetch_redirect_response=False)
+		ficha = self.client.get(reverse('clientes:detalle', args=[self.cliente.pk]))
+		self.assertContains(ficha, 'value="750.00"')
+		self.assertContains(ficha, 'value="55.00"')
+		self.assertContains(ficha, 'Acuerdo vigente')
+
+	def test_crea_cobro_desde_la_ficha_y_lo_muestra_al_volver(self):
+		url_ficha = reverse('clientes:detalle', args=[self.cliente.pk])
+		self.assertContains(self.client.get(url_ficha), 'modal-crear-cobro')
+		respuesta = self.client.post(reverse('honorarios:crear_cobro_manual'), {
+			'cliente_id': self.cliente.pk,
+			'periodo_tipo': CobroHonorario.Periodicidad.EXTRA,
+			'tipo_ingreso': CobroHonorario.TipoIngreso.EXTRAORDINARIO,
+			'tipo_servicio': DetalleCobroHonorario.TipoServicio.TRAMITE,
+			'concepto': 'Trámite registrado desde ficha',
+			'monto_total': '320.00',
+			'volver': f'{url_ficha}#tab-honorarios',
+		})
+		self.assertRedirects(respuesta, f'{url_ficha}#tab-honorarios', fetch_redirect_response=False)
+		ficha = self.client.get(url_ficha)
+		self.assertContains(ficha, 'Trámite registrado desde ficha')
+		self.assertContains(ficha, 'Bs 320.00')

@@ -3,17 +3,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabButtons = document.querySelectorAll('.client-tab-btn');
   const tabPanes = document.querySelectorAll('.client-tab-pane');
 
+  function activarTab(targetId) {
+    tabButtons.forEach(b => b.classList.toggle('active', b.dataset.tab === targetId));
+    tabPanes.forEach(p => p.classList.toggle('active', p.id === targetId));
+  }
+
+  function syncTabFromHash() {
+    const hash = location.hash || '#tab-general';
+    const targetId = hash.startsWith('#') ? hash.slice(1) : hash;
+    if (document.getElementById(targetId)) {
+      activarTab(targetId);
+    }
+  }
+
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      tabButtons.forEach(b => b.classList.remove('active'));
-      tabPanes.forEach(p => p.classList.remove('active'));
-
-      btn.classList.add('active');
       const targetId = btn.dataset.tab;
-      const targetPane = document.getElementById(targetId);
-      if (targetPane) targetPane.classList.add('active');
+      activarTab(targetId);
+      if (targetId) {
+        history.replaceState(null, '', `#${targetId}`);
+      }
     });
   });
+
+  syncTabFromHash();
 
   // Selector de sistema personalizado en creación
   const selectSistema = document.getElementById('cred-select-sistema');

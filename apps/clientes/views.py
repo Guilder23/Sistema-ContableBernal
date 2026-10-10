@@ -330,7 +330,7 @@ def detalle(request, cliente_id):
 	historial = cliente.historial.select_related('usuario')[:20]
 
 	# Tarifa y Cobros de honorarios
-	from apps.honorarios.models import CobroHonorario, PagoHonorario, TarifaCliente
+	from apps.honorarios.models import CobroHonorario, DetalleCobroHonorario, PagoHonorario, TarifaCliente
 	tarifa, _ = TarifaCliente.objects.get_or_create(cliente=cliente)
 	cobros_honorarios = cliente.cobros_honorarios.prefetch_related('pagos').order_by('-anio', '-periodo_numero', '-creado_en')
 	total_cobros_pendientes = sum((c.saldo_pendiente for c in cobros_honorarios if c.estado in (CobroHonorario.Estado.PENDIENTE, CobroHonorario.Estado.PARCIAL)), Decimal('0.00'))
@@ -344,6 +344,8 @@ def detalle(request, cliente_id):
 		'total_cobros_pendientes': total_cobros_pendientes,
 		'metodos_pago': PagoHonorario.MetodoPago.choices,
 		'periodos_tipo': CobroHonorario.Periodicidad.choices,
+		'tipos_ingreso': CobroHonorario.TipoIngreso.choices,
+		'servicios_cobro': DetalleCobroHonorario.TipoServicio.choices,
 		'configuraciones': configuraciones,
 		'config_tipos_ids': config_tipos_ids,
 		'tipos_mensuales': tipos_mensuales,
