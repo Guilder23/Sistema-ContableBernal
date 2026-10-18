@@ -11,13 +11,18 @@
 {% block content %}
 <section class="page-heading agenda-heading">
 	<div><p class="eyebrow">PLANIFICACIÓN DEL ESTUDIO</p><h1>Agenda</h1><p>Citas y recordatorios del equipo, vinculados opcionalmente a clientes.</p></div>
-	{% if puede_gestionar %}<button class="button button--primary" type="button" data-open-modal="modal-crear-evento"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>Nuevo evento</button>{% endif %}
+	<div class="agenda-heading__actions">
+		<div class="agenda-google-control"><span>Google Calendar: <strong>{% if google_conectado %}Conectado{% else %}Sin conectar{% endif %}</strong></span>
+			{% if puede_gestionar %}{% if google_conectado %}{% if eventos_google_pendientes %}<form method="post" action="{% url 'agenda:google_reintentar' %}">{% csrf_token %}<button class="button button--quiet" type="submit">Reintentar {{ eventos_google_pendientes }} pendientes</button></form>{% endif %}<form method="post" action="{% url 'agenda:google_desconectar' %}">{% csrf_token %}<button class="button button--quiet" type="submit">Desconectar</button></form>{% else %}<form method="post" action="{% url 'agenda:google_conectar' %}">{% csrf_token %}<button class="button button--quiet" type="submit">Conectar cuenta</button></form>{% endif %}{% endif %}
+		</div>
+		{% if puede_gestionar %}<button class="button button--primary" type="button" data-open-modal="modal-crear-evento"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>Nuevo evento</button>{% endif %}
+	</div>
 </section>
 
 <section class="agenda-summary" aria-label="Resumen de agenda">
 	<article><span>Eventos en {{ mes_nombre }}</span><strong>{{ eventos_mes }}</strong></article>
 	<article><span>Programados para hoy</span><strong>{{ eventos_hoy }}</strong></article>
-	<article class="agenda-summary__upcoming"><span>Próximos 7 días</span><strong>{{ proximos|length }}</strong></article>
+	<article class="agenda-summary__upcoming"><span>Eventos por venir</span><strong>{{ proximos|length }}</strong></article>
 </section>
 
 <section class="agenda-toolbar surface">
@@ -47,17 +52,20 @@
 		</div>
 	</section>
 	<aside class="agenda-upcoming surface" aria-label="Próximos eventos">
-		<header><h2>Próximos eventos</h2><span>7 días</span></header>
+		<header><h2>Próximos eventos</h2><span>Todos</span></header>
 		{% for evento in proximos %}
 		<article class="agenda-upcoming__item">
 			<div class="agenda-upcoming__date"><strong>{{ evento.fecha|date:'d' }}</strong><span>{{ evento.fecha|date:'M'|upper }}</span></div>
 			<div class="agenda-upcoming__details"><strong>{{ evento.titulo }}</strong><span>{{ evento.hora_inicio|time:'H:i' }}–{{ evento.hora_fin|time:'H:i' }}</span><small>{% if evento.cliente %}{{ evento.cliente.nombre }}{% else %}{{ evento.get_tipo_display }}{% endif %}</small></div>
 			<div class="agenda-upcoming__actions">
-				<button type="button" class="agenda-upcoming__view" data-open-modal="modal-ver-evento" data-event-id="{{ evento.pk }}" data-event-edit-url="{% url 'agenda:editar' evento_id=evento.pk %}" data-event-delete-url="{% url 'agenda:eliminar' evento_id=evento.pk %}" data-event-title="{{ evento.titulo }}" data-event-type="{{ evento.get_tipo_display }}" data-event-type-value="{{ evento.tipo }}" data-event-date="{{ evento.fecha|date:'d/m/Y' }}" data-event-date-value="{{ evento.fecha|date:'Y-m-d' }}" data-event-start="{{ evento.hora_inicio|time:'H:i' }}" data-event-start-value="{{ evento.hora_inicio|time:'H:i' }}" data-event-end="{{ evento.hora_fin|time:'H:i' }}" data-event-end-value="{{ evento.hora_fin|time:'H:i' }}" data-event-client="{{ evento.cliente.nombre|default:'Sin cliente asociado' }}" data-event-client-id="{{ evento.cliente_id|default:'' }}" data-event-owner="{% if evento.responsable %}{{ evento.responsable.get_full_name|default:evento.responsable.username }}{% else %}Sin asignar{% endif %}" data-event-owner-id="{{ evento.responsable_id|default:'' }}" data-event-state="{{ evento.get_estado_display }}" data-event-state-value="{{ evento.estado }}" data-event-place="{{ evento.lugar|default:'Sin lugar indicado' }}" data-event-notes="{{ evento.observaciones|default:'Sin observaciones' }}" aria-label="Ver {{ evento.titulo }}">Ver</button>
-				{% if puede_gestionar %}<button type="button" class="icon-action icon-action--edit agenda-upcoming__edit" title="Editar evento" aria-label="Editar {{ evento.titulo }}" data-open-modal="modal-editar-evento" data-event-edit-url="{% url 'agenda:editar' evento_id=evento.pk %}" data-titulo="{{ evento.titulo }}" data-tipo="{{ evento.tipo }}" data-fecha="{{ evento.fecha|date:'Y-m-d' }}" data-hora-inicio="{{ evento.hora_inicio|time:'H:i' }}" data-hora-fin="{{ evento.hora_fin|time:'H:i' }}" data-cliente="{{ evento.cliente_id|default:'' }}" data-responsable="{{ evento.responsable_id|default:'' }}" data-estado="{{ evento.estado }}" data-lugar="{{ evento.lugar }}" data-observaciones="{{ evento.observaciones }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg></button>{% endif %}
+				<button type="button" class="icon-action icon-action--view agenda-upcoming__view" title="Ver evento" aria-label="Ver {{ evento.titulo }}" data-open-modal="modal-ver-evento" data-event-delete-url="{% url 'agenda:eliminar' evento_id=evento.pk %}" data-event-title="{{ evento.titulo }}" data-event-type="{{ evento.get_tipo_display }}" data-event-date="{{ evento.fecha|date:'d/m/Y' }}" data-event-start="{{ evento.hora_inicio|time:'H:i' }}" data-event-end="{{ evento.hora_fin|time:'H:i' }}" data-event-client="{{ evento.cliente.nombre|default:'Sin cliente asociado' }}" data-event-owner="{% if evento.responsable %}{{ evento.responsable.get_full_name|default:evento.responsable.username }}{% else %}Sin asignar{% endif %}" data-event-state="{{ evento.get_estado_display }}" data-event-place="{{ evento.lugar|default:'Sin lugar indicado' }}" data-event-notes="{{ evento.observaciones|default:'Sin observaciones' }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#eye"></use></svg></button>
+				{% if puede_gestionar %}
+				<button type="button" class="icon-action icon-action--edit agenda-upcoming__edit" title="Editar evento" aria-label="Editar {{ evento.titulo }}" data-open-modal="modal-editar-evento" data-event-edit-url="{% url 'agenda:editar' evento_id=evento.pk %}" data-titulo="{{ evento.titulo }}" data-tipo="{{ evento.tipo }}" data-fecha="{{ evento.fecha|date:'Y-m-d' }}" data-hora-inicio="{{ evento.hora_inicio|time:'H:i' }}" data-hora-fin="{{ evento.hora_fin|time:'H:i' }}" data-cliente="{{ evento.cliente_id|default:'' }}" data-responsable="{{ evento.responsable_id|default:'' }}" data-estado="{{ evento.estado }}" data-lugar="{{ evento.lugar }}" data-observaciones="{{ evento.observaciones }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#pencil"></use></svg></button>
+				<button type="button" class="icon-action icon-action--delete agenda-upcoming__delete" title="Eliminar evento" aria-label="Eliminar {{ evento.titulo }}" data-open-modal="modal-eliminar-evento" data-delete-url="{% url 'agenda:eliminar' evento_id=evento.pk %}" data-delete-title="{{ evento.titulo }}"><svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#trash"></use></svg></button>
+				{% endif %}
 			</div>
 		</article>
-		{% empty %}<p class="agenda-empty">No hay eventos programados para los próximos 7 días.</p>{% endfor %}
+		{% empty %}<p class="agenda-empty">No hay eventos próximos programados.</p>{% endfor %}
 	</aside>
 </section>
 

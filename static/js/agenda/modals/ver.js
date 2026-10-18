@@ -10,17 +10,6 @@ document.addEventListener('click', (event) => {
 		const field = modal.querySelector(`[data-view-field="${name}"]`);
 		if (field) field.textContent = trigger.dataset[key] || 'No indicado';
 	});
-	const editTrigger = modal.querySelector('[data-edit-event-trigger]');
-	if (editTrigger) {
-		editTrigger.dataset.openModal = 'modal-editar-evento';
-		editTrigger.dataset.eventEditUrl = trigger.dataset.eventEditUrl || '';
-		const mapping = {
-			titulo: 'eventTitle', tipo: 'eventTypeValue', fecha: 'eventDateValue', horaInicio: 'eventStartValue',
-			horaFin: 'eventEndValue', cliente: 'eventClientId', responsable: 'eventOwnerId', estado: 'eventStateValue',
-			lugar: 'eventPlace', observaciones: 'eventNotes',
-		};
-		Object.entries(mapping).forEach(([name, key]) => { editTrigger.dataset[name] = trigger.dataset[key] || ''; });
-	}
 	const deleteTrigger = modal.querySelector('[data-delete-event-trigger]');
 	if (deleteTrigger) {
 		deleteTrigger.dataset.openModal = 'modal-eliminar-evento';

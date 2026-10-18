@@ -110,6 +110,10 @@ else:
         }
     }
 JWT_SECRET = config('JWT_SECRET', default='')
+GOOGLE_CLIENT_ID = config('GOOGLE_CLIENT_ID', default='')
+GOOGLE_CLIENT_SECRET = config('GOOGLE_CLIENT_SECRET', default='')
+GOOGLE_TOKEN_ENCRYPTION_KEY = config('GOOGLE_TOKEN_ENCRYPTION_KEY', default='')
+GOOGLE_REDIRECT_URI = config('GOOGLE_REDIRECT_URI', default='')
 
 
 AUTH_PASSWORD_VALIDATORS = [

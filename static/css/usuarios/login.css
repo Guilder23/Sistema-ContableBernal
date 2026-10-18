@@ -45,7 +45,7 @@ body {
 /* Master wrapper - full center view */
 .login-wrapper {
   width: 100%;
-  max-width: 1100px;
+  max-width: 740px;
   max-height: 94vh;
   display: flex;
   justify-content: center;
@@ -56,7 +56,7 @@ body {
 .login-card-window {
   position: relative;
   width: 100%;
-  height: min(620px, 90vh);
+  height: min(590px, 90vh);
   background: radial-gradient(circle at 85% 25%, #8f175a 0%, #70163e 40%, var(--forest) 95%);
   border-radius: 28px;
   box-shadow: 
@@ -90,8 +90,8 @@ body {
 .blob-organic-gum {
   top: -30px;
   right: 18%;
-  width: 170px;
-  height: 155px;
+  width: 110px;
+  height: 102px;
   background: linear-gradient(135deg, rgba(168, 32, 109, 0.45) 0%, rgba(86, 39, 31, 0.3) 100%);
   border: 1.5px solid rgba(255, 255, 255, 0.14);
   /* Sidewalk gum four-corner undulating blob curve */
@@ -105,8 +105,8 @@ body {
 .blob-organic-star {
   bottom: 15px;
   right: 3%;
-  width: 140px;
-  height: 140px;
+  width: 90px;
+  height: 90px;
   background: linear-gradient(145deg, rgba(238, 73, 60, 0.28) 0%, rgba(118, 55, 44, 0.4) 100%);
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 63% 37% 54% 46% / 30% 64% 36% 70%;
@@ -140,11 +140,11 @@ body {
 /* System Image embedded inside an organic decorative shape/portal */
 .figure-photo-sphere {
   position: absolute;
-  right: -30px;
+  right: -12px;
   top: 50%;
   transform: translateY(-50%);
-  width: 440px;
-  height: 440px;
+  width: 270px;
+  height: 270px;
   border-radius: 46% 54% 63% 37% / 41% 44% 56% 59%;
   background-image: url("../../img/FondoContable.png");
   background-size: cover;
@@ -188,10 +188,10 @@ body {
 
 /* Planet 1 - Top right (warm coral to amber gradient) */
 .planet-top-right {
-  top: 48px;
+  top: 42px;
   right: 8%;
-  width: 110px;
-  height: 110px;
+  width: 70px;
+  height: 70px;
   background: radial-gradient(circle at 35% 30%, #ff6b4a 0%, var(--coral) 55%, var(--forest-soft) 100%);
 }
 
@@ -200,8 +200,8 @@ body {
   top: 42%;
   left: -20%;
   width: 140%;
-  height: 22px;
-  border: 3.5px solid rgba(255, 195, 130, 0.45);
+  height: 18px;
+  border: 3px solid rgba(255, 195, 130, 0.45);
   border-left-color: transparent;
   border-right-color: transparent;
   border-radius: 50%;
@@ -210,10 +210,10 @@ body {
 
 /* Planet 2 - Center right (large focal planet) */
 .planet-center-right {
-  bottom: 60px;
+  bottom: 48px;
   right: 14%;
-  width: 185px;
-  height: 185px;
+  width: 116px;
+  height: 116px;
   background: radial-gradient(circle at 32% 30%, #ff5e45 0%, var(--coral) 50%, #762218 100%);
   box-shadow: 
     inset -16px -16px 32px rgba(50, 15, 12, 0.8),
@@ -226,7 +226,7 @@ body {
   top: 48%;
   left: 6%;
   width: 88%;
-  height: 12px;
+  height: 9px;
   background: rgba(255, 190, 155, 0.35);
   border-radius: 50%;
   filter: blur(1px);
@@ -234,10 +234,10 @@ body {
 
 /* Planet 3 - Bottom middle */
 .planet-bottom-mid {
-  bottom: 45px;
+  bottom: 42px;
   left: 45%;
-  width: 115px;
-  height: 115px;
+  width: 72px;
+  height: 72px;
   background: radial-gradient(circle at 30% 30%, #ff7352 0%, #db3b28 55%, var(--forest) 100%);
 }
 
@@ -246,17 +246,17 @@ body {
   top: 42%;
   left: 0;
   width: 100%;
-  height: 16px;
+  height: 12px;
   background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255, 190, 160, 0.35) 50%, rgba(255,255,255,0.05));
   border-radius: 50%;
 }
 
 /* Extra Shape 1: Mini floating glowing satellite / sphere */
 .planet-floating-mini {
-  top: 175px;
+  top: 165px;
   left: 44%;
-  width: 52px;
-  height: 52px;
+  width: 36px;
+  height: 36px;
   background: radial-gradient(circle at 35% 30%, #ffd085 0%, var(--amber) 60%, #a86210 100%);
   box-shadow: 
     inset -4px -5px 10px rgba(50, 20, 0, 0.6),
@@ -269,8 +269,8 @@ body {
   position: absolute;
   top: 12%;
   right: 32%;
-  width: 80px;
-  height: 80px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   border: 2px dashed rgba(255, 200, 150, 0.35);
   filter: drop-shadow(0 0 8px rgba(238, 73, 60, 0.3));
@@ -282,8 +282,8 @@ body {
   position: absolute;
   top: -50px;
   right: 20%;
-  width: 250px;
-  height: 250px;
+  width: 160px;
+  height: 160px;
   background: radial-gradient(circle, rgba(229, 161, 58, 0.18) 0%, transparent 70%);
   filter: blur(40px);
 }
@@ -300,22 +300,22 @@ body {
 /* White organic wave container with the exact curve from reference image */
 .form-container {
   position: relative;
-  width: min(500px, 100%);
+  width: min(430px, 100%);
   height: 100%;
   background-color: var(--surface);
-  padding: 36px clamp(28px, 4.5vw, 55px);
+  padding: 30px clamp(26px, 3.5vw, 42px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   box-shadow: 18px 0 45px rgba(0, 0, 0, 0.12);
   /* Organic S-wave curve on the right border */
-  border-top-right-radius: 170px 240px;
-  border-bottom-right-radius: 220px 360px;
+  border-top-right-radius: 150px 220px;
+  border-bottom-right-radius: 190px 300px;
 }
 
 /* Brand header with Logo directly inside the form side */
 .brand-header {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .brand-link {
@@ -331,8 +331,8 @@ body {
 }
 
 .brand-logo {
-  width: 54px;
-  height: 54px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
   filter: drop-shadow(0 4px 10px rgba(86, 39, 31, 0.2));
 }
@@ -366,7 +366,7 @@ body {
 }
 
 .form-group {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .field-label {
@@ -381,7 +381,7 @@ body {
 
 .field-input {
   width: 100%;
-  height: 42px;
+  height: 38px;
   border: none;
   border-bottom: 2px solid var(--line);
   background: transparent;
@@ -440,7 +440,7 @@ body {
   display: flex;
   align-items: center;
   margin-top: 4px;
-  margin-bottom: 30px;
+  margin-bottom: 22px;
 }
 
 .remember-label {
@@ -501,8 +501,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
-  padding: 0 46px;
+  height: 44px;
+  padding: 0 38px;
   border: none;
   border-radius: 26px;
   background: linear-gradient(135deg, var(--forest) 0%, #a8206d 50%, var(--coral) 100%);
@@ -558,14 +558,16 @@ body {
 /* Responsive adjustments */
 @media (max-width: 860px) {
   .login-card-window {
+    height: auto;
     min-height: auto;
     border-radius: 20px;
   }
 
   .form-container {
     width: 100%;
+    height: auto;
     border-radius: 20px;
-    padding: 44px 30px;
+    padding: 34px 28px;
     box-shadow: none;
   }
 
@@ -589,7 +591,7 @@ body {
   }
 
   .form-container {
-    padding: 34px 20px;
+    padding: 28px 20px;
   }
 }
 

@@ -10,6 +10,6 @@ document.addEventListener('click', (event) => {
 	};
 	Object.entries(mapping).forEach(([name, key]) => {
 		const field = editAgendaForm.querySelector(`[data-edit-field="${name}"]`);
-		if (field) field.value = trigger.dataset[name] || '';
+		if (field) field.value = trigger.dataset[key] || '';
 	});
 });

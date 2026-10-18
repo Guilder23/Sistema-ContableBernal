@@ -1,6 +1,39 @@
+import base64
+import hashlib
+import hmac
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from cryptography.fernet import Fernet
+
+
+class GoogleCalendarCredential(models.Model):
+	singleton = models.PositiveSmallIntegerField(default=1, unique=True, editable=False)
+	refresh_token_encrypted = models.TextField()
+	conectado_en = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		verbose_name = 'conexión de Google Calendar'
+		verbose_name_plural = 'conexión de Google Calendar'
+
+	@staticmethod
+	def _fernet():
+		key = getattr(settings, 'GOOGLE_TOKEN_ENCRYPTION_KEY', '')
+		if not key:
+			clave_derivada = hmac.new(
+				settings.SECRET_KEY.encode(),
+				b'contablebernal-google-calendar-token',
+				hashlib.sha256,
+			).digest()
+			key = base64.urlsafe_b64encode(clave_derivada).decode()
+		return Fernet(key.encode())
+
+	def set_refresh_token(self, token):
+		self.refresh_token_encrypted = self._fernet().encrypt(token.encode()).decode()
+
+	def get_refresh_token(self):
+		return self._fernet().decrypt(self.refresh_token_encrypted.encode()).decode()
 
 
 class EventoAgenda(models.Model):
@@ -35,6 +68,13 @@ class EventoAgenda(models.Model):
 	estado = models.CharField(max_length=12, choices=Estado.choices, default=Estado.PROGRAMADO)
 	lugar = models.CharField(max_length=160, blank=True, default='')
 	observaciones = models.TextField(blank=True, default='')
+	google_event_id = models.CharField(max_length=255, blank=True, default='')
+	google_sync_status = models.CharField(
+		max_length=12,
+		choices=(('pending', 'Pendiente'), ('synced', 'Sincronizado'), ('error', 'Error')),
+		default='pending',
+	)
+	google_sync_error = models.CharField(max_length=500, blank=True, default='')
 	creado_por = models.ForeignKey(
 		settings.AUTH_USER_MODEL,
 		null=True,
