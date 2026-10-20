@@ -1,1 +1,3 @@
 #modal-editar .client-modal__panel { border-top-color: #d6a33f; }
+#modal-editar .client-form [hidden] { display: none !important; }
+#modal-editar .client-counter-control { display: grid; align-content: start; gap: 10px; padding-top: 8px; }

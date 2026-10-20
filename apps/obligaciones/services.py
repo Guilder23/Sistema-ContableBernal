@@ -33,6 +33,7 @@ CIERRES_FISCALES = {
 	Cliente.Actividad.INDUSTRIAL: (3, 31),
 	Cliente.Actividad.CONSTRUCTORA: (3, 31),
 	Cliente.Actividad.AGRICOLA: (6, 30),
+	Cliente.Actividad.AGROPECUARIA: (6, 30),
 	Cliente.Actividad.GANADERA: (6, 30),
 	Cliente.Actividad.AGROINDUSTRIAL: (6, 30),
 	Cliente.Actividad.MINERA: (9, 30),

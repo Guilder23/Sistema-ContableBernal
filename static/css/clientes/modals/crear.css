@@ -1,1 +1,3 @@
 #modal-crear .client-modal__panel { border-top-color: #39745a; }
+#modal-crear .client-form [hidden] { display: none !important; }
+#modal-crear .client-counter-control { display: grid; align-content: start; gap: 10px; padding-top: 8px; }

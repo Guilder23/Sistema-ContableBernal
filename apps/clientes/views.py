@@ -1,11 +1,10 @@
 from decimal import Decimal
+from datetime import datetime
 
 from django.contrib import messages
 
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -20,29 +19,81 @@ from apps.historial.services import registrar_historial
 from apps.obligaciones.models import ConfiguracionCliente, Obligacion, TipoObligacion
 from apps.tareas.models import Tarea
 
+from .services import ErrorRecordatorioAgenda, sincronizar_recordatorio_vencimiento
 from .models import Cliente
 from .permissions import puede_gestionar_clientes, solo_gestores_clientes
+
+
+ACTIVIDADES_POR_TIPO = {
+	Cliente.Tipo.PERSONA_NATURAL: {
+		Cliente.Actividad.PROFESIONAL,
+		Cliente.Actividad.TECNICO,
+		Cliente.Actividad.ALQUILER,
+		Cliente.Actividad.DEPENDIENTE,
+		Cliente.Actividad.CONSULTOR_EN_LINEA,
+		Cliente.Actividad.OTRA,
+	},
+	Cliente.Tipo.UNIPERSONAL: {
+		Cliente.Actividad.COMERCIAL,
+		Cliente.Actividad.SERVICIOS,
+		Cliente.Actividad.INDUSTRIAL,
+		Cliente.Actividad.CONSTRUCTORA,
+		Cliente.Actividad.AGRICOLA,
+		Cliente.Actividad.AGROPECUARIA,
+		Cliente.Actividad.GANADERA,
+		Cliente.Actividad.AGROINDUSTRIAL,
+		Cliente.Actividad.MINERA,
+		Cliente.Actividad.OTRA,
+	},
+	Cliente.Tipo.JURIDICA: {
+		Cliente.Actividad.COMERCIAL,
+		Cliente.Actividad.SERVICIOS,
+		Cliente.Actividad.INDUSTRIAL,
+		Cliente.Actividad.CONSTRUCTORA,
+		Cliente.Actividad.AGRICOLA,
+		Cliente.Actividad.AGROPECUARIA,
+		Cliente.Actividad.GANADERA,
+		Cliente.Actividad.AGROINDUSTRIAL,
+		Cliente.Actividad.MINERA,
+		Cliente.Actividad.OTRA,
+	},
+	Cliente.Tipo.SIN_FINES_LUCRO: {
+		Cliente.Actividad.ASOCIACION,
+		Cliente.Actividad.ONG,
+		Cliente.Actividad.OTRA,
+	},
+}
 
 
 def _datos_formulario(request, cliente=None):
 	if request.method == 'POST':
 		return {
 			'nombre': request.POST.get('nombre', '').strip(),
-			'razon_social': request.POST.get('razon_social', '').strip(),
+			'razon_social': request.POST.get(
+				'razon_social', cliente.razon_social if cliente else '',
+			).strip(),
 			'tipo': request.POST.get('tipo', Cliente.Tipo.PERSONA_NATURAL),
+			'forma_juridica': request.POST.get('forma_juridica', '').strip(),
+			'forma_juridica_detalle': request.POST.get('forma_juridica_detalle', '').strip(),
+			'actividad_detalle': request.POST.get('actividad_detalle', '').strip(),
+			'tiene_seprec': request.POST.get('tiene_seprec') in {'1', 'on', 'true', 'True', 'si'},
+			'tiene_roe': request.POST.get('tiene_roe') in {'1', 'on', 'true', 'True', 'si'},
 			'nit': request.POST.get('nit', '').strip(),
 			'ci': request.POST.get('ci', '').strip(),
 			'ci_complemento': request.POST.get('ci_complemento', '').strip(),
 			'ci_expedido': request.POST.get('ci_expedido', '').strip(),
 			'fecha_nacimiento': request.POST.get('fecha_nacimiento', '').strip(),
 			'cambio_contador': request.POST.get('cambio_contador') in {'1', 'on', 'true', 'True'},
-			'actividad': request.POST.get('actividad', Cliente.Actividad.OTRA),
+			'fecha_cambio_contador': request.POST.get('fecha_cambio_contador', '').strip(),
+			'actividad': request.POST.get('actividad', ''),
 			'telefono': request.POST.get('telefono', '').strip(),
 			'whatsapp': request.POST.get('whatsapp', '').strip(),
-			'correo': request.POST.get('correo', '').strip(),
+			'correo': cliente.correo if cliente else '',
 			'direccion': request.POST.get('direccion', '').strip(),
 			'estado': Cliente.Estado.ACTIVO if request.POST.get('estado') == 'activo' else Cliente.Estado.INACTIVO,
 			'fecha_inicio': request.POST.get('fecha_inicio', '').strip(),
+			'tipo_facturacion': request.POST.get('tipo_facturacion', '').strip(),
+			'fecha_vencimiento_facturacion': request.POST.get('fecha_vencimiento_facturacion', '').strip(),
 			'tiene_representante_legal': request.POST.get('tiene_representante_legal') in {'1', 'on', 'true', 'True'},
 			'representante_legal_nombre': request.POST.get('representante_legal_nombre', '').strip(),
 			'representante_legal_carnet': request.POST.get('representante_legal_carnet', '').strip(),
@@ -54,11 +105,15 @@ def _datos_formulario(request, cliente=None):
 		}
 	if cliente is None:
 		return {
-			'nombre': '', 'razon_social': '', 'tipo': Cliente.Tipo.PERSONA_NATURAL, 'nit': '', 'ci': '',
+			'nombre': '', 'razon_social': '', 'tipo': Cliente.Tipo.PERSONA_NATURAL,
+			'forma_juridica': '', 'forma_juridica_detalle': '', 'actividad_detalle': '',
+			'tiene_seprec': False, 'tiene_roe': False, 'nit': '', 'ci': '',
 			'ci_complemento': '', 'ci_expedido': '', 'fecha_nacimiento': '', 'cambio_contador': False,
-			'actividad': Cliente.Actividad.OTRA, 'telefono': '', 'whatsapp': '',
+			'fecha_cambio_contador': '',
+			'actividad': '', 'telefono': '', 'whatsapp': '',
 			'correo': '', 'direccion': '', 'estado': Cliente.Estado.ACTIVO,
-			'fecha_inicio': '', 'tiene_representante_legal': False,
+			'fecha_inicio': '', 'tipo_facturacion': '', 'fecha_vencimiento_facturacion': '',
+			'tiene_representante_legal': False,
 			'representante_legal_nombre': '', 'representante_legal_carnet': '', 'representante_legal_complemento': '',
 			'representante_legal_expedido': '', 'representante_legal_celular': '', 'representante_legal_fecha_nacimiento': '',
 			'observaciones': '',
@@ -67,12 +122,18 @@ def _datos_formulario(request, cliente=None):
 		'nombre': cliente.nombre,
 		'razon_social': cliente.razon_social,
 		'tipo': cliente.tipo,
+		'forma_juridica': cliente.forma_juridica,
+		'forma_juridica_detalle': cliente.forma_juridica_detalle,
+		'actividad_detalle': cliente.actividad_detalle,
+		'tiene_seprec': cliente.tiene_seprec,
+		'tiene_roe': cliente.tiene_roe,
 		'nit': cliente.nit or '',
 		'ci': cliente.ci,
 		'ci_complemento': cliente.ci_complemento,
 		'ci_expedido': cliente.ci_expedido,
 		'fecha_nacimiento': cliente.fecha_nacimiento.isoformat() if cliente.fecha_nacimiento else '',
 		'cambio_contador': cliente.cambio_contador,
+		'fecha_cambio_contador': cliente.fecha_cambio_contador,
 		'actividad': cliente.actividad,
 		'telefono': cliente.telefono,
 		'whatsapp': cliente.whatsapp,
@@ -80,6 +141,8 @@ def _datos_formulario(request, cliente=None):
 		'direccion': cliente.direccion,
 		'estado': cliente.estado,
 		'fecha_inicio': cliente.fecha_inicio.isoformat() if cliente.fecha_inicio else '',
+		'tipo_facturacion': cliente.tipo_facturacion,
+		'fecha_vencimiento_facturacion': cliente.fecha_vencimiento_facturacion.isoformat() if cliente.fecha_vencimiento_facturacion else '',
 		'tiene_representante_legal': cliente.tiene_representante_legal,
 		'representante_legal_nombre': cliente.representante_legal_nombre,
 		'representante_legal_carnet': cliente.representante_legal_carnet,
@@ -109,6 +172,7 @@ def _validar_formulario(request, cliente=None):
 			errores['nit'] = 'El NIT no puede superar 20 caracteres.'
 	for campo, limite in (
 		('nombre', 180), ('razon_social', 180), ('ci', 20), ('ci_complemento', 10), ('ci_expedido', 20),
+		('forma_juridica_detalle', 100), ('actividad_detalle', 120),
 		('representante_legal_nombre', 180), ('representante_legal_carnet', 20),
 		('representante_legal_complemento', 10), ('representante_legal_expedido', 20),
 		('representante_legal_celular', 30), ('telefono', 30), ('whatsapp', 30),
@@ -125,19 +189,43 @@ def _validar_formulario(request, cliente=None):
 		errores['fecha_nacimiento'] = 'Ingresa una fecha de nacimiento válida.'
 	if datos['representante_legal_fecha_nacimiento'] and parse_date(datos['representante_legal_fecha_nacimiento']) is None:
 		errores['representante_legal_fecha_nacimiento'] = 'Ingresa una fecha válida para el representante legal.'
-	if datos['correo']:
-		try:
-			validate_email(datos['correo'])
-		except ValidationError:
-			errores['correo'] = 'Ingresa un correo electrónico válido.'
 	if datos['tipo'] not in {valor for valor, _ in Cliente.Tipo.choices}:
 		errores['tipo'] = 'Selecciona un tipo de cliente válido.'
+	elif datos['actividad'] not in ACTIVIDADES_POR_TIPO[datos['tipo']]:
+		actividad_heredada_sin_cambios = (
+			cliente is not None
+			and cliente.tipo == datos['tipo']
+			and cliente.actividad == datos['actividad']
+		)
+		if not actividad_heredada_sin_cambios:
+			errores['actividad'] = 'Selecciona una actividad correspondiente al tipo de cliente.'
 	if datos['actividad'] not in {valor for valor, _ in Cliente.Actividad.choices}:
 		errores['actividad'] = 'Selecciona una actividad válida.'
+	if datos['tipo'] == Cliente.Tipo.JURIDICA:
+		if datos['forma_juridica'] not in {valor for valor, _ in Cliente.FormaJuridica.choices}:
+			errores['forma_juridica'] = 'Selecciona la forma jurídica.'
+		elif datos['forma_juridica'] == Cliente.FormaJuridica.OTRA and not datos['forma_juridica_detalle']:
+			errores['forma_juridica_detalle'] = 'Especifica la forma jurídica.'
+	if datos['tiene_seprec'] and not datos['razon_social']:
+		errores['razon_social'] = 'Ingresa la razón social o nombre de la empresa.'
 	if datos['estado'] not in {valor for valor, _ in Cliente.Estado.choices}:
 		errores['estado'] = 'Selecciona un estado válido.'
 	if datos['fecha_inicio'] and parse_date(datos['fecha_inicio']) is None:
 		errores['fecha_inicio'] = 'Ingresa una fecha válida.'
+	if datos['cambio_contador']:
+		try:
+			datetime.strptime(datos['fecha_cambio_contador'], '%Y-%m')
+		except ValueError:
+			errores['fecha_cambio_contador'] = 'Indica el mes y año del cambio de contador.'
+	if datos['tipo_facturacion'] and datos['tipo_facturacion'] not in {
+		valor for valor, _ in Cliente.TipoFacturacion.choices
+	}:
+		errores['tipo_facturacion'] = 'Selecciona un tipo de facturación válido.'
+	if datos['fecha_vencimiento_facturacion']:
+		if parse_date(datos['fecha_vencimiento_facturacion']) is None:
+			errores['fecha_vencimiento_facturacion'] = 'Ingresa una fecha de vencimiento válida.'
+		elif not datos['tipo_facturacion']:
+			errores['tipo_facturacion'] = 'Selecciona el tipo de facturación para registrar el vencimiento.'
 	return datos, errores
 
 
@@ -152,12 +240,27 @@ def _guardar_cliente(request, cliente=None):
 		cliente.nombre = datos['nombre']
 		cliente.razon_social = datos['razon_social']
 		cliente.tipo = datos['tipo']
+		cliente.forma_juridica = datos['forma_juridica'] if datos['tipo'] == Cliente.Tipo.JURIDICA else ''
+		cliente.forma_juridica_detalle = (
+			datos['forma_juridica_detalle']
+			if datos['tipo'] == Cliente.Tipo.JURIDICA and datos['forma_juridica'] == Cliente.FormaJuridica.OTRA
+			else ''
+		)
+		cliente.actividad_detalle = datos['actividad_detalle'] if datos['actividad'] == Cliente.Actividad.OTRA else ''
+		cliente.tiene_seprec = bool(datos['tiene_seprec'])
+		cliente.tiene_roe = bool(datos['tiene_roe'])
 		cliente.nit = datos['nit'] or None
-		cliente.ci = datos['ci']
-		cliente.ci_complemento = datos['ci_complemento']
-		cliente.ci_expedido = datos['ci_expedido']
-		cliente.fecha_nacimiento = parse_date(datos['fecha_nacimiento']) if datos['fecha_nacimiento'] else None
+		persona_juridica = datos['tipo'] == Cliente.Tipo.JURIDICA
+		cliente.ci = '' if persona_juridica else datos['ci']
+		cliente.ci_complemento = '' if persona_juridica else datos['ci_complemento']
+		cliente.ci_expedido = '' if persona_juridica else datos['ci_expedido']
+		cliente.fecha_nacimiento = (
+			parse_date(datos['fecha_nacimiento'])
+			if datos['fecha_nacimiento'] and not persona_juridica
+			else None
+		)
 		cliente.cambio_contador = bool(datos['cambio_contador'])
+		cliente.fecha_cambio_contador = datos['fecha_cambio_contador'] if datos['cambio_contador'] else ''
 		cliente.actividad = datos['actividad']
 		cliente.telefono = datos['telefono']
 		cliente.whatsapp = datos['whatsapp']
@@ -165,6 +268,12 @@ def _guardar_cliente(request, cliente=None):
 		cliente.direccion = datos['direccion']
 		cliente.estado = datos['estado']
 		cliente.fecha_inicio = parse_date(datos['fecha_inicio']) if datos['fecha_inicio'] else None
+		cliente.tipo_facturacion = datos['tipo_facturacion']
+		cliente.fecha_vencimiento_facturacion = (
+			parse_date(datos['fecha_vencimiento_facturacion'])
+			if datos['fecha_vencimiento_facturacion']
+			else None
+		)
 		cliente.tiene_representante_legal = bool(datos['tiene_representante_legal'])
 		cliente.representante_legal_nombre = datos['representante_legal_nombre']
 		cliente.representante_legal_carnet = datos['representante_legal_carnet']
@@ -174,6 +283,11 @@ def _guardar_cliente(request, cliente=None):
 		cliente.representante_legal_fecha_nacimiento = parse_date(datos['representante_legal_fecha_nacimiento']) if datos['representante_legal_fecha_nacimiento'] else None
 		cliente.observaciones = datos['observaciones']
 		cliente.save()
+		try:
+			sincronizar_recordatorio_vencimiento(cliente, request.user)
+		except ErrorRecordatorioAgenda as error:
+			transaction.set_rollback(True)
+			return None, datos, {'fecha_vencimiento_facturacion': str(error)}
 
 		if es_nuevo:
 			registrar_historial(
@@ -212,7 +326,6 @@ def _contexto_listado(request, datos=None, errores=None, modal_activo='', client
 			Q(nombre__icontains=busqueda)
 			| Q(nit__icontains=busqueda)
 			| Q(ci__icontains=busqueda)
-			| Q(correo__icontains=busqueda)
 		)
 	if tipo in {valor for valor, _ in Cliente.Tipo.choices}:
 		clientes = clientes.filter(tipo=tipo)
@@ -232,7 +345,9 @@ def _contexto_listado(request, datos=None, errores=None, modal_activo='', client
 		'tipo_filtro': tipo,
 		'estado_filtro': estado,
 		'tipos': Cliente.Tipo.choices,
+		'formas_juridicas': Cliente.FormaJuridica.choices,
 		'actividades': Cliente.Actividad.choices,
+		'tipos_facturacion': Cliente.TipoFacturacion.choices,
 		'estados': Cliente.Estado.choices,
 		'puede_gestionar': puede_gestionar,
 		'datos': datos or {},
@@ -363,7 +478,9 @@ def detalle(request, cliente_id):
 		'hoy': hoy,
 		'puede_gestionar': puede_gestionar,
 		'tipos': Cliente.Tipo.choices,
+		'formas_juridicas': Cliente.FormaJuridica.choices,
 		'actividades': Cliente.Actividad.choices,
+		'tipos_facturacion': Cliente.TipoFacturacion.choices,
 		'estados': Cliente.Estado.choices,
 	})
 

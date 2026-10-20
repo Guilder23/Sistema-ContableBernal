@@ -12,7 +12,6 @@ document.addEventListener('click', (event) => {
         ci: trigger.dataset.clientCi,
         phone: trigger.dataset.clientPhone,
         whatsapp: trigger.dataset.clientWhatsapp,
-        email: trigger.dataset.clientEmail,
         address: trigger.dataset.clientAddress,
         status: trigger.dataset.clientStatus,
         'start-date': trigger.dataset.clientStartDate,

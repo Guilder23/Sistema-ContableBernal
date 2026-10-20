@@ -27,7 +27,7 @@ document.addEventListener('click', (event) => {
 	const trigger = event.target.closest('[data-open-modal]');
 	if (trigger) {
 		const modal = document.getElementById(trigger.dataset.openModal);
-		if (modal?.hidden && ['modal-crear', 'modal-editar'].includes(modal.id)) modal.querySelector('form')?.reset();
+		if (modal?.hidden && modal.id === 'modal-crear') modal.querySelector('form')?.reset();
 		if (modal) {
 			previousClientTrigger = trigger;
 			modal.hidden = false;

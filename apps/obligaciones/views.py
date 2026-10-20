@@ -223,7 +223,7 @@ def configurar_cliente(request):
             messages.error(request, error)
     else:
         messages.success(request, mensaje)
-    return redirect(_url_periodo_cliente(cliente.pk, periodicidad, anio, numero, volver))
+    return _redirigir_cliente(cliente.pk, volver)
 
 
 
