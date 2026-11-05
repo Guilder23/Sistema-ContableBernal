@@ -9,11 +9,17 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import urlencode
+from django.urls import reverse
 from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_POST
 
 from apps.credenciales.models import Credencial
-from apps.credenciales.permissions import puede_gestionar_credenciales, puede_ver_credenciales
+from apps.credenciales.permissions import (
+	CREDENCIALES_REAUTH_SESSION_KEY,
+	puede_gestionar_credenciales,
+	puede_ver_credenciales,
+)
 from apps.historial.models import EntradaHistorial
 from apps.historial.services import registrar_historial
 from apps.obligaciones.models import ConfiguracionCliente, Obligacion, TipoObligacion
@@ -428,9 +434,19 @@ def detalle(request, cliente_id):
 	tipos_anuales = [t for t in tipos_disponibles if t.periodicidad == TipoObligacion.Periodicidad.ANUAL]
 
 	# Credenciales
-	puede_ver_cred = puede_ver_credenciales(request.user)
+	puede_ver_cred = (
+		puede_ver_credenciales(request.user)
+		and request.session.get(CREDENCIALES_REAUTH_SESSION_KEY, False)
+	)
 	puede_gest_cred = puede_gestionar_credenciales(request.user)
 	credenciales = cliente.credenciales.select_related('creado_por', 'actualizado_por').all() if puede_ver_cred else []
+	credenciales_login_url = '{}?{}'.format(
+		reverse('usuarios:login'),
+		urlencode({
+			'next': f'{request.get_full_path()}#tab-credenciales',
+			'reauth': 'credenciales',
+		}),
+	)
 
 	# Tareas del cliente
 	tareas = Tarea.objects.filter(obligacion__cliente=cliente).select_related(
@@ -469,6 +485,7 @@ def detalle(request, cliente_id):
 		'credenciales': credenciales,
 		'puede_ver_cred': puede_ver_cred,
 		'puede_gest_cred': puede_gest_cred,
+		'credenciales_login_url': credenciales_login_url,
 		'sistemas_credenciales': Credencial.Sistema.choices,
 		'tareas_pendientes': tareas_pendientes[:15],
 		'tareas_vencidas': tareas_vencidas,
@@ -483,4 +500,3 @@ def detalle(request, cliente_id):
 		'tipos_facturacion': Cliente.TipoFacturacion.choices,
 		'estados': Cliente.Estado.choices,
 	})
-

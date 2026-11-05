@@ -57,6 +57,10 @@
                 <form class="auth-form" id="login-form" method="post" novalidate>
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ siguiente }}">
+                    {% if requiere_reautenticacion %}
+                    <input type="hidden" name="reauth" value="credenciales">
+                    <p class="login-reason">Confirma tu identidad para acceder a Credenciales y Accesos.</p>
+                    {% endif %}
 
                     {% if error %}
                         <div class="form-error" role="alert" aria-live="assertive">

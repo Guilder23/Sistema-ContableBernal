@@ -69,7 +69,7 @@
     Obligaciones tributarias
     <span class="client-tab-badge">{{ config_tipos_ids|length }}</span>
   </button>
-  <button type="button" class="client-tab-btn" data-tab="tab-credenciales">
+  <button type="button" class="client-tab-btn" data-tab="tab-credenciales" data-reauth-url="{{ credenciales_login_url }}" data-credenciales-autorizadas="{{ puede_ver_cred|yesno:'true,false' }}">
     <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg>
     Credenciales y accesos
     <span class="client-tab-badge">{{ credenciales|length }}</span>
@@ -217,6 +217,14 @@
 
 <!-- TAB 3: CREDENCIALES Y ACCESOS -->
 <div class="client-tab-pane" id="tab-credenciales">
+  {% if not puede_ver_cred %}
+  <div class="client-card" style="text-align:center; padding:32px;">
+    <svg class="icon" style="width:40px; height:40px; color:#9cb1a6; margin-bottom:8px;" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#key"></use></svg>
+    <p style="margin:0; font-weight:600; color:#495e54;">Esta sección requiere una nueva autenticación.</p>
+    <p style="margin:4px 0 16px 0; font-size:13px; color:#71877c;">Ingresa nuevamente para consultar las credenciales y accesos.</p>
+    <a class="button button--primary" href="{{ credenciales_login_url }}">Iniciar sesión</a>
+  </div>
+  {% else %}
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
     <div>
       <h2 style="font-size:17px; margin:0; color:var(--ink);">Credenciales y accesos protegidos</h2>
@@ -227,6 +235,7 @@
       <svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>
       Nueva credencial
     </button>
+    {% endif %}
     {% endif %}
   </div>
 
@@ -568,9 +577,9 @@
 {% block page_js %}
 <script defer src="{% static 'js/clientes/clientes.js' %}"></script>
 <script defer src="{% static 'js/clientes/detalle.js' %}"></script>
+<script defer src="{% static 'js/credenciales/credenciales.js' %}"></script>
 <script defer src="{% static 'js/honorarios/honorarios.js' %}"></script>
 {% if puede_gestionar %}
 <script defer src="{% static 'js/clientes/modals/editar.js' %}"></script>
 {% endif %}
 {% endblock %}
-

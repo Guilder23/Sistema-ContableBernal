@@ -12,7 +12,13 @@ from apps.historial.models import EntradaHistorial
 from apps.historial.services import registrar_historial
 
 from .models import Credencial
-from .permissions import puede_gestionar_credenciales, puede_ver_credenciales, solo_gestores_credenciales
+from .permissions import (
+	puede_gestionar_credenciales,
+	puede_ver_credenciales,
+	limpiar_reautenticacion_credenciales,
+	requiere_reautenticacion_credenciales,
+	solo_gestores_credenciales,
+)
 
 
 def _volver(request, default_url='credenciales:index', cliente_id=None):
@@ -28,7 +34,7 @@ def _volver(request, default_url='credenciales:index', cliente_id=None):
 	return redirect(default_url)
 
 
-@login_required
+@requiere_reautenticacion_credenciales
 def index(request):
 	if not puede_ver_credenciales(request.user):
 		return HttpResponseForbidden('No tienes acceso a las credenciales.')
@@ -76,6 +82,13 @@ def index(request):
 
 
 @login_required
+@require_POST
+def salir(request):
+	limpiar_reautenticacion_credenciales(request)
+	return JsonResponse({'ok': True})
+
+
+@requiere_reautenticacion_credenciales
 def revelar_password(request, credencial_id):
 	if not puede_ver_credenciales(request.user):
 		return JsonResponse({'error': 'No autorizado'}, status=403)
@@ -85,6 +98,7 @@ def revelar_password(request, credencial_id):
 
 
 @solo_gestores_credenciales
+@requiere_reautenticacion_credenciales
 @require_POST
 def crear(request):
 	cliente_id = request.POST.get('cliente_id')
@@ -130,6 +144,7 @@ def crear(request):
 
 
 @solo_gestores_credenciales
+@requiere_reautenticacion_credenciales
 @require_POST
 def editar(request, credencial_id):
 	credencial = get_object_or_404(Credencial, pk=credencial_id)
@@ -173,6 +188,7 @@ def editar(request, credencial_id):
 
 
 @solo_gestores_credenciales
+@requiere_reautenticacion_credenciales
 @require_POST
 def eliminar(request, credencial_id):
 	credencial = get_object_or_404(Credencial, pk=credencial_id)

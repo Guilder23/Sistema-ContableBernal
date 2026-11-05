@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from apps.historial.models import EntradaHistorial
 from apps.historial.services import registrar_historial
 
+from apps.credenciales.permissions import CREDENCIALES_REAUTH_SESSION_KEY
 from .models import PerfilUsuario
 from .permissions import solo_administradores
 
@@ -137,7 +138,11 @@ def _guardar_usuario(request, usuario=None, es_nuevo=False):
 
 
 def login_view(request):
-	if request.user.is_authenticated:
+	requiere_reautenticacion = (
+		request.POST.get('reauth') == 'credenciales'
+		or request.GET.get('reauth') == 'credenciales'
+	)
+	if request.user.is_authenticated and not requiere_reautenticacion:
 		return redirect('dashboard:index')
 
 	siguiente = request.POST.get('next') or request.GET.get('next', '')
@@ -146,8 +151,12 @@ def login_view(request):
 		usuario = request.POST.get('username', '').strip()
 		contrasena = request.POST.get('password', '')
 		cuenta = authenticate(request, username=usuario, password=contrasena)
-		if cuenta is not None:
+		if cuenta is not None and requiere_reautenticacion and cuenta.pk != request.user.pk:
+			error = 'Ingresa las credenciales de tu cuenta actual.'
+		elif cuenta is not None:
 			login(request, cuenta)
+			if requiere_reautenticacion:
+				request.session[CREDENCIALES_REAUTH_SESSION_KEY] = True
 			if siguiente and url_has_allowed_host_and_scheme(
 				siguiente,
 				allowed_hosts={request.get_host()},
@@ -155,9 +164,14 @@ def login_view(request):
 			):
 				return redirect(siguiente)
 			return redirect('dashboard:index')
-		error = 'Usuario o contraseña incorrectos.'
+		elif not error:
+			error = 'Usuario o contraseña incorrectos.'
 
-	return render(request, 'usuarios/login.html', {'error': error, 'siguiente': siguiente})
+	return render(request, 'usuarios/login.html', {
+		'error': error,
+		'siguiente': siguiente,
+		'requiere_reautenticacion': requiere_reautenticacion,
+	})
 
 
 @login_required

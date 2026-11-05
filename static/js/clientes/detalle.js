@@ -19,6 +19,25 @@ document.addEventListener('DOMContentLoaded', () => {
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetId = btn.dataset.tab;
+      const credencialesBtn = document.querySelector('[data-tab="tab-credenciales"]');
+      const credencialesAutorizadas = credencialesBtn
+        && credencialesBtn.dataset.credencialesAutorizadas === 'true';
+
+      if (targetId === 'tab-credenciales' && !credencialesAutorizadas && btn.dataset.reauthUrl) {
+        window.location.assign(btn.dataset.reauthUrl);
+        return;
+      }
+
+      if (targetId !== 'tab-credenciales' && credencialesAutorizadas) {
+        const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
+        if (csrf && navigator.sendBeacon) {
+          const datos = new FormData();
+          datos.append('csrfmiddlewaretoken', csrf.value);
+          navigator.sendBeacon('/credenciales/salir/', datos);
+        }
+        credencialesBtn.dataset.credencialesAutorizadas = 'false';
+      }
+
       activarTab(targetId);
       if (targetId) {
         history.replaceState(null, '', `#${targetId}`);

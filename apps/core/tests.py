@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from apps.credenciales.permissions import CREDENCIALES_REAUTH_SESSION_KEY
+
 
 class ModulePageTests(TestCase):
 	pages = [
@@ -50,6 +52,10 @@ class ModulePageTests(TestCase):
 		self.client.force_login(self.admin)
 		for path, asset_folder, asset_name in self.pages:
 			with self.subTest(path=path):
+				if path == '/credenciales/':
+					session = self.client.session
+					session[CREDENCIALES_REAUTH_SESSION_KEY] = True
+					session.save()
 				response = self.client.get(path)
 				self.assertEqual(response.status_code, 200)
 				self.assertContains(response, f'css/{asset_folder}/{asset_name}.css')
