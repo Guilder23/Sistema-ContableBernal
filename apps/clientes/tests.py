@@ -79,6 +79,19 @@ class GestionClientesTests(TestCase):
 		self.assertContains(respuesta, f'data-client-activity-value="{cliente.actividad}"')
 		self.assertContains(respuesta, f'data-client-phone="{cliente.telefono}"')
 
+	def test_credenciales_sin_autorizacion_no_se_muestran_en_otras_secciones(self):
+		cliente = Cliente.objects.create(
+			nombre='Cliente con pestañas',
+			actividad=Cliente.Actividad.COMERCIAL,
+		)
+		self.client.force_login(self.auxiliar)
+
+		respuesta = self.client.get(f'/clientes/{cliente.pk}/')
+
+		self.assertEqual(respuesta.status_code, 200)
+		self.assertContains(respuesta, 'Esta sección requiere una nueva autenticación.')
+		self.assertNotContains(respuesta, 'No hay credenciales registradas para este cliente.')
+
 	def test_crea_cliente_con_campos_complementarios_y_representante_legal(self):
 		response = self.client.post('/clientes/crear/', {
 			**self.datos_cliente(
