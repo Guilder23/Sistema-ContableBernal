@@ -71,11 +71,25 @@ def periodo_de_obligacion(tipo, cliente, anio, numero):
 			raise ValidationError('Selecciona un mes válido.')
 		return date(anio, numero, 1), date(anio, numero, calendar.monthrange(anio, numero)[1])
 
+	if tipo.periodicidad == TipoObligacion.Periodicidad.BIMENSUAL:
+		if not 1 <= numero <= 6:
+			raise ValidationError('Selecciona un bimestre válido.')
+		mes_inicio = (numero - 1) * 2 + 1
+		mes_fin = mes_inicio + 1
+		return date(anio, mes_inicio, 1), date(anio, mes_fin, calendar.monthrange(anio, mes_fin)[1])
+
 	if tipo.periodicidad == TipoObligacion.Periodicidad.TRIMESTRAL:
 		if not 1 <= numero <= 4:
 			raise ValidationError('Selecciona un trimestre válido.')
 		mes_inicio = (numero - 1) * 3 + 1
 		mes_fin = mes_inicio + 2
+		return date(anio, mes_inicio, 1), date(anio, mes_fin, calendar.monthrange(anio, mes_fin)[1])
+
+	if tipo.periodicidad == TipoObligacion.Periodicidad.SEMESTRAL:
+		if not 1 <= numero <= 2:
+			raise ValidationError('Selecciona un semestre válido.')
+		mes_inicio = (numero - 1) * 6 + 1
+		mes_fin = mes_inicio + 5
 		return date(anio, mes_inicio, 1), date(anio, mes_fin, calendar.monthrange(anio, mes_fin)[1])
 
 	if tipo.periodicidad == TipoObligacion.Periodicidad.ANUAL:

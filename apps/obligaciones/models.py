@@ -13,7 +13,9 @@ MESES_EN_ESPANOL = (
 class TipoObligacion(models.Model):
 	class Periodicidad(models.TextChoices):
 		MENSUAL = 'mensual', 'Mensual'
+		BIMENSUAL = 'bimensual', 'Bimensual'
 		TRIMESTRAL = 'trimestral', 'Trimestral'
+		SEMESTRAL = 'semestral', 'Semestral'
 		ANUAL = 'anual', 'Anual'
 
 	class ReglaVencimiento(models.TextChoices):
@@ -124,8 +126,14 @@ class Obligacion(models.Model):
 	def periodo_etiqueta(self):
 		if self.tipo.periodicidad == TipoObligacion.Periodicidad.MENSUAL:
 			return f'{MESES_EN_ESPANOL[self.periodo_inicio.month - 1]} {self.anio}'
+		if self.tipo.periodicidad == TipoObligacion.Periodicidad.BIMENSUAL:
+			mes_inicio = MESES_EN_ESPANOL[self.periodo_inicio.month - 1]
+			mes_fin = MESES_EN_ESPANOL[self.periodo_fin.month - 1]
+			return f'{mes_inicio}-{mes_fin} {self.anio}'
 		if self.tipo.periodicidad == TipoObligacion.Periodicidad.TRIMESTRAL:
 			return f'{self.periodo_numero}.er trimestre {self.anio}'
+		if self.tipo.periodicidad == TipoObligacion.Periodicidad.SEMESTRAL:
+			return f'{"Primer" if self.periodo_numero == 1 else "Segundo"} semestre {self.anio}'
 		return f'Ejercicio fiscal {self.anio}'
 
 	@property

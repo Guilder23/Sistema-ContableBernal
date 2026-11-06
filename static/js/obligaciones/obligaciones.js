@@ -15,13 +15,20 @@ const quarterOptions = [
 	['1', 'Primer trimestre'], ['2', 'Segundo trimestre'],
 	['3', 'Tercer trimestre'], ['4', 'Cuarto trimestre'],
 ];
+const bimonthOptions = [
+	['1', 'Enero-Febrero'], ['2', 'Marzo-Abril'], ['3', 'Mayo-Junio'],
+	['4', 'Julio-Agosto'], ['5', 'Septiembre-Octubre'], ['6', 'Noviembre-Diciembre'],
+];
+const semesterOptions = [['1', 'Primer semestre'], ['2', 'Segundo semestre']];
 
 function populatePeriods(select, frequency, includeAll) {
 	if (!select) return;
 	select.replaceChildren();
 	const options = includeAll ? [['', 'Todos']] : [];
 	if (frequency === 'mensual') options.push(...monthOptions);
+	if (frequency === 'bimensual') options.push(...bimonthOptions);
 	if (frequency === 'trimestral') options.push(...quarterOptions);
+	if (frequency === 'semestral') options.push(...semesterOptions);
 	if (frequency === 'anual' && !includeAll) options.push(['0', 'Ejercicio fiscal']);
 
 	options.forEach(([value, label]) => {

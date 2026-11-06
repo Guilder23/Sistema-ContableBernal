@@ -28,6 +28,19 @@ MESES = (
     (9, 'Septiembre'), (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre'),
 )
 
+PERIODOS_POR_PERIODICIDAD = {
+    TipoObligacion.Periodicidad.MENSUAL: MESES,
+    TipoObligacion.Periodicidad.BIMENSUAL: (
+        (1, 'Enero-Febrero'), (2, 'Marzo-Abril'), (3, 'Mayo-Junio'),
+        (4, 'Julio-Agosto'), (5, 'Septiembre-Octubre'), (6, 'Noviembre-Diciembre'),
+    ),
+    TipoObligacion.Periodicidad.TRIMESTRAL: (
+        (1, 'Primer trimestre'), (2, 'Segundo trimestre'),
+        (3, 'Tercer trimestre'), (4, 'Cuarto trimestre'),
+    ),
+    TipoObligacion.Periodicidad.SEMESTRAL: ((1, 'Primer semestre'), (2, 'Segundo semestre')),
+}
+
 
 def _redirigir_cliente(cliente_id, volver=''):
     if volver:
@@ -69,10 +82,8 @@ def index(request):
             numero = int(numero_raw)
     except (TypeError, ValueError):
         numero = ''
-    maximo = 12 if periodicidad == TipoObligacion.Periodicidad.MENSUAL else (
-        4 if periodicidad == TipoObligacion.Periodicidad.TRIMESTRAL else 0
-    )
-    if periodicidad in (TipoObligacion.Periodicidad.MENSUAL, TipoObligacion.Periodicidad.TRIMESTRAL):
+    maximo = len(PERIODOS_POR_PERIODICIDAD.get(periodicidad, ()))
+    if maximo:
         if numero != '' and not 1 <= numero <= maximo:
             numero = ''
     else:
@@ -120,17 +131,14 @@ def index(request):
         'periodicidades': TipoObligacion.Periodicidad.choices,
         'estados': Obligacion.Estado.choices,
         'meses': MESES,
-        'periodo_options': ((('', 'Todos'),) + MESES) if periodicidad == TipoObligacion.Periodicidad.MENSUAL else (
-            (('', 'Todos'), (1, 'Primer trimestre'), (2, 'Segundo trimestre'), (3, 'Tercer trimestre'), (4, 'Cuarto trimestre'))
-            if periodicidad == TipoObligacion.Periodicidad.TRIMESTRAL else (('', 'Todos'),)
-        ),
+        'periodo_options': ((('', 'Todos'),) + PERIODOS_POR_PERIODICIDAD[periodicidad]) if periodicidad in PERIODOS_POR_PERIODICIDAD else (('', 'Todos'),),
         'periodicidad': periodicidad,
         'anio': anio,
         'periodo_numero': numero,
         'generacion_periodicidad': TipoObligacion.Periodicidad.MENSUAL,
         'generacion_anio': hoy.year,
         'generacion_numero': hoy.month,
-        'generacion_periodos': MESES,
+        'generacion_periodos': PERIODOS_POR_PERIODICIDAD[TipoObligacion.Periodicidad.MENSUAL],
         'cliente_filtro': cliente_filtro,
         'estado_filtro': estado_filtro,
         'cliente_config': cliente_config,
@@ -195,9 +203,7 @@ def configurar_cliente(request):
         messages.warning(request, 'La configuración se guardó, pero no se pudo generar el período seleccionado.')
         return _redirigir_cliente(cliente.pk, volver)
 
-    maximo = 12 if periodicidad == TipoObligacion.Periodicidad.MENSUAL else (
-        4 if periodicidad == TipoObligacion.Periodicidad.TRIMESTRAL else 0
-    )
+    maximo = len(PERIODOS_POR_PERIODICIDAD.get(periodicidad, ()))
     periodo_valido = (
         periodicidad in {valor for valor, _ in TipoObligacion.Periodicidad.choices}
         and 2000 <= anio <= 2200
@@ -239,9 +245,7 @@ def generar(request):
         messages.error(request, 'Ingresa un año y período válidos.')
         return redirect('obligaciones:index')
 
-    maximo = 12 if periodicidad == TipoObligacion.Periodicidad.MENSUAL else (
-        4 if periodicidad == TipoObligacion.Periodicidad.TRIMESTRAL else 0
-    )
+    maximo = len(PERIODOS_POR_PERIODICIDAD.get(periodicidad, ()))
     if periodicidad not in periodicidades_validas or not 2000 <= anio <= 2200 or (maximo and not 1 <= numero <= maximo) or (not maximo and numero != 0):
         messages.error(request, 'Selecciona una periodicidad y un período válidos.')
         return redirect('obligaciones:index')

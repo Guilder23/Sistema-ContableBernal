@@ -60,6 +60,29 @@ class VencimientosTests(TestCase):
 		self.assertEqual(periodo_fin, date(2026, 3, 31))
 		self.assertEqual(calcular_vencimiento(tipo, self.cliente, periodo_fin), date(2026, 7, 29))
 
+	def test_bimensual_vence_ultimo_habil_de_marzo(self):
+		tipo = self.crear_tipo(
+			'hotel_test',
+			TipoObligacion.ReglaVencimiento.ULTIMO_HABIL,
+			TipoObligacion.Periodicidad.BIMENSUAL,
+		)
+		periodo_inicio, periodo_fin = periodo_de_obligacion(tipo, self.cliente, 2026, 1)
+		self.assertEqual((periodo_inicio, periodo_fin), (date(2026, 1, 1), date(2026, 2, 28)))
+		self.assertEqual(calcular_vencimiento(tipo, self.cliente, periodo_fin), date(2026, 3, 31))
+
+	def test_semestral_vence_en_julio_y_enero(self):
+		tipo = self.crear_tipo(
+			'construccion_test',
+			TipoObligacion.ReglaVencimiento.ULTIMO_HABIL,
+			TipoObligacion.Periodicidad.SEMESTRAL,
+		)
+		inicio_primer_semestre, fin_primer_semestre = periodo_de_obligacion(tipo, self.cliente, 2026, 1)
+		inicio_segundo_semestre, fin_segundo_semestre = periodo_de_obligacion(tipo, self.cliente, 2026, 2)
+		self.assertEqual((inicio_primer_semestre, fin_primer_semestre), (date(2026, 1, 1), date(2026, 6, 30)))
+		self.assertEqual((inicio_segundo_semestre, fin_segundo_semestre), (date(2026, 7, 1), date(2026, 12, 31)))
+		self.assertEqual(calcular_vencimiento(tipo, self.cliente, fin_primer_semestre), date(2026, 7, 31))
+		self.assertEqual(calcular_vencimiento(tipo, self.cliente, fin_segundo_semestre), date(2027, 1, 29))
+
 
 class ObligacionesIntegracionTests(TestCase):
 	def setUp(self):
@@ -175,6 +198,32 @@ class ObligacionesIntegracionTests(TestCase):
 		self.assertContains(respuesta, 'Reglas y feriados')
 		self.assertContains(respuesta, 'Días no laborables')
 		self.assertNotContains(respuesta, 'admin:obligaciones_tipoobligacion_changelist')
+
+	def test_catalogo_inicial_incluye_nuevas_obligaciones(self):
+		self.assertEqual(
+			set(TipoObligacion.objects.filter(
+				codigo__in=('bancarizacion', 'formulario_608', 'informacion_hotelera', 'informacion_construccion')
+			).values_list('codigo', 'periodicidad')),
+			{
+				('bancarizacion', 'mensual'),
+				('formulario_608', 'mensual'),
+				('informacion_hotelera', 'bimensual'),
+				('informacion_construccion', 'semestral'),
+			},
+		)
+
+	def test_periodos_bimensuales_y_semestrales_se_generan_desde_el_panel(self):
+		self.client.force_login(self.usuario)
+		for periodicidad, numero in (('bimensual', 1), ('semestral', 1)):
+			tipo = TipoObligacion.objects.get(periodicidad=periodicidad)
+			ConfiguracionCliente.objects.create(cliente=self.cliente, tipo=tipo, fecha_inicio=date(2026, 1, 1))
+			respuesta = self.client.post(reverse('obligaciones:generar'), {
+				'periodicidad': periodicidad, 'anio': '2026', 'periodo_numero': str(numero),
+			})
+			self.assertEqual(respuesta.status_code, 302)
+			self.assertTrue(Obligacion.objects.filter(
+				cliente=self.cliente, tipo=tipo, anio=2026, periodo_numero=numero,
+			).exists())
 
 	def test_crea_y_edita_tipo_desde_la_interfaz(self):
 		self.client.force_login(self.usuario)

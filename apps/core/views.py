@@ -5,7 +5,7 @@ from django.shortcuts import redirect, render
 MODULE_PAGES = {
 	'clientes': ('Clientes', 'Ficha general, actividad económica y configuración tributaria de cada cliente.'),
 	'credenciales': ('Credenciales', 'Accesos de clientes a Impuestos, Gestora, cajas y otros portales.'),
-	'obligaciones': ('Obligaciones', 'Calendario mensual, trimestral y anual de obligaciones contables.'),
+	'obligaciones': ('Obligaciones', 'Calendario mensual, bimensual, trimestral, semestral y anual de obligaciones contables.'),
 	'tareas': ('Tareas', 'Asignaciones, vencimientos, responsables y evidencias de trabajo.'),
 	'honorarios': ('Honorarios', 'Tarifas, cargos recurrentes, extras y control de pagos.'),
 	'ingresos': ('Ingresos', 'Honorarios cobrados, trabajos extraordinarios y otros ingresos.'),
