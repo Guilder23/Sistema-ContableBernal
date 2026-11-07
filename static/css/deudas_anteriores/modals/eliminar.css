@@ -1,0 +1,85 @@
+.deuda-modal--eliminar {
+	width: min(100%, 480px);
+}
+
+.deuda-modal--eliminar .deuda-modal__panel {
+	border-top-color: #c75c47;
+}
+
+.deuda-modal--eliminar .deuda-modal__header {
+	margin-bottom: 12px;
+}
+
+.deuda-modal--eliminar .deuda-modal__header .eyebrow {
+	color: #a84436;
+}
+
+.deuda-modal--eliminar .deuda-vista-previa {
+	margin: 0 0 12px;
+	color: #526359;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.deuda-modal--eliminar .deuda-eliminar-aviso {
+	margin: 0 0 14px;
+	padding: 12px 14px;
+	border: 1px solid #f0d9c7;
+	border-radius: 8px;
+	background: #fff8f0;
+	color: #8c4838;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.deuda-modal--eliminar .deuda-eliminar-resumen {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 10px;
+	margin: 0;
+	padding: 12px 0;
+	border-top: 1px solid #edf1ee;
+	border-bottom: 1px solid #edf1ee;
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.deuda-modal--eliminar .deuda-eliminar-resumen > div {
+	display: contents;
+}
+
+.deuda-modal--eliminar .deuda-eliminar-resumen dt {
+	color: var(--muted);
+}
+
+.deuda-modal--eliminar .deuda-eliminar-resumen dd {
+	margin: 0;
+	color: var(--ink);
+	font-weight: 600;
+	text-align: right;
+}
+
+.deuda-eliminar__acciones {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+.deuda-eliminar__acciones .button {
+	min-height: 42px;
+	padding: 0 14px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+@media (max-width: 480px) {
+	.deuda-eliminar__acciones {
+		flex-direction: column-reverse;
+	}
+
+	.deuda-eliminar__acciones .button {
+		width: 100%;
+	}
+}

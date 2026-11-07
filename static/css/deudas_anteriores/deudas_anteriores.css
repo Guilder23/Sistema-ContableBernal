@@ -1,0 +1,490 @@
+.workspace--deudas-anteriores .eyebrow {
+	color: #a84436;
+}
+
+.deuda-heading {
+	align-items: center;
+	margin-bottom: 22px;
+}
+
+.button {
+	display: inline-flex;
+	min-height: 42px;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 0 14px;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.button--primary {
+	background: var(--coral);
+	color: #fff;
+	box-shadow: 0 3px 8px rgb(238 73 60 / 18%);
+}
+
+.button--primary:hover {
+	background: #d83c32;
+}
+
+.button--quiet {
+	border-color: var(--line);
+	background: #fff;
+	color: #70463c;
+}
+
+.button--quiet:hover {
+	border-color: #d9a789;
+	background: #fff7ef;
+}
+
+.button--filter {
+	background: #fff0d7;
+	color: #80541f;
+}
+
+.button--filter:hover {
+	background: #ffe5b7;
+}
+
+.button--danger {
+	background: #9b3b30;
+	color: #fff;
+}
+
+.button--danger:hover {
+	background: #7e2e26;
+}
+
+.deuda-resumen {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 14px;
+	margin-bottom: 14px;
+}
+
+.deuda-resumen__item {
+	display: grid;
+	min-height: 88px;
+	align-content: center;
+	gap: 8px;
+	padding: 15px 18px;
+}
+
+.deuda-resumen__item span {
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.deuda-resumen__item strong {
+	color: var(--ink);
+	font: 700 22px var(--font-display);
+}
+
+.deuda-toolbar {
+	margin-bottom: 12px;
+	padding: 15px 16px;
+}
+
+.deuda-filtros {
+	display: flex;
+	align-items: flex-end;
+	gap: 11px;
+}
+
+.deuda-filtros label {
+	display: grid;
+	min-width: 155px;
+	flex: 1;
+	gap: 6px;
+	color: #65746b;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.deuda-filtros__buscar {
+	flex: 1.15 !important;
+}
+
+.deuda-filtros input,
+.deuda-filtros select {
+	width: 100%;
+	height: 42px;
+	padding: 0 10px;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	outline: 0;
+	background: #fff;
+	color: var(--ink);
+	font: inherit;
+	font-size: 14px;
+}
+
+.deuda-filtros input:focus,
+.deuda-filtros select:focus {
+	border-color: var(--coral);
+	box-shadow: 0 0 0 3px rgb(238 73 60 / 12%);
+}
+
+.deuda-busqueda {
+	display: flex;
+	height: 42px;
+	align-items: center;
+	gap: 8px;
+	padding: 0 10px;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	background: #fff;
+	color: var(--muted);
+}
+
+.deuda-busqueda:focus-within {
+	border-color: var(--coral);
+	box-shadow: 0 0 0 3px rgb(238 73 60 / 12%);
+}
+
+.deuda-busqueda .icon {
+	width: 16px;
+	height: 16px;
+}
+
+.deuda-busqueda input {
+	height: 38px;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	outline: 0;
+	background: transparent;
+	box-shadow: none !important;
+}
+
+.deuda-filtro-acciones {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.deuda-tabla-contenedor {
+	padding: 15px 16px 0;
+}
+
+.deuda-tabla-encabezado {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 2px 1px 14px;
+}
+
+.deuda-tabla-encabezado h2 {
+	margin: 0;
+	font: 700 15px var(--font-display);
+}
+
+.deuda-tabla-encabezado > span {
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.deuda-tabla-scroll {
+	overflow-x: auto;
+}
+
+.deuda-tabla {
+	width: 100%;
+	border-collapse: collapse;
+	text-align: left;
+}
+
+.deuda-tabla th {
+	padding: 11px 10px;
+	border-top: 1px solid var(--line);
+	border-bottom: 1px solid var(--line);
+	color: #65746b;
+	font-size: 12px;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.deuda-tabla td {
+	padding: 12px 10px;
+	border-bottom: 1px solid #edf1ee;
+	color: #4e5e54;
+	font-size: 14px;
+	white-space: nowrap;
+}
+
+.deuda-cliente {
+	display: flex;
+	min-width: 170px;
+	align-items: center;
+	gap: 9px;
+}
+
+.deuda-cliente > span:last-child {
+	display: grid;
+	gap: 3px;
+}
+
+.deuda-cliente strong {
+	max-width: 220px;
+	overflow: hidden;
+	color: #263a2e;
+	font-size: 14px;
+	text-overflow: ellipsis;
+}
+
+.deuda-cliente small {
+	color: var(--muted);
+	font-size: 12px;
+}
+
+.deuda-cliente__avatar {
+	display: grid;
+	width: 31px;
+	height: 31px;
+	flex: 0 0 31px;
+	place-items: center;
+	border-radius: 50%;
+	background: #e5f0e8;
+	color: #326248;
+	font: 700 14px var(--font-display);
+}
+
+.deuda-estado {
+	display: inline-flex;
+	min-height: 22px;
+	align-items: center;
+	padding: 0 8px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.deuda-estado--pendiente {
+	background: #f8e9e5;
+	color: #a34d3c;
+}
+
+.deuda-estado--parcial {
+	background: #fff0d7;
+	color: #8b681f;
+}
+
+.deuda-estado--pagado {
+	background: #e8f3eb;
+	color: #34714c;
+}
+
+.deuda-acciones {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.deuda-action--amortizar {
+	border-color: rgb(49 119 83 / 20%);
+	background: rgb(49 119 83 / 10%);
+	color: #326248;
+}
+
+.deuda-action--amortizar:hover {
+	background: rgb(49 119 83 / 20%);
+}
+
+.deuda-vacia {
+	height: 100px;
+	color: var(--muted) !important;
+	text-align: center;
+}
+
+.deuda-modal {
+	width: min(640px, calc(100% - 32px));
+	max-width: none;
+	max-height: calc(100% - 32px);
+	padding: 0;
+	border: 0;
+	border-radius: 11px;
+	background: transparent;
+	color: var(--ink);
+}
+
+.deuda-modal::backdrop {
+	background: rgb(17 34 27 / 48%);
+}
+
+.deuda-modal__panel {
+	max-height: min(92vh, 820px);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: 22px;
+	border: 1px solid var(--line);
+	border-top: 3px solid var(--coral);
+	border-radius: 11px;
+	background: #fff;
+	box-shadow: 0 18px 55px rgb(92 48 34 / 18%);
+}
+
+.deuda-modal__header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 14px;
+	margin-bottom: 17px;
+}
+
+.deuda-modal__header h2 {
+	margin: 3px 0 0;
+	font: 700 19px var(--font-display);
+	overflow-wrap: anywhere;
+}
+
+.deuda-modal__header .eyebrow {
+	margin: 0 0 7px;
+	color: #39745a;
+}
+
+.deuda-modal__header p:not(.eyebrow) {
+	margin: 7px 0 0;
+	color: var(--muted);
+	font-size: 13px;
+	line-height: 1.55;
+}
+
+.deuda-modal__close {
+	min-height: 40px;
+	padding: 6px 9px;
+	border: 1px solid var(--line);
+	background: #fff;
+	color: #54645a;
+	cursor: pointer;
+	font-size: 13px;
+}
+
+.pagination {
+	display: flex;
+	min-height: 53px;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding-top: 13px;
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.pagination > div {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.pagination .page-number,
+.pagination .page-arrow {
+	display: grid;
+	min-width: 34px;
+	height: 34px;
+	place-items: center;
+	padding: 0 7px;
+	border: 1px solid transparent;
+	border-radius: 7px;
+	color: #4b6053;
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.pagination .page-number:hover,
+.pagination .page-arrow:hover {
+	border-color: var(--line);
+	background: #fff;
+}
+
+.pagination .page-number--active {
+	border-color: #e2c5ad;
+	background: #fff0e4;
+	color: #8c4838;
+	font-weight: 700;
+}
+
+@media (max-width: 850px) {
+	.deuda-filtros {
+		flex-wrap: wrap;
+	}
+
+	.deuda-filtros__buscar {
+		flex-basis: 100%;
+	}
+}
+
+@media (max-width: 700px) {
+	.deuda-heading {
+		align-items: flex-start;
+	}
+
+	.deuda-heading > .button {
+		width: 100%;
+	}
+
+	.deuda-resumen {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 620px) {
+	.deuda-toolbar,
+	.deuda-tabla-contenedor {
+		padding: 13px;
+	}
+
+	.deuda-filtros label {
+		min-width: calc(50% - 6px);
+	}
+
+	.deuda-filtros__buscar {
+		flex-basis: 100%;
+	}
+
+	.deuda-tabla {
+		min-width: 940px;
+	}
+
+	.deuda-modal {
+		width: calc(100% - 18px);
+	}
+
+	.deuda-modal__panel {
+		max-height: 95vh;
+		padding: 16px;
+	}
+
+}
+
+@media (max-width: 480px) {
+	.deuda-filtros {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.deuda-filtros label {
+		min-width: 0;
+	}
+
+	.deuda-filtro-acciones {
+		width: 100%;
+	}
+
+	.deuda-filtro-acciones .button {
+		flex: 1;
+	}
+
+	.deuda-tabla-encabezado {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+}

@@ -1,0 +1,46 @@
+<dialog
+	class="deuda-modal deuda-modal--eliminar"
+	id="deuda-modal-eliminar-{{ deuda.pk }}"
+	aria-labelledby="deuda-eliminar-titulo-{{ deuda.pk }}"
+>
+	<div class="deuda-modal__panel">
+		<header class="deuda-modal__header">
+			<div>
+				<p class="eyebrow">CONFIRMAR ELIMINACIÓN</p>
+				<h2 id="deuda-eliminar-titulo-{{ deuda.pk }}">Eliminar deuda anterior</h2>
+			</div>
+			<button class="deuda-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button>
+		</header>
+
+		<p class="deuda-vista-previa">
+			¿Deseas eliminar la deuda <strong>“{{ deuda.detalle }}”</strong> de
+			<strong>{{ deuda.cliente.nombre }}</strong>?
+		</p>
+		<p class="deuda-eliminar-aviso">
+			Se eliminará también su historial de {{ deuda.abonos.count }}
+			cobro{{ deuda.abonos.count|pluralize }} registrado{{ deuda.abonos.count|pluralize }}.
+			Esta acción no se puede deshacer.
+		</p>
+
+		<dl class="deuda-eliminar-resumen">
+			<div>
+				<dt>Monto original</dt>
+				<dd>Bs {{ deuda.monto_total|floatformat:2 }}</dd>
+			</div>
+			<div>
+				<dt>Abonado hasta ahora</dt>
+				<dd>Bs {{ deuda.monto_pagado|floatformat:2 }}</dd>
+			</div>
+			<div>
+				<dt>Saldo pendiente</dt>
+				<dd>Bs {{ deuda.saldo_pendiente|floatformat:2 }}</dd>
+			</div>
+		</dl>
+
+		<form method="post" action="{% url 'deudas_anteriores:eliminar' deuda.pk %}" class="deuda-eliminar__acciones">
+			{% csrf_token %}
+			<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+			<button class="button button--danger" type="submit">Eliminar deuda</button>
+		</form>
+	</div>
+</dialog>

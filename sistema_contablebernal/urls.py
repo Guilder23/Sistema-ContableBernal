@@ -29,6 +29,7 @@ urlpatterns = [
     path('obligaciones/', include('apps.obligaciones.urls')),
     path('tareas/', include('apps.tareas.urls')),
     path('honorarios/', include('apps.honorarios.urls')),
+    path('deudas-anteriores/', include('apps.deudas_anteriores.urls')),
     path('ingresos/', include('apps.ingresos.urls')),
     path('gastos/', include('apps.gastos.urls')),
     path('servicios/', include('apps.servicios.urls')),

@@ -1,0 +1,84 @@
+<dialog
+	class="deuda-modal deuda-modal--crear"
+	id="deuda-modal-crear"
+	data-max-date="{{ hoy|date:'Y-m-d' }}"
+	aria-labelledby="deuda-crear-titulo"
+>
+	<div class="deuda-modal__panel">
+		<header class="deuda-modal__header">
+			<div>
+				<p class="eyebrow">CARTERA HISTÓRICA</p>
+				<h2 id="deuda-crear-titulo">Registrar deuda anterior</h2>
+			</div>
+			<button class="deuda-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button>
+		</header>
+
+		<p class="deuda-modal__intro">
+			Asigna el saldo previo al sistema a un cliente y registra su fecha de origen.
+		</p>
+
+		<form method="post" action="{% url 'deudas_anteriores:crear' %}" class="deuda-form" novalidate>
+			{% csrf_token %}
+
+			<div class="deuda-form-field">
+				<label for="deuda-crear-cliente">Cliente</label>
+				<select id="deuda-crear-cliente" name="cliente" required>
+					<option value="">Selecciona un cliente</option>
+					{% for cliente in clientes %}
+					<option value="{{ cliente.pk }}" {% if creation_values.cliente == cliente.pk|stringformat:'s' %}selected{% endif %}>
+						{{ cliente.nombre }}
+					</option>
+					{% endfor %}
+				</select>
+				{% if creation_errors.cliente %}<small class="deuda-error">{{ creation_errors.cliente }}</small>{% endif %}
+			</div>
+
+			<div class="deuda-form-grid">
+				<div class="deuda-form-field">
+					<label for="deuda-crear-fecha">Fecha de origen</label>
+					<input
+						id="deuda-crear-fecha"
+						type="date"
+						name="fecha_cobro"
+						value="{{ creation_values.fecha_cobro }}"
+						max="{{ hoy|date:'Y-m-d' }}"
+						required
+					>
+					{% if creation_errors.fecha_cobro %}<small class="deuda-error">{{ creation_errors.fecha_cobro }}</small>{% endif %}
+				</div>
+				<div class="deuda-form-field">
+					<label for="deuda-crear-monto">Monto total (Bs)</label>
+					<input
+						id="deuda-crear-monto"
+						type="number"
+						name="monto_total"
+						value="{{ creation_values.monto_total }}"
+						min="0.01"
+						max="99999999.99"
+						step="0.01"
+						required
+					>
+					{% if creation_errors.monto_total %}<small class="deuda-error">{{ creation_errors.monto_total }}</small>{% endif %}
+				</div>
+			</div>
+
+			<div class="deuda-form-field">
+				<label for="deuda-crear-detalle">Detalle</label>
+				<input
+					id="deuda-crear-detalle"
+					type="text"
+					name="detalle"
+					value="{{ creation_values.detalle }}"
+					maxlength="200"
+					required
+				>
+				{% if creation_errors.detalle %}<small class="deuda-error">{{ creation_errors.detalle }}</small>{% endif %}
+			</div>
+
+			<footer class="deuda-modal__actions">
+				<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+				<button class="button button--primary" type="submit">Guardar deuda</button>
+			</footer>
+		</form>
+	</div>
+</dialog>

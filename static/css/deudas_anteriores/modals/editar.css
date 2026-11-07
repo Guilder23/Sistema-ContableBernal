@@ -1,0 +1,80 @@
+.deuda-modal--editar .deuda-modal__panel {
+	border-top-color: #d6a33f;
+}
+
+.deuda-modal--editar .deuda-form {
+	display: grid;
+	gap: 13px;
+}
+
+.deuda-modal--editar .deuda-form-field {
+	display: grid;
+	gap: 6px;
+	color: #56675d;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.deuda-modal--editar .deuda-form-field input,
+.deuda-modal--editar .deuda-form-field select {
+	width: 100%;
+	min-height: 42px;
+	padding: 8px 9px;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	outline: 0;
+	background: #fff;
+	color: var(--ink);
+	font: inherit;
+	font-weight: 400;
+}
+
+.deuda-modal--editar .deuda-form-field input:focus,
+.deuda-modal--editar .deuda-form-field select:focus {
+	border-color: var(--coral);
+	box-shadow: 0 0 0 3px rgb(238 73 60 / 12%);
+}
+
+.deuda-modal--editar .deuda-form-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.deuda-modal--editar .deuda-error {
+	color: #a84335;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.5;
+}
+
+.deuda-modal--editar .deuda-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.deuda-modal--editar .deuda-form-grid {
+	align-items: start;
+}
+
+.deuda-modal--editar .deuda-modal__actions {
+	padding-top: 3px;
+}
+
+@media (max-width: 620px) {
+	.deuda-modal--editar .deuda-form-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 480px) {
+	.deuda-modal--editar .deuda-modal__actions {
+		flex-direction: column-reverse;
+	}
+
+	.deuda-modal--editar .deuda-modal__actions .button {
+		width: 100%;
+	}
+}

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apps.obligaciones.apps.ObligacionesConfig',
     'apps.tareas.apps.TareasConfig',
     'apps.honorarios.apps.HonorariosConfig',
+    'apps.deudas_anteriores.apps.DeudasAnterioresConfig',
     'apps.ingresos.apps.IngresosConfig',
     'apps.gastos.apps.GastosConfig',
     'apps.servicios.apps.ServiciosConfig',

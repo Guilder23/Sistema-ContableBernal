@@ -1,0 +1,80 @@
+<dialog
+	class="deuda-modal deuda-modal--editar"
+	id="deuda-modal-editar-{{ deuda.pk }}"
+	data-max-date="{{ hoy|date:'Y-m-d' }}"
+	aria-labelledby="deuda-editar-titulo-{{ deuda.pk }}"
+>
+	<div class="deuda-modal__panel">
+		<header class="deuda-modal__header">
+			<div>
+				<p class="eyebrow">CARTERA HISTÓRICA</p>
+				<h2 id="deuda-editar-titulo-{{ deuda.pk }}">Editar deuda anterior</h2>
+			</div>
+			<button class="deuda-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button>
+		</header>
+
+		<form method="post" action="{% url 'deudas_anteriores:editar' deuda.pk %}" class="deuda-form" novalidate>
+			{% csrf_token %}
+
+			<div class="deuda-form-field">
+				<label for="deuda-editar-cliente-{{ deuda.pk }}">Cliente</label>
+				<select id="deuda-editar-cliente-{{ deuda.pk }}" name="cliente" required>
+					<option value="">Selecciona un cliente</option>
+					{% for cliente in clientes %}
+					<option value="{{ cliente.pk }}" {% if item.edit_values.cliente == cliente.pk|stringformat:'s' %}selected{% endif %}>
+						{{ cliente.nombre }}
+					</option>
+					{% endfor %}
+				</select>
+				{% if item.edit_errors.cliente %}<small class="deuda-error">{{ item.edit_errors.cliente }}</small>{% endif %}
+			</div>
+
+			<div class="deuda-form-grid">
+				<div class="deuda-form-field">
+					<label for="deuda-editar-fecha-{{ deuda.pk }}">Fecha de origen</label>
+					<input
+						id="deuda-editar-fecha-{{ deuda.pk }}"
+						type="date"
+						name="fecha_cobro"
+						value="{{ item.edit_values.fecha_cobro }}"
+						max="{{ hoy|date:'Y-m-d' }}"
+						required
+					>
+					{% if item.edit_errors.fecha_cobro %}<small class="deuda-error">{{ item.edit_errors.fecha_cobro }}</small>{% endif %}
+				</div>
+				<div class="deuda-form-field">
+					<label for="deuda-editar-monto-{{ deuda.pk }}">Monto total (Bs)</label>
+					<input
+						id="deuda-editar-monto-{{ deuda.pk }}"
+						type="number"
+						name="monto_total"
+						value="{{ item.edit_values.monto_total }}"
+						min="0.01"
+						max="99999999.99"
+						step="0.01"
+						required
+					>
+					{% if item.edit_errors.monto_total %}<small class="deuda-error">{{ item.edit_errors.monto_total }}</small>{% endif %}
+				</div>
+			</div>
+
+			<div class="deuda-form-field">
+				<label for="deuda-editar-detalle-{{ deuda.pk }}">Detalle</label>
+				<input
+					id="deuda-editar-detalle-{{ deuda.pk }}"
+					type="text"
+					name="detalle"
+					value="{{ item.edit_values.detalle }}"
+					maxlength="200"
+					required
+				>
+				{% if item.edit_errors.detalle %}<small class="deuda-error">{{ item.edit_errors.detalle }}</small>{% endif %}
+			</div>
+
+			<footer class="deuda-modal__actions">
+				<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+				<button class="button button--primary" type="submit">Guardar cambios</button>
+			</footer>
+		</form>
+	</div>
+</dialog>

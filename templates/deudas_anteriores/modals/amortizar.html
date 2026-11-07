@@ -1,0 +1,94 @@
+<dialog
+	class="deuda-modal deuda-modal--amortizar"
+	id="deuda-modal-amortizar-{{ deuda.pk }}"
+	aria-labelledby="deuda-amortizar-titulo-{{ deuda.pk }}"
+>
+	<div class="deuda-modal__panel">
+		<header class="deuda-modal__header">
+			<div>
+				<p class="eyebrow">REGISTRO DE PAGO</p>
+				<h2 id="deuda-amortizar-titulo-{{ deuda.pk }}">Amortizar deuda</h2>
+				<p>{{ deuda.cliente.nombre }} · Saldo: Bs {{ deuda.saldo_pendiente|floatformat:2 }}</p>
+			</div>
+			<button class="deuda-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button>
+		</header>
+
+		{% if deuda.saldo_pendiente > 0 %}
+		<form method="post" action="{% url 'deudas_anteriores:amortizar' deuda.pk %}" class="deuda-form deuda-form--amortizar" novalidate>
+			{% csrf_token %}
+
+			<div class="deuda-form-field">
+				<label for="deuda-amortizar-fecha-{{ deuda.pk }}">Fecha de cobro</label>
+				<input
+					id="deuda-amortizar-fecha-{{ deuda.pk }}"
+					type="date"
+					name="fecha_cobro"
+					value="{{ item.abono_values.fecha_cobro }}"
+					max="{{ hoy|date:'Y-m-d' }}"
+					required
+				>
+				{% if item.abono_errors.fecha_cobro %}<small class="deuda-error">{{ item.abono_errors.fecha_cobro }}</small>{% endif %}
+			</div>
+
+			<div class="deuda-form-field">
+				<label for="deuda-amortizar-detalle-{{ deuda.pk }}">Detalle</label>
+				<input
+					id="deuda-amortizar-detalle-{{ deuda.pk }}"
+					type="text"
+					name="detalle"
+					value="{{ item.abono_values.detalle }}"
+					maxlength="200"
+					required
+				>
+				{% if item.abono_errors.detalle %}<small class="deuda-error">{{ item.abono_errors.detalle }}</small>{% endif %}
+			</div>
+
+			<div class="deuda-form-grid">
+				<div class="deuda-form-field">
+					<label for="deuda-amortizar-monto-{{ deuda.pk }}">Monto (Bs)</label>
+					<input
+						id="deuda-amortizar-monto-{{ deuda.pk }}"
+						type="number"
+						name="monto"
+						value="{{ item.abono_values.monto }}"
+						min="0.01"
+						max="{{ deuda.saldo_pendiente }}"
+						step="0.01"
+						required
+					>
+					{% if item.abono_errors.monto %}<small class="deuda-error">{{ item.abono_errors.monto }}</small>{% endif %}
+				</div>
+				<div class="deuda-form-field">
+					<label for="deuda-amortizar-recibo-{{ deuda.pk }}">N.º de recibo</label>
+					<input
+						id="deuda-amortizar-recibo-{{ deuda.pk }}"
+						type="text"
+						name="numero_recibo"
+						value="{{ item.abono_values.numero_recibo }}"
+						maxlength="60"
+					>
+					{% if item.abono_errors.numero_recibo %}<small class="deuda-error">{{ item.abono_errors.numero_recibo }}</small>{% endif %}
+				</div>
+			</div>
+
+			<div class="deuda-form-field">
+				<label for="deuda-amortizar-tipo-pago-{{ deuda.pk }}">Tipo de pago</label>
+				<select id="deuda-amortizar-tipo-pago-{{ deuda.pk }}" name="tipo_pago" required>
+					<option value="">Selecciona un tipo de pago</option>
+					{% for value, label in tipos_pago %}
+					<option value="{{ value }}" {% if item.abono_values.tipo_pago == value %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+				</select>
+				{% if item.abono_errors.tipo_pago %}<small class="deuda-error">{{ item.abono_errors.tipo_pago }}</small>{% endif %}
+			</div>
+
+			<footer class="deuda-modal__actions">
+				<button class="button button--quiet" type="button" data-close-modal>Cancelar</button>
+				<button class="button button--primary" type="submit">Registrar abono</button>
+			</footer>
+		</form>
+		{% else %}
+		<p class="deuda-amortizar__sin-saldo">Esta deuda ya no tiene saldo pendiente.</p>
+		{% endif %}
+	</div>
+</dialog>

@@ -1,0 +1,102 @@
+.deuda-modal--ver {
+	width: min(100%, 900px);
+}
+
+.deuda-modal--ver .deuda-saldo-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 10px;
+	margin-bottom: 18px;
+}
+
+.deuda-modal--ver .deuda-saldo-grid > div {
+	display: grid;
+	align-content: center;
+	gap: 7px;
+	min-height: 68px;
+	padding: 12px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	background: #fff8f0;
+}
+
+.deuda-modal--ver .deuda-saldo-grid > div > span:first-child {
+	color: var(--muted);
+	font-size: 12px;
+}
+
+.deuda-modal--ver .deuda-saldo-grid strong {
+	color: var(--ink);
+	font: 700 16px var(--font-display);
+}
+
+.deuda-modal--ver .deuda-datos {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0 20px;
+	margin: 0 0 18px;
+}
+
+.deuda-modal--ver .deuda-datos > div {
+	display: grid;
+	min-width: 0;
+	gap: 5px;
+	padding: 11px 0;
+	border-bottom: 1px solid #edf1ee;
+}
+
+.deuda-modal--ver .deuda-datos dt {
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.deuda-modal--ver .deuda-datos dd {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+	overflow-wrap: anywhere;
+}
+
+.deuda-modal--ver .deuda-modal__section-title {
+	margin: 0 0 10px;
+	font: 700 15px var(--font-display);
+}
+
+.deuda-modal--ver .deuda-tabla {
+	min-width: 700px;
+}
+
+.deuda-modal--ver .deuda-modal__panel {
+	border-top-color: #547b68;
+}
+
+.deuda-modal--ver .deuda-historial {
+	margin-top: 20px;
+}
+
+.deuda-modal--ver .deuda-tabla th,
+.deuda-modal--ver .deuda-tabla td {
+	padding: 10px;
+}
+
+.deuda-modal--ver .deuda-tabla td {
+	white-space: normal;
+}
+
+.deuda-modal--ver .deuda-vacia {
+	height: 78px;
+}
+
+@media (max-width: 620px) {
+	.deuda-modal--ver {
+		width: calc(100% - 18px);
+	}
+
+	.deuda-modal--ver .deuda-saldo-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.deuda-modal--ver .deuda-datos {
+		grid-template-columns: 1fr;
+	}
+}

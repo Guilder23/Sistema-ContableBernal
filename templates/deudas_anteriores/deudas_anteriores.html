@@ -1,0 +1,235 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Deudas anteriores | ContableBernal{% endblock %}
+{% block workspace_class %}workspace--deudas-anteriores{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{% static 'css/deudas_anteriores/deudas_anteriores.css' %}">
+<link rel="stylesheet" href="{% static 'css/deudas_anteriores/modals/crear.css' %}">
+<link rel="stylesheet" href="{% static 'css/deudas_anteriores/modals/ver.css' %}">
+<link rel="stylesheet" href="{% static 'css/deudas_anteriores/modals/editar.css' %}">
+<link rel="stylesheet" href="{% static 'css/deudas_anteriores/modals/amortizar.css' %}">
+<link rel="stylesheet" href="{% static 'css/deudas_anteriores/modals/eliminar.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-heading deuda-heading" data-deuda-modal="{{ open_modal|default:'' }}">
+	<div>
+		<p class="eyebrow">CARTERA HISTÓRICA · MÓDULO INDEPENDIENTE</p>
+		<h1>Deudas anteriores</h1>
+		<p>Gestión de saldos pendientes previos al sistema y registro de sus abonos.</p>
+	</div>
+	{% if puede_gestionar %}
+	<button class="button button--primary" type="button" data-open-modal="deuda-modal-crear">
+		<svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#plus"></use></svg>
+		Registrar deuda
+	</button>
+	{% endif %}
+</section>
+
+<section class="deuda-resumen" aria-label="Resumen">
+	<article class="deuda-resumen__item surface">
+		<span>Deudas encontradas</span>
+		<strong>{{ total_deudas }}</strong>
+	</article>
+	<article class="deuda-resumen__item surface">
+		<span>Total registrado</span>
+		<strong>Bs {{ total_registrado|floatformat:2 }}</strong>
+	</article>
+	<article class="deuda-resumen__item surface">
+		<span>Total abonado</span>
+		<strong>Bs {{ total_abonado|floatformat:2 }}</strong>
+	</article>
+</section>
+
+<section class="deuda-toolbar surface">
+	<form class="deuda-filtros" method="get">
+		<label class="deuda-filtros__buscar">
+			<span>Buscar</span>
+			<span class="deuda-busqueda">
+				<svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#search"></use></svg>
+				<input type="search" name="q" value="{{ busqueda }}" placeholder="Cliente, NIT o detalle">
+			</span>
+		</label>
+		<label>
+			<span>Cliente</span>
+			<select name="cliente">
+				<option value="">Todos</option>
+				{% for cliente in clientes %}
+				<option
+					value="{{ cliente.pk }}"
+					{% if cliente_filtro == cliente.pk|stringformat:'s' %}selected{% endif %}
+				>{{ cliente.nombre }}</option>
+				{% endfor %}
+			</select>
+		</label>
+		<label>
+			<span>Estado</span>
+			<select name="estado">
+				<option value="">Todos</option>
+				<option value="pendiente" {% if estado_filtro == 'pendiente' %}selected{% endif %}>Pendiente</option>
+				<option value="parcial" {% if estado_filtro == 'parcial' %}selected{% endif %}>Pago parcial</option>
+				<option value="pagado" {% if estado_filtro == 'pagado' %}selected{% endif %}>Pagado</option>
+			</select>
+		</label>
+		<div class="deuda-filtro-acciones">
+			<button class="button button--filter" type="submit">Filtrar</button>
+			<a class="button button--quiet" href="{% url 'deudas_anteriores:index' %}">Limpiar</a>
+		</div>
+	</form>
+</section>
+
+<section class="deuda-tabla-contenedor surface" aria-label="Listado de deudas anteriores">
+	<header class="deuda-tabla-encabezado">
+		<h2>Deudas registradas</h2>
+		<span>{{ total_deudas }} deuda{{ total_deudas|pluralize }}{% if page_obj.paginator.count %} · {{ page_obj.start_index }}–{{ page_obj.end_index }}{% endif %}</span>
+	</header>
+	<div class="deuda-tabla-scroll">
+		<table class="deuda-tabla">
+			<thead>
+				<tr>
+					<th>Cliente</th>
+					<th>Detalle</th>
+					<th>Fecha</th>
+					<th>Total</th>
+					<th>Abonado</th>
+					<th>Saldo</th>
+					<th>Estado</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+			{% for item in deuda_items %}
+				{% with deuda=item.deuda %}
+				<tr>
+					<td>
+						<div class="deuda-cliente">
+							<span class="deuda-cliente__avatar">{{ deuda.cliente.nombre|first|upper }}</span>
+							<span>
+								<strong>{{ deuda.cliente.nombre }}</strong>
+								<small>{% if deuda.cliente.nit %}NIT {{ deuda.cliente.nit }}{% else %}Sin NIT{% endif %}</small>
+							</span>
+						</div>
+					</td>
+					<td>{{ deuda.detalle }}</td>
+					<td>{{ deuda.fecha_cobro|date:'d/m/Y' }}</td>
+					<td>Bs {{ deuda.monto_total|floatformat:2 }}</td>
+					<td>Bs {{ deuda.monto_pagado|floatformat:2 }}</td>
+					<td><strong>Bs {{ deuda.saldo_pendiente|floatformat:2 }}</strong></td>
+					<td><span class="deuda-estado deuda-estado--{{ deuda.estado }}">{{ deuda.get_estado_display }}</span></td>
+					<td>
+						<div class="deuda-acciones">
+							<button
+								type="button"
+								class="icon-action icon-action--view"
+								title="Ver deuda"
+								aria-label="Ver deuda de {{ deuda.cliente.nombre }}"
+								data-open-modal="deuda-modal-ver-{{ deuda.pk }}"
+							>
+								<svg class="icon" aria-hidden="true">
+									<use href="{% static 'img/iconos.svg' %}#eye"></use>
+								</svg>
+							</button>
+							{% if puede_gestionar %}
+							<button
+								type="button"
+								class="icon-action icon-action--edit"
+								title="Editar deuda"
+								aria-label="Editar deuda de {{ deuda.cliente.nombre }}"
+								data-open-modal="deuda-modal-editar-{{ deuda.pk }}"
+							>
+								<svg class="icon" aria-hidden="true">
+									<use href="{% static 'img/iconos.svg' %}#pencil"></use>
+								</svg>
+							</button>
+							{% if deuda.saldo_pendiente > 0 %}
+							<button
+								type="button"
+								class="icon-action deuda-action--amortizar"
+								title="Amortizar deuda"
+								aria-label="Amortizar deuda de {{ deuda.cliente.nombre }}"
+								data-open-modal="deuda-modal-amortizar-{{ deuda.pk }}"
+							>
+								<svg class="icon" aria-hidden="true">
+									<use href="{% static 'img/iconos.svg' %}#wallet"></use>
+								</svg>
+							</button>
+							{% endif %}
+							<button
+								type="button"
+								class="icon-action icon-action--delete"
+								title="Eliminar deuda"
+								aria-label="Eliminar deuda de {{ deuda.cliente.nombre }}"
+								data-open-modal="deuda-modal-eliminar-{{ deuda.pk }}"
+							>
+								<svg class="icon" aria-hidden="true">
+									<use href="{% static 'img/iconos.svg' %}#trash"></use>
+								</svg>
+							</button>
+							{% endif %}
+						</div>
+					</td>
+				</tr>
+				{% endwith %}
+			{% empty %}
+				<tr>
+					<td class="deuda-vacia" colspan="8">
+						No hay deudas anteriores que coincidan con los filtros.
+					</td>
+				</tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% if page_obj.has_other_pages %}
+	<nav class="pagination" aria-label="Paginación de deudas anteriores">
+		<span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+		<div>
+			{% if page_obj.has_previous %}
+			<a class="page-arrow" href="?q={{ busqueda|urlencode }}&amp;cliente={{ cliente_filtro }}&amp;estado={{ estado_filtro }}&amp;page={{ page_obj.previous_page_number }}" aria-label="Página anterior">
+				<svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-left"></use></svg>
+			</a>
+			{% endif %}
+			{% for number in page_obj.paginator.page_range %}
+				{% if number == page_obj.number %}
+				<span class="page-number page-number--active" aria-current="page">{{ number }}</span>
+				{% else %}
+				<a class="page-number" href="?q={{ busqueda|urlencode }}&amp;cliente={{ cliente_filtro }}&amp;estado={{ estado_filtro }}&amp;page={{ number }}">{{ number }}</a>
+				{% endif %}
+			{% endfor %}
+			{% if page_obj.has_next %}
+			<a class="page-arrow" href="?q={{ busqueda|urlencode }}&amp;cliente={{ cliente_filtro }}&amp;estado={{ estado_filtro }}&amp;page={{ page_obj.next_page_number }}" aria-label="Página siguiente">
+				<svg class="icon" aria-hidden="true"><use href="{% static 'img/iconos.svg' %}#chevron-right"></use></svg>
+			</a>
+			{% endif %}
+		</div>
+	</nav>
+	{% endif %}
+</section>
+
+{% if puede_gestionar %}
+{% include 'deudas_anteriores/modals/crear.html' %}
+{% endif %}
+
+{% for item in deuda_items %}
+	{% with deuda=item.deuda %}
+		{% include 'deudas_anteriores/modals/ver.html' %}
+		{% if puede_gestionar %}
+			{% include 'deudas_anteriores/modals/editar.html' %}
+			{% include 'deudas_anteriores/modals/amortizar.html' %}
+			{% include 'deudas_anteriores/modals/eliminar.html' %}
+		{% endif %}
+	{% endwith %}
+{% endfor %}
+
+{% endblock %}
+
+{% block page_js %}
+<script defer src="{% static 'js/deudas_anteriores/deudas_anteriores.js' %}"></script>
+<script defer src="{% static 'js/deudas_anteriores/modals/crear.js' %}"></script>
+<script defer src="{% static 'js/deudas_anteriores/modals/ver.js' %}"></script>
+<script defer src="{% static 'js/deudas_anteriores/modals/editar.js' %}"></script>
+<script defer src="{% static 'js/deudas_anteriores/modals/amortizar.js' %}"></script>
+<script defer src="{% static 'js/deudas_anteriores/modals/eliminar.js' %}"></script>
+{% endblock %}

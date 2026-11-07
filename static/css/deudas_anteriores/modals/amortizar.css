@@ -1,0 +1,106 @@
+.deuda-modal--amortizar .deuda-modal__panel {
+	border-top-color: #547b68;
+}
+
+.deuda-modal--amortizar .deuda-modal__header {
+	margin-bottom: 20px;
+}
+
+.deuda-modal--amortizar .deuda-form {
+	display: grid;
+	gap: 13px;
+}
+
+.deuda-modal--amortizar .deuda-form-field {
+	display: grid;
+	gap: 6px;
+	color: #56675d;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.deuda-modal--amortizar .deuda-form-field input,
+.deuda-modal--amortizar .deuda-form-field select {
+	width: 100%;
+	min-height: 42px;
+	padding: 8px 9px;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	outline: 0;
+	background: #fff;
+	color: var(--ink);
+	font: inherit;
+	font-weight: 400;
+}
+
+.deuda-modal--amortizar .deuda-form-field input:focus,
+.deuda-modal--amortizar .deuda-form-field select:focus {
+	border-color: var(--coral);
+	box-shadow: 0 0 0 3px rgb(238 73 60 / 12%);
+}
+
+.deuda-modal--amortizar .deuda-form-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.deuda-modal--amortizar .deuda-error {
+	color: #a84335;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.5;
+}
+
+.deuda-modal--amortizar .deuda-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.deuda-modal--amortizar .deuda-modal__header > div > p:last-child {
+	display: inline-block;
+	margin-top: 10px;
+	padding: 6px 9px;
+	border-radius: 6px;
+	background: #fff0d7;
+	color: #80541f;
+	font-weight: 600;
+}
+
+.deuda-modal--amortizar input[name="monto"] {
+	border-color: #b7d2c0;
+	font-weight: 600;
+}
+
+.deuda-modal--amortizar input[name="monto"]:focus {
+	border-color: #547b68;
+	box-shadow: 0 0 0 3px rgb(84 123 104 / 14%);
+}
+
+.deuda-amortizar__sin-saldo {
+	margin: 0;
+	padding: 14px;
+	border: 1px solid #d5e5d9;
+	border-radius: 8px;
+	background: #eef6f0;
+	color: #34714c;
+	font-size: 14px;
+}
+
+@media (max-width: 620px) {
+	.deuda-modal--amortizar .deuda-form-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 480px) {
+	.deuda-modal--amortizar .deuda-modal__actions {
+		flex-direction: column-reverse;
+	}
+
+	.deuda-modal--amortizar .deuda-modal__actions .button {
+		width: 100%;
+	}
+}

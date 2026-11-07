@@ -1,0 +1,104 @@
+<dialog
+	class="deuda-modal deuda-modal--ver"
+	id="deuda-modal-ver-{{ deuda.pk }}"
+	aria-labelledby="deuda-ver-titulo-{{ deuda.pk }}"
+>
+	<div class="deuda-modal__panel">
+		<header class="deuda-modal__header">
+			<div>
+				<p class="eyebrow">DEUDA ANTERIOR</p>
+				<h2 id="deuda-ver-titulo-{{ deuda.pk }}">{{ deuda.cliente.nombre }}</h2>
+				<p>{{ deuda.detalle }}</p>
+			</div>
+			<button class="deuda-modal__close" type="button" data-close-modal aria-label="Cerrar">×</button>
+		</header>
+
+		<section class="deuda-saldo-grid" aria-label="Resumen de saldo">
+			<div>
+				<span>Monto original</span>
+				<strong>Bs {{ deuda.monto_total|floatformat:2 }}</strong>
+			</div>
+			<div>
+				<span>Total amortizado</span>
+				<strong>Bs {{ deuda.monto_pagado|floatformat:2 }}</strong>
+			</div>
+			<div>
+				<span>Saldo pendiente</span>
+				<strong>Bs {{ deuda.saldo_pendiente|floatformat:2 }}</strong>
+			</div>
+			<div>
+				<span>Estado</span>
+				<strong><span class="deuda-estado deuda-estado--{{ deuda.estado }}">{{ deuda.get_estado_display }}</span></strong>
+			</div>
+		</section>
+
+		<dl class="deuda-datos">
+			<div>
+				<dt>Cliente</dt>
+				<dd>{{ deuda.cliente.nombre }}</dd>
+			</div>
+			<div>
+				<dt>NIT</dt>
+				<dd>{{ deuda.cliente.nit|default:'—' }}</dd>
+			</div>
+			<div>
+				<dt>Fecha de origen</dt>
+				<dd>{{ deuda.fecha_cobro|date:'d/m/Y' }}</dd>
+			</div>
+			<div>
+				<dt>Registrada por</dt>
+				<dd>
+					{% if deuda.registrado_por %}
+					{{ deuda.registrado_por.get_full_name|default:deuda.registrado_por.username }}
+					{% else %}
+					—
+					{% endif %}
+				</dd>
+			</div>
+		</dl>
+
+		<section class="deuda-historial" aria-labelledby="deuda-historial-titulo-{{ deuda.pk }}">
+			<h3 class="deuda-modal__section-title" id="deuda-historial-titulo-{{ deuda.pk }}">Historial de cobros</h3>
+			<div class="deuda-tabla-scroll">
+				<table class="deuda-tabla">
+					<thead>
+						<tr>
+							<th>Fecha de cobro</th>
+							<th>Detalle</th>
+							<th>Recibo</th>
+							<th>Tipo de pago</th>
+							<th>Registrado por</th>
+							<th>Monto</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for abono in deuda.abonos.all %}
+						<tr>
+							<td>{{ abono.fecha_cobro|date:'d/m/Y' }}</td>
+							<td>{{ abono.detalle }}</td>
+							<td>{{ abono.numero_recibo|default:'—' }}</td>
+							<td>{{ abono.get_tipo_pago_display }}</td>
+							<td>
+								{% if abono.registrado_por %}
+								{{ abono.registrado_por.get_full_name|default:abono.registrado_por.username }}
+								{% else %}
+								—
+								{% endif %}
+							</td>
+							<td><strong>Bs {{ abono.monto|floatformat:2 }}</strong></td>
+						</tr>
+						{% empty %}
+						<tr>
+							<td class="deuda-vacia" colspan="6">Todavía no se registraron cobros para esta deuda.</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<footer class="deuda-modal__actions">
+			<button class="button button--quiet" type="button" data-close-modal>Cerrar</button>
+		</footer>
+	</div>
+</dialog>
