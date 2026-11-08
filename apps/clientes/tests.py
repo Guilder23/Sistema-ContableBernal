@@ -53,6 +53,7 @@ class GestionClientesTests(TestCase):
 		self.assertContains(response, 'Tiene SEPREC')
 		self.assertContains(response, 'Tiene ROE')
 		self.assertContains(response, 'Tipo de facturación')
+		self.assertContains(response, 'Fecha de habilitación')
 		self.assertNotContains(response, 'Correo')
 		html = response.content.decode()
 		for modal in ('crear', 'ver', 'editar', 'eliminar'):
@@ -189,12 +190,15 @@ class GestionClientesTests(TestCase):
 
 	def test_vencimiento_facturacion_crea_actualiza_y_quita_recordatorio_de_agenda(self):
 		fecha_vencimiento = timezone.localdate() + timedelta(days=30)
+		fecha_habilitacion = timezone.localdate() - timedelta(days=30)
 		response = self.client.post('/clientes/crear/', self.datos_cliente(
 			tipo_facturacion=Cliente.TipoFacturacion.MANUAL,
 			fecha_vencimiento_facturacion=fecha_vencimiento.isoformat(),
+			fecha_habilitacion_facturacion=fecha_habilitacion.isoformat(),
 		))
 		cliente = Cliente.objects.get(nit='123456789')
 		self.assertRedirects(response, f'/clientes/{cliente.pk}/')
+		self.assertEqual(cliente.fecha_habilitacion_facturacion, fecha_habilitacion)
 		evento = EventoAgenda.objects.get(pk=cliente.evento_vencimiento_facturacion_id)
 		self.assertEqual(evento.fecha, fecha_vencimiento)
 		self.assertEqual(evento.tipo, EventoAgenda.Tipo.RECORDATORIO)
@@ -204,8 +208,11 @@ class GestionClientesTests(TestCase):
 		response = self.client.post(f'/clientes/{cliente.pk}/editar/', self.datos_cliente(
 			tipo_facturacion=Cliente.TipoFacturacion.PORTAL_WEB,
 			fecha_vencimiento_facturacion=fecha_actualizada.isoformat(),
+			fecha_habilitacion_facturacion='2026-02-10',
 		))
 		self.assertRedirects(response, f'/clientes/{cliente.pk}/')
+		cliente.refresh_from_db()
+		self.assertEqual(cliente.fecha_habilitacion_facturacion.isoformat(), '2026-02-10')
 		evento.refresh_from_db()
 		self.assertEqual(evento.fecha, fecha_actualizada)
 

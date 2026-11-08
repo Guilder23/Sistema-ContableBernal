@@ -67,6 +67,7 @@ class Cliente(models.Model):
 	fecha_inicio = models.DateField(null=True, blank=True)
 	tipo_facturacion = models.CharField(max_length=28, choices=TipoFacturacion.choices, blank=True, default='')
 	fecha_vencimiento_facturacion = models.DateField(null=True, blank=True)
+	fecha_habilitacion_facturacion = models.DateField(null=True, blank=True)
 	evento_vencimiento_facturacion = models.OneToOneField(
 		'agenda.EventoAgenda',
 		null=True,

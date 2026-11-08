@@ -100,6 +100,7 @@ def _datos_formulario(request, cliente=None):
 			'fecha_inicio': request.POST.get('fecha_inicio', '').strip(),
 			'tipo_facturacion': request.POST.get('tipo_facturacion', '').strip(),
 			'fecha_vencimiento_facturacion': request.POST.get('fecha_vencimiento_facturacion', '').strip(),
+			'fecha_habilitacion_facturacion': request.POST.get('fecha_habilitacion_facturacion', '').strip(),
 			'tiene_representante_legal': request.POST.get('tiene_representante_legal') in {'1', 'on', 'true', 'True'},
 			'representante_legal_nombre': request.POST.get('representante_legal_nombre', '').strip(),
 			'representante_legal_carnet': request.POST.get('representante_legal_carnet', '').strip(),
@@ -119,6 +120,7 @@ def _datos_formulario(request, cliente=None):
 			'actividad': '', 'telefono': '', 'whatsapp': '',
 			'correo': '', 'direccion': '', 'estado': Cliente.Estado.ACTIVO,
 			'fecha_inicio': '', 'tipo_facturacion': '', 'fecha_vencimiento_facturacion': '',
+			'fecha_habilitacion_facturacion': '',
 			'tiene_representante_legal': False,
 			'representante_legal_nombre': '', 'representante_legal_carnet': '', 'representante_legal_complemento': '',
 			'representante_legal_expedido': '', 'representante_legal_celular': '', 'representante_legal_fecha_nacimiento': '',
@@ -149,6 +151,7 @@ def _datos_formulario(request, cliente=None):
 		'fecha_inicio': cliente.fecha_inicio.isoformat() if cliente.fecha_inicio else '',
 		'tipo_facturacion': cliente.tipo_facturacion,
 		'fecha_vencimiento_facturacion': cliente.fecha_vencimiento_facturacion.isoformat() if cliente.fecha_vencimiento_facturacion else '',
+		'fecha_habilitacion_facturacion': cliente.fecha_habilitacion_facturacion.isoformat() if cliente.fecha_habilitacion_facturacion else '',
 		'tiene_representante_legal': cliente.tiene_representante_legal,
 		'representante_legal_nombre': cliente.representante_legal_nombre,
 		'representante_legal_carnet': cliente.representante_legal_carnet,
@@ -232,6 +235,8 @@ def _validar_formulario(request, cliente=None):
 			errores['fecha_vencimiento_facturacion'] = 'Ingresa una fecha de vencimiento válida.'
 		elif not datos['tipo_facturacion']:
 			errores['tipo_facturacion'] = 'Selecciona el tipo de facturación para registrar el vencimiento.'
+	if datos['fecha_habilitacion_facturacion'] and parse_date(datos['fecha_habilitacion_facturacion']) is None:
+		errores['fecha_habilitacion_facturacion'] = 'Ingresa una fecha de habilitación válida.'
 	return datos, errores
 
 
@@ -278,6 +283,11 @@ def _guardar_cliente(request, cliente=None):
 		cliente.fecha_vencimiento_facturacion = (
 			parse_date(datos['fecha_vencimiento_facturacion'])
 			if datos['fecha_vencimiento_facturacion']
+			else None
+		)
+		cliente.fecha_habilitacion_facturacion = (
+			parse_date(datos['fecha_habilitacion_facturacion'])
+			if datos['fecha_habilitacion_facturacion']
 			else None
 		)
 		cliente.tiene_representante_legal = bool(datos['tiene_representante_legal'])

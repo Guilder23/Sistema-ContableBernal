@@ -88,6 +88,7 @@ const loadClientEditForm = (trigger) => {
         fecha_inicio: trigger.dataset.clientStartDate,
         tipo_facturacion: trigger.dataset.clientBillingType,
         fecha_vencimiento_facturacion: trigger.dataset.clientBillingExpiry,
+        fecha_habilitacion_facturacion: trigger.dataset.clientBillingEnabledDate,
         tiene_representante_legal: trigger.dataset.clientHasRepresentative,
         representante_legal_nombre: trigger.dataset.clientRepresentativeName,
         representante_legal_carnet: trigger.dataset.clientRepresentativeId,
